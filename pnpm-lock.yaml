@@ -182,6 +182,15 @@ importers:
         specifier: 2.2.1
         version: 2.2.1
     devDependencies:
+      '@babel/core':
+        specifier: ^7.24.7
+        version: 7.24.7
+      '@babel/preset-env':
+        specifier: ^7.24.7
+        version: 7.24.7(@babel/core@7.24.7)
+      '@babel/runtime':
+        specifier: ^7.24.7
+        version: 7.24.7
       '@laundryroom/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -197,15 +206,6 @@ importers:
       '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@babel/core':
-        specifier: ^7.24.7
-        version: 7.24.7
-      '@babel/preset-env':
-        specifier: ^7.24.7
-        version: 7.24.7(@babel/core@7.24.7)
-      '@babel/runtime':
-        specifier: ^7.24.7
-        version: 7.24.7
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
@@ -358,15 +358,15 @@ importers:
 
   packages/auth:
     dependencies:
-      '@laundryroom/db':
-        specifier: workspace:*
-        version: link:../db
       '@auth/core':
         specifier: 0.32.0
         version: 0.32.0
       '@auth/drizzle-adapter':
         specifier: ^1.4.1
         version: 1.4.1
+      '@laundryroom/db':
+        specifier: workspace:*
+        version: link:../db
       '@t3-oss/env-nextjs':
         specifier: ^0.10.1
         version: 0.10.1(typescript@5.5.3)(zod@3.23.8)
