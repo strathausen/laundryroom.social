@@ -1,5 +1,5 @@
 {
-  "name": "@acme/ui",
+  "name": "@laundryroom/ui",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -37,10 +37,10 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tailwind-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tailwind-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
     "@types/react": "catalog:react18",
     "eslint": "catalog:",
     "prettier": "catalog:",
@@ -53,5 +53,5 @@
     "react": "catalog:react18",
     "zod": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@laundryroom/prettier-config"
 }

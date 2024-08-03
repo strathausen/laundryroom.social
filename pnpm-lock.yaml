@@ -48,7 +48,7 @@ importers:
 
   .:
     devDependencies:
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:tooling/prettier
       '@turbo/gen':
@@ -70,16 +70,16 @@ importers:
         specifier: 0.32.0
         version: 0.32.0
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tailwind-config':
+      '@laundryroom/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -182,19 +182,19 @@ importers:
         specifier: 2.2.1
         version: 2.2.1
     devDependencies:
-      '@acme/api':
+      '@laundryroom/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tailwind-config':
+      '@laundryroom/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@babel/core':
@@ -227,19 +227,19 @@ importers:
 
   apps/nextjs:
     dependencies:
-      '@acme/api':
+      '@laundryroom/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@acme/auth':
+      '@laundryroom/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@acme/db':
+      '@laundryroom/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@acme/ui':
+      '@laundryroom/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@acme/validators':
+      '@laundryroom/validators':
         specifier: workspace:*
         version: link:../../packages/validators
       '@t3-oss/env-nextjs':
@@ -276,16 +276,16 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tailwind-config':
+      '@laundryroom/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -318,13 +318,13 @@ importers:
 
   packages/api:
     dependencies:
-      '@acme/auth':
+      '@laundryroom/auth':
         specifier: workspace:*
         version: link:../auth
-      '@acme/db':
+      '@laundryroom/db':
         specifier: workspace:*
         version: link:../db
-      '@acme/validators':
+      '@laundryroom/validators':
         specifier: workspace:*
         version: link:../validators
       '@trpc/server':
@@ -337,13 +337,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       eslint:
@@ -358,7 +358,7 @@ importers:
 
   packages/auth:
     dependencies:
-      '@acme/db':
+      '@laundryroom/db':
         specifier: workspace:*
         version: link:../db
       '@auth/core':
@@ -386,13 +386,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       eslint:
@@ -423,13 +423,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       dotenv-cli:
@@ -484,16 +484,16 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.5.3)))
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tailwind-config':
+      '@laundryroom/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/react':
@@ -524,13 +524,13 @@ importers:
         specifier: 'catalog:'
         version: 3.23.8
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       eslint:
@@ -570,10 +570,10 @@ importers:
         specifier: rc-v8
         version: 8.0.0-alpha.62(eslint@9.7.0)(typescript@5.5.3)
     devDependencies:
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       eslint:
@@ -600,7 +600,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(@ianvs/prettier-plugin-sort-imports@4.3.0(prettier@3.3.3))(prettier@3.3.3)
     devDependencies:
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       typescript:
@@ -619,13 +619,13 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.5.3)))
     devDependencies:
-      '@acme/eslint-config':
+      '@laundryroom/eslint-config':
         specifier: workspace:*
         version: link:../eslint
-      '@acme/prettier-config':
+      '@laundryroom/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@acme/tsconfig':
+      '@laundryroom/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       eslint:

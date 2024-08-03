@@ -1,5 +1,5 @@
 {
-  "name": "@acme/nextjs",
+  "name": "@laundryroom/nextjs",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,11 +14,11 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@acme/api": "workspace:*",
-    "@acme/auth": "workspace:*",
-    "@acme/db": "workspace:*",
-    "@acme/ui": "workspace:*",
-    "@acme/validators": "workspace:*",
+    "@laundryroom/api": "workspace:*",
+    "@laundryroom/auth": "workspace:*",
+    "@laundryroom/db": "workspace:*",
+    "@laundryroom/ui": "workspace:*",
+    "@laundryroom/validators": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
@@ -32,10 +32,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tailwind-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tailwind-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
     "@types/node": "^20.14.9",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
@@ -46,5 +46,5 @@
     "tailwindcss": "^3.4.4",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@laundryroom/prettier-config"
 }
