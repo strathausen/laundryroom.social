@@ -15,21 +15,21 @@ import { env } from "~/env";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+      ? "https://www.laundryroom.social"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "laundryroom.social",
+  description: "meet people, organise meetups, have fun",
   openGraph: {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
-    url: "https://create-t3-turbo.vercel.app",
-    siteName: "Create T3 Turbo",
+    title: "laundryroom.social",
+    description: "meet people, organise meetups, have fun",
+    url: "https://www.laundryroom.social",
+    siteName: "laundryroom.social",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@jullerino",
-    creator: "@jullerino",
+    site: "@strathausen",
+    creator: "@strathausen",
   },
 };
 

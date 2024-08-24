@@ -11,20 +11,20 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+          "bg-tahiti px-2 py-1 font-bold text-background text-white shadow-hardrock shadow-hotpink transition-shadow hover:shadow-hardrock-lg hover:shadow-hotpink active:shadow-hardrock-sm active:shadow-hotpink",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+          "hover:bg-destructive/90 bg-destructive text-destructive-foreground shadow-sm",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+          "hover:bg-secondary/80 bg-secondary text-secondary-foreground shadow-sm",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4 shadow-none hover:underline",
       },
       size: {
         sm: "h-8 rounded-md px-3 text-xs",
         md: "h-9 px-4 py-2",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-10 rounded-lg px-8",
         icon: "size-9",
       },
     },
@@ -46,7 +46,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={
+          // for some reason, these don't work when they're in the variants object
+          "shadow-hardrock hover:shadow-hardrock-lg active:shadow-hardrock-sm " +
+          cn(buttonVariants({ variant, size, className }))
+        }
         ref={ref}
         {...props}
       />

@@ -18,12 +18,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@laundryroom/db": "workspace:*",
     "@auth/core": "0.32.0",
     "@auth/drizzle-adapter": "^1.4.1",
+    "@laundryroom/db": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",
     "next": "^14.2.4",
-    "next-auth": "5.0.0-beta.19",
+    "next-auth": "5.0.0-beta.20",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
     "zod": "catalog:"

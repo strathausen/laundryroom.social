@@ -11,6 +11,7 @@ export const env = createEnv({
         ? z.string().min(1)
         : z.string().min(1).optional(),
     NODE_ENV: z.enum(["development", "production"]).optional(),
+    RESEND_KEY: z.string().min(1),
   },
   client: {},
   experimental__runtimeEnv: {},

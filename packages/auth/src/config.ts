@@ -6,9 +6,15 @@ import type {
 import { skipCSRFCheck } from "@auth/core";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Discord from "next-auth/providers/discord";
+import Resend from "next-auth/providers/resend";
 
 import { db } from "@laundryroom/db/client";
-import { Account, Session, User } from "@laundryroom/db/schema";
+import {
+  Account,
+  Session,
+  User,
+  VerificationToken,
+} from "@laundryroom/db/schema";
 
 import { env } from "../env";
 
@@ -24,6 +30,7 @@ const adapter = DrizzleAdapter(db, {
   usersTable: User,
   accountsTable: Account,
   sessionsTable: Session,
+  verificationTokensTable: VerificationToken,
 });
 
 export const isSecureContext = env.NODE_ENV !== "development";
@@ -38,7 +45,13 @@ export const authConfig = {
       }
     : {}),
   secret: env.AUTH_SECRET,
-  providers: [Discord],
+  providers: [
+    Discord,
+    Resend({
+      apiKey: env.RESEND_KEY,
+      from: "Laundryroom Registration <noreply@tomatovillage.com>"
+    }),
+  ],
   callbacks: {
     session: (opts) => {
       if (!("user" in opts))
@@ -53,7 +66,7 @@ export const authConfig = {
       };
     },
   },
-} satisfies NextAuthConfig;
+} as NextAuthConfig;
 
 export const validateToken = async (
   token: string,
