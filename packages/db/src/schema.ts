@@ -138,6 +138,16 @@ export const Group = pgTable("group", {
   }).$onUpdateFn(() => sql`now()`),
 });
 
+export const UpsertGroupSchema = createInsertSchema(Group, {
+  id: z.string().optional(),
+  name: z.string().max(255),
+  description: z.string().max(255),
+  image: z.string().max(255),
+}).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const GroupRelations = relations(Group, ({ many }) => ({
   members: many(GroupMember),
   meetups: many(Meetup),

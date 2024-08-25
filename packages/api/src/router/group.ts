@@ -19,18 +19,30 @@ export const groupRouter = {
       });
     }),
 
-  create: protectedProcedure
-    .input(z.object({ name: z.string(), description: z.string() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.db.insert(Group).values(input);
-    }),
-
-  update: protectedProcedure
+  upsert: protectedProcedure
     .input(
-      z.object({ id: z.string(), name: z.string(), description: z.string() }),
+      z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        description: z.string(),
+      }),
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
+    .mutation(async ({ ctx, input }) => {
+      if (input.id) {
+        // also check for user permissions, only group admins or owners can update
+        const membership = await ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, input.id),
+            eq(GroupMember.userId, ctx.session.user.id),
+          ),
+        });
+        if (!["owner", "admin"].includes(membership?.role ?? "")) {
+          throw new Error("not authorized");
+        }
+
+        return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
+      }
+      return ctx.db.insert(Group).values(input);
     }),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
