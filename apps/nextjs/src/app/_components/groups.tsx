@@ -7,6 +7,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
   useForm,
 } from "@laundryroom/ui/form";
@@ -44,6 +45,7 @@ export function UpsertGroupForm() {
   return (
     <Form {...form}>
       <form
+        className="flex w-full max-w-2xl flex-col gap-4"
         onSubmit={form.handleSubmit((data) => {
           upsertGroup.mutate(data);
         })}
@@ -53,13 +55,28 @@ export function UpsertGroupForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
+              <FormLabel>name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Name" />
+                <Input {...field} placeholder="name" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>description</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Save</Button>
       </form>
     </Form>
   );

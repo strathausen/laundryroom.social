@@ -42,7 +42,21 @@ export const groupRouter = {
 
         return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
       }
-      return ctx.db.insert(Group).values(input);
+      return ctx.db.transaction(async (tx) => {
+        const [group] = await tx
+          .insert(Group)
+          .values(input)
+          .returning({ id: Group.id });
+        if (!group) {
+          throw new Error("failed to create group");
+        }
+        await tx.insert(GroupMember).values({
+          groupId: group.id,
+          userId: ctx.session.user.id,
+          role: "owner",
+        });
+        return group;
+      });
     }),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {

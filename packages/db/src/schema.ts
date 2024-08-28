@@ -128,8 +128,8 @@ export const MeetupAttendeeStatus = pgEnum("meetup_attendee_status", [
 
 export const Group = pgTable("group", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description").notNull(),
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
@@ -140,9 +140,9 @@ export const Group = pgTable("group", {
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
-  name: z.string().max(255),
-  description: z.string().max(255),
-  image: z.string().max(255),
+  name: z.string().max(255).min(3).nullable().optional(),
+  description: z.string().max(255).min(20),
+  image: z.string().max(255).optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,
