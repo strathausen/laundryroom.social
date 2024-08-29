@@ -1,8 +1,5 @@
-"use client";
-
-import { Button } from "@laundryroom/ui/button";
-
 import { UpsertGroupForm } from "~/app/_components/groups";
+import { api, HydrateClient } from "~/trpc/server";
 
 interface PageProps {
   params: {
@@ -10,23 +7,23 @@ interface PageProps {
   };
 }
 
-export default function EditGroupPage({ params }: PageProps) {
+export default async function EditGroupPage({ params }: PageProps) {
+  const isNew = params.groupId === "new";
+  // if group id is not "new" then fetch the group
+  if (!isNew) {
+    await api.group.byId.prefetch({ id: params.groupId });
+  }
   return (
-    <main className="container h-screen max-w-screen-lg py-16 text-foreground">
-      <div className="flex flex-col gap-4">
-        <h1 className="pb-2 text-5xl font-bold underline decoration-fancyorange decoration-4">
-          {params.groupId === "new" ? "Create Group" : "Edit Group"}
-        </h1>
-        <div className="flex flex-row gap-4 pt-2">
-          <Button>Save the group! ✨</Button>
-          <Button variant="destructive">Delete the group! 😱</Button>
-          <Button variant="outline">archive the group! 🚫</Button>
-          <Button variant="secondary">Cancel</Button>
+    <HydrateClient>
+      <main className="container h-screen max-w-screen-lg py-16 text-foreground">
+        <div className="flex flex-col gap-4">
+          <h1 className="pb-2 text-5xl font-bold underline decoration-fancyorange decoration-4">
+            {isNew ? "Create Group" : "Edit Group"}
+          </h1>
+          {isNew && <p>create a new group to meet people</p>}
+          <UpsertGroupForm groupId={params.groupId} isNew={isNew} />
         </div>
-        <div>
-          <UpsertGroupForm />
-        </div>
-      </div>
-    </main>
+      </main>
+    </HydrateClient>
   );
 }

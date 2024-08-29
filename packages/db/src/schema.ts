@@ -140,7 +140,7 @@ export const Group = pgTable("group", {
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
-  name: z.string().max(255).min(3).nullable().optional(),
+  name: z.string().max(255).min(3),
   description: z.string().max(255).min(20),
   image: z.string().max(255).optional(),
 }).omit({

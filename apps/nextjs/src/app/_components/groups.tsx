@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
 import {
@@ -17,21 +20,43 @@ import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 
-export function UpsertGroupForm() {
+type Props = {
+  groupId: string;
+  isNew: boolean;
+};
+
+export function UpsertGroupForm(props: Props) {
+  const router = useRouter();
+  const groupQuery = api.group.byId.useQuery(
+    {
+      id: props.groupId,
+    },
+    {
+      enabled: !props.isNew,
+    },
+  );
   const form = useForm({
     schema: UpsertGroupSchema,
-    defaultValues: {
+    defaultValues: groupQuery.data ?? {
       name: "",
       description: "",
-      image: "",
     },
+    // disabled: groupQuery.data && !props.isNew,
   });
+
+  useEffect(() => {
+    if (groupQuery.data) {
+      form.setValue("name", groupQuery.data.name);
+      form.setValue("description", groupQuery.data.description);
+    }
+  }, [groupQuery.data]);
 
   const utils = api.useUtils();
   const upsertGroup = api.group.upsert.useMutation({
-    async onSuccess() {
+    async onSuccess(data) {
       form.reset();
       await utils.group.invalidate();
+      if ("id" in data) router.push(`/groups?highlight=${data.id}`);
     },
     onError: (err) => {
       toast.error(
@@ -55,9 +80,9 @@ export function UpsertGroupForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>name</FormLabel>
+              <FormLabel>group name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="name" />
+                <Input {...field} placeholder="a catchy name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -68,15 +93,25 @@ export function UpsertGroupForm() {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>description</FormLabel>
+              <FormLabel>group description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="description" />
+                <Textarea {...field} placeholder="what is your group about?" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Save</Button>
+        <div className="flex gap-4">
+          <Button type="submit">save</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              router.push("/groups");
+            }}
+          >
+            cancel
+          </Button>
+        </div>
       </form>
     </Form>
   );
