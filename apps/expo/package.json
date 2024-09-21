@@ -43,14 +43,14 @@
     "superjson": "2.2.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/runtime": "^7.24.7",
     "@laundryroom/api": "workspace:*",
     "@laundryroom/eslint-config": "workspace:*",
     "@laundryroom/prettier-config": "workspace:*",
     "@laundryroom/tailwind-config": "workspace:*",
     "@laundryroom/tsconfig": "workspace:*",
-    "@babel/core": "^7.24.7",
-    "@babel/preset-env": "^7.24.7",
-    "@babel/runtime": "^7.24.7",
     "@types/babel__core": "^7.20.5",
     "@types/react": "catalog:react18",
     "eslint": "catalog:",
