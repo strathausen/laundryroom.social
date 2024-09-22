@@ -59,8 +59,8 @@ export function NavBar(props: Props) {
             <Link
               key={link}
               href={`/${link === "feed" && !props.session?.user ? "" : link}`}
-              className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange decoration-4 md:flex-row ${
-                pathName.startsWith(`/${link}`) ? "font-bold" : ""
+              className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange decoration-4 transition-all md:flex-row ${
+                pathName.startsWith(`/${link}`) ? "font-bold decoration-fancyorange" : "decoration-fancyorange/0"
               }`}
             >
               {icon} <span className="text-sm md:text-xl">{label}</span>
@@ -72,7 +72,7 @@ export function NavBar(props: Props) {
                 ? `/user/${props.session.user.id}`
                 : `/api/auth/signin`
             }
-            className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange md:flex-row ${
+            className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange decoration-4 md:flex-row ${
               pathName.startsWith(`/user/${props.session?.user.id}`)
                 ? "font-bold"
                 : ""
