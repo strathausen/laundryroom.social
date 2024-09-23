@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -114,5 +115,58 @@ export function UpsertGroupForm(props: Props) {
         </div>
       </form>
     </Form>
+  );
+}
+
+export function GroupList() {
+  const groupsQuery = api.group.all.useQuery();
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {groupsQuery.data?.map((group) => (
+        <Link
+          key={group.id}
+          className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-hotpink"
+          href={`/groups/${group.id}`}
+        >
+          <div>
+            <h2 className="text-xl font-bold underline decoration-bubble-gum decoration-2">
+              {group.name}
+            </h2>
+            <p>{group.description}</p>
+          </div>
+          {/* stats, with dummy data (no of events, most recent event, no of users) at the bottom of the box */}
+          <div className="mt-2 flex gap-2">
+            <div className="flex gap-1">
+              <span className="font-bold">events:</span>
+              <span>3</span>
+            </div>
+            <div className="flex gap-1">
+              <span className="font-bold">users:</span>
+              <span>5</span>
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export function GroupDetail() {
+  const params = useParams<{ groupId: string }>();
+  const groupQuery = api.group.byId.useQuery({
+    id: params.groupId,
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
+        {groupQuery.data?.name}
+      </h1>
+      <p>{groupQuery.data?.description}</p>
+      {/* discussions */}
+      {/* events */}
+      {/* members */}
+    </div>
   );
 }

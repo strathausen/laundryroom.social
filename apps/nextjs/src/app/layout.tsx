@@ -12,6 +12,7 @@ import "~/app/globals.css";
 
 import { env } from "~/env";
 import { NavBar } from "./_components/navbar";
+import { auth } from "@laundryroom/auth";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -41,7 +42,8 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout(props: { children: React.ReactNode }) {
+export default async function RootLayout(props: { children: React.ReactNode }) {
+  const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -52,7 +54,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NavBar />
+          <NavBar session={session} />
           <div className="pl-0 md:pl-32">
             <TRPCReactProvider>{props.children}</TRPCReactProvider>
           </div>

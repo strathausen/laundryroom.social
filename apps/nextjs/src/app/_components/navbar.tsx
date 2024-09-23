@@ -19,11 +19,11 @@ import {
 } from "react-icons/fa6";
 
 type Props = {
-  session?: Session | null;
+  session: Session | null;
 };
 
 const menuLinks = [
-  { label: "events", link: "events", icon: <FaCalendar /> },
+  { label: "events", link: "playground", icon: <FaCalendar /> },
   { label: "groups", link: "groups", icon: <FaPeopleGroup /> },
   { label: "create", link: "edit-group/new", icon: <FaPlus /> },
   { label: "feed", link: "feed", icon: <FaBowlRice /> },
@@ -35,7 +35,7 @@ export function NavBar(props: Props) {
   // const t = useScopedI18n("navBar");
 
   return (
-    <div className="absolute bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row bg-white/60 pb-4 pt-2 text-sm backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
+    <div className="absolute bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row bg-white/30 pb-4 pt-2 text-sm backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
       <div title="tomato village" className="mt-2 hidden md:block">
         <Link href="/" className="flex items-center gap-2">
           <div></div>
@@ -59,8 +59,10 @@ export function NavBar(props: Props) {
             <Link
               key={link}
               href={`/${link === "feed" && !props.session?.user ? "" : link}`}
-              className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange decoration-4 transition-all md:flex-row ${
-                pathName.startsWith(`/${link}`) ? "font-bold decoration-fancyorange" : "decoration-fancyorange/0"
+              className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 transition-all hover:decoration-fancyorange md:flex-row ${
+                pathName.startsWith(`/${link}`)
+                  ? "font-bold decoration-fancyorange"
+                  : "decoration-fancyorange/0"
               }`}
             >
               {icon} <span className="text-sm md:text-xl">{label}</span>
@@ -72,13 +74,15 @@ export function NavBar(props: Props) {
                 ? `/user/${props.session.user.id}`
                 : `/api/auth/signin`
             }
-            className={`drop-shadow-white flex flex-col items-center gap-3 hover:underline hover:decoration-fancyorange decoration-4 md:flex-row ${
+            className={`drop-shadow-white flex flex-col items-center gap-3 decoration-4 hover:underline hover:decoration-fancyorange md:flex-row ${
               pathName.startsWith(`/user/${props.session?.user.id}`)
                 ? "font-bold"
                 : ""
             }`}
           >
-            <div className={props.session ? "-m-1" : ""}>
+            <div
+            // className={props.session ? "-m-1" : ""}
+            >
               {/* {props.session ? ( */}
               {/* // <ProfileImage imageUrl={props.session?.user.image} size={28} /> */}
               {/* // ) : ( */}
@@ -88,7 +92,7 @@ export function NavBar(props: Props) {
             <span className="text-sm md:text-xl">{"profile"}</span>
           </Link>
         </div>
-        <div className="text-primary-darker mb-24 hidden md:block xl:mb-0">
+        <div className="text-primary-darker mb-24 hidden md:mb-0 md:block">
           <div className="pb-3">
             <Link
               href="https://www.zupafeed.com/campaign/clsa7g66k0007u2z77f2g0e4o"
