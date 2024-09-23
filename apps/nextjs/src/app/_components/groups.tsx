@@ -164,9 +164,6 @@ export function GroupDetail() {
         {groupQuery.data?.name}
       </h1>
       <p>{groupQuery.data?.description}</p>
-      {/* discussions */}
-      {/* events */}
-      {/* members */}
     </div>
   );
 }

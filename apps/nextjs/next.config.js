@@ -1,4 +1,5 @@
 import { fileURLToPath } from "url";
+import createMDX from "@next/mdx";
 import createJiti from "jiti";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
@@ -20,6 +21,16 @@ const config = {
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
+  images: {
+    remotePatterns: [
+      {
+        hostname: "utfs.io",
+      },
+    ],
+  },
 };
 
-export default config;
+const withMDX = createMDX();
+
+export default withMDX(config);
