@@ -38,7 +38,7 @@ export function UpsertGroupForm(props: Props) {
   );
   const form = useForm({
     schema: UpsertGroupSchema,
-    defaultValues: groupQuery.data ?? {
+    defaultValues: groupQuery.data?.group ?? {
       name: "",
       description: "",
     },
@@ -46,9 +46,9 @@ export function UpsertGroupForm(props: Props) {
   });
 
   useEffect(() => {
-    if (groupQuery.data) {
-      form.setValue("name", groupQuery.data.name);
-      form.setValue("description", groupQuery.data.description);
+    if (groupQuery.data?.group) {
+      form.setValue("name", groupQuery.data.group.name);
+      form.setValue("description", groupQuery.data.group.description);
     }
   }, [groupQuery.data]);
 
@@ -158,12 +158,29 @@ export function GroupDetail() {
     id: params.groupId,
   });
 
+  if (groupQuery.error) {
+    return <div>Failed to load group</div>;
+  }
+  if (groupQuery.isLoading || !groupQuery.data?.group) {
+    return <div>Loading group...</div>;
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
-        {groupQuery.data?.name}
+        {groupQuery.data.group.name}
       </h1>
-      <p>{groupQuery.data?.description}</p>
+      {/* the MDXRemote component can only run server side, and for good reason. meanwhile, we don't support mdx yet */}
+      {/* <MDXRemote source={groupQuery.data?.description} /> */}
+      {groupQuery.data.group.description.split("\n").map((line, i) => (
+        <p key={i}>{line}</p>
+      ))}
+      {/* show edit button if I'm the owner */}
+      {groupQuery.data.membership?.role === "owner" && (
+        <Link href={`/edit-group/${groupQuery.data.group.id}`}>
+          <Button>edit</Button>
+        </Link>
+      )}
     </div>
   );
 }

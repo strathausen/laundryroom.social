@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq } from "@laundryroom/db";
-import { Group, GroupMember } from "@laundryroom/db/schema";
+import { and, desc, eq } from "@laundryroom/db";
+import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -13,10 +13,34 @@ export const groupRouter = {
 
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.Group.findFirst({
+    .query(async ({ ctx, input }) => {
+      const user = ctx.session?.user;
+      const groupQuery = ctx.db.query.Group.findFirst({
         where: eq(Group.id, input.id),
+        with: {
+          members: {
+            limit: 10,
+            orderBy: desc(GroupMember.joinedAt),
+          },
+          meetups: {
+            limit: 10,
+            orderBy: desc(Meetup.createdAt),
+          },
+        },
       });
+      const membershipQuery = user
+        ? ctx.db.query.GroupMember.findFirst({
+            where: and(
+              eq(GroupMember.groupId, input.id),
+              eq(GroupMember.userId, user.id),
+            ),
+          })
+        : null;
+      const [group, membership] = await Promise.all([
+        groupQuery,
+        membershipQuery,
+      ]);
+      return { group, membership };
     }),
 
   upsert: protectedProcedure

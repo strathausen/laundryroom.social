@@ -1,6 +1,0 @@
-# planned features
-
-- search/sort events/meetings groups by geographical distance
-- private groups (where membership is also private)
-- turn adult mode on (off by default)
-- ability for group admins to charge fees from members

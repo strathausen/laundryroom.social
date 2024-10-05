@@ -186,6 +186,17 @@ export const GroupMember = pgTable("group_member", {
   }).$onUpdateFn(() => sql`now()`),
 });
 
+export const GroupMemberRelations = relations(GroupMember, ({ one }) => ({
+  group: one(Group, {
+    fields: [GroupMember.groupId],
+    references: [Group.id],
+  }),
+  user: one(User, {
+    fields: [GroupMember.userId],
+    references: [User.id],
+  }),
+}));
+
 export const Meetup = pgTable("meetup", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   groupId: uuid("group_id")
