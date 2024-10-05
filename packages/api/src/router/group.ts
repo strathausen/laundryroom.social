@@ -87,15 +87,46 @@ export const groupRouter = {
     return ctx.db.delete(Group).where(eq(Group.id, input));
   }),
 
-  addMember: protectedProcedure
-    .input(z.object({ groupId: z.string(), userId: z.string() }))
+  join: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
     .mutation(({ ctx, input }) => {
-      return ctx.db.insert(GroupMember).values(input);
+      return ctx.db.insert(GroupMember).values({
+        groupId: input.groupId,
+        userId: ctx.session.user.id,
+        role: "member",
+      });
+    }),
+
+  leave: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db
+        .delete(GroupMember)
+        .where(
+          and(
+            eq(GroupMember.groupId, input.groupId),
+            eq(GroupMember.userId, ctx.session.user.id),
+          ),
+        );
     }),
 
   removeMember: protectedProcedure
     .input(z.object({ groupId: z.string(), userId: z.string() }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // check if the current user is an admin or owner
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      if (!["owner", "admin"].includes(membership?.role ?? "")) {
+        throw new Error("not authorized");
+      }
+      // user to remove should not be the owner
+      if (membership?.userId === input.userId) {
+        throw new Error("cannot remove owner");
+      }
       return ctx.db
         .delete(GroupMember)
         .where(

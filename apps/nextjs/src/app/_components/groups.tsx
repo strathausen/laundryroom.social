@@ -1,5 +1,6 @@
 "use client";
 
+import { join } from "path";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -157,6 +158,8 @@ export function GroupDetail() {
   const groupQuery = api.group.byId.useQuery({
     id: params.groupId,
   });
+  const joinGroup = api.group.join.useMutation();
+  const leaveGroup = api.group.leave.useMutation();
 
   if (groupQuery.error) {
     return <div>Failed to load group</div>;
@@ -181,6 +184,37 @@ export function GroupDetail() {
           <Button>edit</Button>
         </Link>
       )}
+      {/* show join button if no membership */}
+      {!groupQuery.data.membership && (
+        <Button
+          disabled={joinGroup.isPending || groupQuery.isRefetching}
+          onClick={async() => {
+            await joinGroup.mutateAsync({
+              groupId: groupQuery.data.group?.id!,
+            });
+            groupQuery.refetch();
+          }}
+        >
+          join this group
+        </Button>
+      )}
+      {/* if user is not the owner and is a member, offer to leave the group */}
+      {groupQuery.data.membership &&
+        groupQuery.data.membership.role !== "owner" && (
+          <Button
+            disabled={leaveGroup.isPending || groupQuery.isRefetching}
+            onClick={async () => {
+              await leaveGroup.mutateAsync({
+                groupId: groupQuery.data.group?.id!,
+              });
+              groupQuery.refetch();
+            }}
+          >
+            leave this group
+          </Button>
+        )}
+      {/* show events, discussions, etc */}
+      {/* don't show discussion etc if not logged in */}
     </div>
   );
 }
