@@ -167,52 +167,57 @@ export function GroupDetail() {
   if (groupQuery.isLoading || !groupQuery.data?.group) {
     return <div>Loading group...</div>;
   }
+  const { membership, group } = groupQuery.data;
 
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
-        {groupQuery.data.group.name}
+        {group.name}
       </h1>
       {/* the MDXRemote component can only run server side, and for good reason. meanwhile, we don't support mdx yet */}
       {/* <MDXRemote source={groupQuery.data?.description} /> */}
-      {groupQuery.data.group.description.split("\n").map((line, i) => (
+      {group.description.split("\n").map((line, i) => (
         <p key={i}>{line}</p>
       ))}
-      {/* show edit button if I'm the owner */}
-      {groupQuery.data.membership?.role === "owner" && (
-        <Link href={`/edit-group/${groupQuery.data.group.id}`}>
-          <Button>edit</Button>
-        </Link>
-      )}
-      {/* show join button if no membership */}
-      {!groupQuery.data.membership && (
-        <Button
-          disabled={joinGroup.isPending || groupQuery.isRefetching}
-          onClick={async() => {
-            await joinGroup.mutateAsync({
-              groupId: groupQuery.data.group?.id!,
-            });
-            groupQuery.refetch();
-          }}
-        >
-          join this group
-        </Button>
-      )}
-      {/* if user is not the owner and is a member, offer to leave the group */}
-      {groupQuery.data.membership &&
-        groupQuery.data.membership.role !== "owner" && (
+      <div>
+        {/* show edit button if I'm the owner */}
+        {membership?.role === "owner" && (
+          <Link href={`/edit-group/${groupQuery.data.group.id}`}>
+            <Button>edit</Button>
+          </Link>
+        )}
+        {/* show join button if no membership */}
+        {!membership && (
           <Button
-            disabled={leaveGroup.isPending || groupQuery.isRefetching}
+            disabled={joinGroup.isPending || groupQuery.isRefetching}
             onClick={async () => {
-              await leaveGroup.mutateAsync({
-                groupId: groupQuery.data.group?.id!,
-              });
+              await joinGroup.mutateAsync({ groupId: group?.id! });
               groupQuery.refetch();
             }}
           >
-            leave this group
+            join this group
           </Button>
         )}
+        {/* if user is not the owner and is a member, offer to leave the group */}
+        {membership && membership.role !== "owner" && (
+          <div className="text-muted-foreground">
+            you're a member of this group,{" "}
+            <Button
+              className="p-1"
+              disabled={leaveGroup.isPending || groupQuery.isRefetching}
+              onClick={async () => {
+                await leaveGroup.mutateAsync({
+                  groupId: groupQuery.data.group?.id!,
+                });
+                groupQuery.refetch();
+              }}
+              variant={"link"}
+            >
+              leave this group
+            </Button>
+          </div>
+        )}
+      </div>
       {/* show events, discussions, etc */}
       {/* don't show discussion etc if not logged in */}
     </div>
