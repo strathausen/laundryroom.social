@@ -135,14 +135,14 @@ export const Group = pgTable("group", {
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
+  }).$onUpdateFn(() => new Date()),
 });
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
   name: z.string().max(255).min(3),
   description: z.string().max(255).min(20),
-  image: z.string().max(255).optional(),
+  // image: z.string().max(255).optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,

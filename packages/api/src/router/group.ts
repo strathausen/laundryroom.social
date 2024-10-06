@@ -63,7 +63,6 @@ export const groupRouter = {
         if (!["owner", "admin"].includes(membership?.role ?? "")) {
           throw new Error("not authorized");
         }
-
         return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
       }
       return ctx.db.transaction(async (tx) => {

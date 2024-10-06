@@ -59,6 +59,7 @@ export function UpsertGroupForm(props: Props) {
       form.reset();
       await utils.group.invalidate();
       if ("id" in data) router.push(`/groups?highlight=${data.id}`);
+      toast.success("Group saved");
     },
     onError: (err) => {
       toast.error(
@@ -72,48 +73,55 @@ export function UpsertGroupForm(props: Props) {
   return (
     <Form {...form}>
       <form
-        className="flex w-full max-w-2xl flex-col gap-4"
         onSubmit={form.handleSubmit((data) => {
           upsertGroup.mutate(data);
         })}
       >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>group name</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="a catchy name" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>group description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="what is your group about?" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex gap-4">
-          <Button type="submit">save</Button>
-          <Button
-            type="button"
-            onClick={() => {
-              router.push("/groups");
-            }}
-          >
-            cancel
-          </Button>
-        </div>
+        <fieldset
+          className="flex w-full max-w-2xl flex-col gap-4"
+          disabled={upsertGroup.isPending}
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>group name</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="a catchy name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>group description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="what is your group about?"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex gap-4">
+            <Button type="submit">save</Button>
+            <Button
+              type="button"
+              onClick={() => {
+                router.push("/groups");
+              }}
+            >
+              cancel
+            </Button>
+          </div>
+        </fieldset>
       </form>
     </Form>
   );
@@ -127,7 +135,7 @@ export function GroupList() {
       {groupsQuery.data?.map((group) => (
         <Link
           key={group.id}
-          className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-hotpink"
+          className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-bubble-gum"
           href={`/groups/${group.id}`}
         >
           <div>
