@@ -82,9 +82,21 @@ export const groupRouter = {
       });
     }),
 
-  delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
-    return ctx.db.delete(Group).where(eq(Group.id, input));
-  }),
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      // check if the current user is the owner
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      if (membership?.role !== "owner") {
+        throw new Error("not authorized");
+      }
+      return ctx.db.delete(Group).where(eq(Group.id, input));
+    }),
 
   join: protectedProcedure
     .input(z.object({ groupId: z.string() }))
