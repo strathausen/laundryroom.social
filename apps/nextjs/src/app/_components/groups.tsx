@@ -1,7 +1,6 @@
 "use client";
 
-import { join } from "path";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
@@ -21,6 +20,7 @@ import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
+import { UpsertMeetupForm } from "./meetup";
 
 type Props = {
   groupId: string;
@@ -43,7 +43,6 @@ export function UpsertGroupForm(props: Props) {
       name: "",
       description: "",
     },
-    // disabled: groupQuery.data && !props.isNew,
   });
 
   useEffect(() => {
@@ -145,7 +144,7 @@ export function GroupList() {
             <p>{group.description}</p>
           </div>
           {/* stats, with dummy data (no of events, most recent event, no of users) at the bottom of the box */}
-          <div className="mt-2 flex gap-2">
+          {/* <div className="mt-2 flex gap-2">
             <div className="flex gap-1">
               <span className="font-bold">events:</span>
               <span>3</span>
@@ -154,7 +153,7 @@ export function GroupList() {
               <span className="font-bold">users:</span>
               <span>5</span>
             </div>
-          </div>
+          </div> */}
         </Link>
       ))}
     </div>
@@ -163,6 +162,7 @@ export function GroupList() {
 
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
+  const [showCreateMeetup, setShowCreateMeetup] = useState(false);
   const groupQuery = api.group.byId.useQuery({
     id: params.groupId,
   });
@@ -183,16 +183,22 @@ export function GroupDetail() {
         {group.name}
       </h1>
       {/* the MDXRemote component can only run server side, and for good reason. meanwhile, we don't support mdx yet */}
-      {/* <MDXRemote source={groupQuery.data?.description} /> */}
+      {/* <MDXRemote source={groupQuery.data.description} /> */}
       {group.description.split("\n").map((line, i) => (
         <p key={i}>{line}</p>
       ))}
       <div>
         {/* show edit button if I'm the owner */}
         {membership?.role === "owner" && (
-          <Link href={`/edit-group/${groupQuery.data.group.id}`}>
-            <Button>edit</Button>
-          </Link>
+          <div className="flex gap-4">
+            <Link href={`/edit-group/${groupQuery.data.group.id}`}>
+              <Button>edit</Button>
+            </Link>
+            <Button onClick={() => setShowCreateMeetup(true)}>
+              create event
+            </Button>
+            {showCreateMeetup && <UpsertMeetupForm isNew={true} />}
+          </div>
         )}
         {/* show join button if no membership */}
         {!membership && (

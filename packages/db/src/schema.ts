@@ -18,7 +18,7 @@ export const Post = pgTable("post", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", {
-    mode: "date",
+    mode: "string",
     withTimezone: true,
   }).$onUpdateFn(() => sql`now()`),
 });
@@ -133,16 +133,16 @@ export const Group = pgTable("group", {
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
-    mode: "date",
+    mode: "string",
     withTimezone: true,
-  }).$onUpdateFn(() => new Date()),
+  }).$onUpdateFn(() => sql`now()`),
 });
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
   name: z.string().max(255).min(3),
   description: z.string().max(255).min(20),
-  // image: z.string().max(255).optional(),
+  image: z.string().max(255).optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,
@@ -166,25 +166,31 @@ export const CreateGroupSchema = createInsertSchema(Group, {
   updatedAt: true,
 });
 
-export const GroupMember = pgTable("group_member", {
-  groupId: uuid("group_id")
-    .notNull()
-    .references(() => Group.id, {
-      onDelete: "cascade",
-    }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => User.id, {
-      onDelete: "cascade",
-    }),
-  role: GroupMemberRole("member"),
-  joinedAt: timestamp("joined_at").defaultNow().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
-});
+export const GroupMember = pgTable(
+  "group_member",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => Group.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => User.id, {
+        onDelete: "cascade",
+      }),
+    role: GroupMemberRole("member"),
+    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+    }).$onUpdateFn(() => sql`now()`),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.groupId, t.userId] }),
+  }),
+);
 
 export const GroupMemberRelations = relations(GroupMember, ({ one }) => ({
   group: one(Group, {
@@ -213,57 +219,56 @@ export const Meetup = pgTable("meetup", {
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
+  }).$onUpdateFn(() => new Date()),
 });
 
-export const CreateMeetupSchema = createInsertSchema(Meetup, {
+export const UpsertMeetupSchema = createInsertSchema(Meetup, {
+  id: z.string().optional(),
   groupId: z.string(),
   title: z.string().max(255),
   description: z.string().max(255),
   location: z.string().max(255),
-  startTime: z.string(),
-  endTime: z.string(),
+  startTime: z.date(),
+  endTime: z.date(),
 }).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const UpdateMeetupSchema = z.object({
-  id: z.string(),
-  groupId: z.string(),
-  title: z.string().max(255),
-  description: z.string().max(255),
-  location: z.string().max(255),
-  startTime: z.string(),
-  endTime: z.string(),
-});
-
-export const MeetupRelations = relations(Meetup, ({ one }) => ({
+export const MeetupRelations = relations(Meetup, ({ one, many }) => ({
   group: one(Group, {
     fields: [Meetup.groupId],
     references: [Group.id],
   }),
+  attendees: many(Attendee, {
+    relationName: "meetup",
+  }),
 }));
 
-export const Attendee = pgTable("attendee", {
-  meetupId: uuid("meetup_id")
-    .notNull()
-    .references(() => Meetup.id, {
-      onDelete: "cascade",
-    }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => User.id, {
-      onDelete: "cascade",
-    }),
-  status: MeetupAttendeeStatus("going"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
-});
+export const Attendee = pgTable(
+  "attendee",
+  {
+    meetupId: uuid("meetup_id")
+      .notNull()
+      .references(() => Meetup.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => User.id, {
+        onDelete: "cascade",
+      }),
+    status: MeetupAttendeeStatus("going"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdateFn(() => new Date()),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.meetupId, t.userId] }),
+  }),
+);
 
 export const AttendeeRelations = relations(Attendee, ({ one }) => ({
   meetup: one(Meetup, {
@@ -293,7 +298,7 @@ export const Comment = pgTable("comment", {
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
+  }).$onUpdateFn(() => new Date()),
 });
 
 export const CommentRelations = relations(Comment, ({ one }) => ({
