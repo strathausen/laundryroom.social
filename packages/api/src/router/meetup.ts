@@ -52,6 +52,11 @@ export const meetupRouter = createTRPCRouter({
   upsert: protectedProcedure
     .input(UpsertMeetupSchema)
     .mutation(async ({ ctx, input }) => {
+      const data = {
+        ...input,
+        startTime: new Date(input.startTime),
+        endTime: new Date(input.endTime),
+      };
       const { user } = ctx.session;
       // check if user is admin or owner of the group
       const group = await ctx.db.query.Group.findFirst({
@@ -69,7 +74,7 @@ export const meetupRouter = createTRPCRouter({
       if (!membership || !["owner", "admin"].includes(membership.role!)) {
         throw new Error("Not authorized");
       }
-      if (input.startTime > input.endTime) {
+      if (input.endTime && data.startTime > new Date(input.endTime)) {
         throw new Error("Start time must be before end time");
       }
       // update existing meetup if id is provided
@@ -85,9 +90,9 @@ export const meetupRouter = createTRPCRouter({
           throw new Error("Group mismatch");
         }
         // all seems good, update the meetup
-        return ctx.db.update(Meetup).set(input).where(eq(Meetup.id, input.id));
+        return ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
       }
 
-      return ctx.db.insert(Meetup).values(input);
+      return ctx.db.insert(Meetup).values(data);
     }),
 });

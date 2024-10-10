@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@laundryroom/ui/dialog";
 import {
   Form,
   FormControl,
@@ -30,12 +31,8 @@ type Props = {
 export function UpsertGroupForm(props: Props) {
   const router = useRouter();
   const groupQuery = api.group.byId.useQuery(
-    {
-      id: props.groupId,
-    },
-    {
-      enabled: !props.isNew,
-    },
+    { id: props.groupId },
+    { enabled: !props.isNew },
   );
   const form = useForm({
     schema: UpsertGroupSchema,
@@ -194,10 +191,21 @@ export function GroupDetail() {
             <Link href={`/edit-group/${groupQuery.data.group.id}`}>
               <Button>edit</Button>
             </Link>
-            <Button onClick={() => setShowCreateMeetup(true)}>
-              create event
-            </Button>
-            {showCreateMeetup && <UpsertMeetupForm isNew={true} />}
+            <Dialog open={showCreateMeetup} onOpenChange={setShowCreateMeetup}>
+              <DialogTrigger asChild>
+                <Button>create event</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <UpsertMeetupForm
+                  isNew={true}
+                  groupId={params.groupId}
+                  onSaved={() => {
+                    setShowCreateMeetup(false);
+                    groupQuery.refetch();
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         )}
         {/* show join button if no membership */}

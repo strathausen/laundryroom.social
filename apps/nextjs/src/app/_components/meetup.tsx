@@ -22,7 +22,9 @@ import { api } from "~/trpc/react";
 
 type Props = {
   eventId?: string;
+  groupId: string;
   isNew: boolean;
+  onSaved?: () => void;
 };
 
 export function UpsertMeetupForm(props: Props) {
@@ -34,26 +36,32 @@ export function UpsertMeetupForm(props: Props) {
       await utils.meetup.invalidate();
       if ("id" in data) router.push(`/events?highlight=${data.id}`);
       toast.success("Event saved");
+      props.onSaved?.();
     },
   });
-  const eventQuery = api.meetup.byId.useQuery(
+  const meetupQuery = api.meetup.byId.useQuery(
     { id: props.eventId! },
     { enabled: !!props.eventId },
   );
   const form = useForm({
     schema: UpsertMeetupSchema,
-    defaultValues: eventQuery.data ?? {
-      title: "",
-      description: "",
+    defaultValues: {
+      groupId: props.groupId,
+      title: meetupQuery.data?.title ?? "",
+      description: meetupQuery.data?.description || "",
+      location: meetupQuery.data?.location || "",
+      startTime: meetupQuery.data?.startTime.toISOString() || "",
+      endTime: meetupQuery.data?.endTime?.toISOString() || "",
     },
   });
 
   useEffect(() => {
-    if (eventQuery.data) {
-      form.setValue("title", eventQuery.data.title);
-      form.setValue("description", eventQuery.data.description);
+    if (meetupQuery.data) {
+      form.setValue("title", meetupQuery.data.title);
+      form.setValue("description", meetupQuery.data.description!);
+      form.setValue("location", meetupQuery.data.location!);
     }
-  }, [eventQuery.data]);
+  }, [meetupQuery.data]);
 
   return (
     <Form {...form}>
@@ -64,9 +72,17 @@ export function UpsertMeetupForm(props: Props) {
         // simple frame
       >
         <fieldset
-          className="flex flex-col gap-4 rounded border border-gray-200 p-4"
+          className="flex flex-col gap-4 rounded p-4"
           disabled={upsertMeetup.isPending}
         >
+          {form.formState.errors && (
+            <div>
+              {Object.values(form.formState.errors).join(", ")}
+            </div>
+          )}
+          {upsertMeetup.error && (
+            <div>{upsertMeetup.error.message}</div>
+          )}
           <FormField
             control={form.control}
             name="title"
@@ -80,7 +96,65 @@ export function UpsertMeetupForm(props: Props) {
               </FormItem>
             )}
           />
-          <Button type="submit">save</Button>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>description</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>location</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="startTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>starts at</FormLabel>
+                <FormControl>
+                  <Input {...field} type="datetime-local" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="endTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ends at</FormLabel>
+                <FormControl>
+                  <Input {...field} type="datetime-local" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            disabled={!form.formState.isValid}
+            title={!form.formState.isValid ? "Please fill out all fields" : ""}
+          >
+            save
+          </Button>
         </fieldset>
       </form>
     </Form>
