@@ -178,7 +178,7 @@ export function GroupDetail() {
   const { membership, group } = groupQuery.data;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-h-svh">
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
         {group.name}
       </h1>

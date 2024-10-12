@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -126,17 +127,50 @@ export const MeetupAttendeeStatus = pgEnum("meetup_attendee_status", [
   "waitlist",
 ]);
 
-export const Group = pgTable("group", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }).notNull().unique(),
-  description: text("description").notNull(),
-  image: varchar("image", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", {
-    mode: "string",
-    withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
-});
+export const GroupStatus = pgEnum("group_status", [
+  "active",
+  "archived",
+  "hidden",
+]);
+
+export const GroupModerationStatus = pgEnum("group_moderation_tags", [
+  "ok",
+  "pending",
+  "rejected",
+  "review",
+  "reported",
+  "spam",
+  "offensive",
+  "inappropriate",
+]);
+
+export const Group = pgTable(
+  "group",
+  {
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    description: text("description").notNull(),
+    aiSearchText: text("ai_search_text"),
+    image: varchar("image", { length: 255 }),
+    status: GroupStatus("status").default("active"),
+    moderationStatus: GroupModerationStatus("moderation_status").default("ok"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+    }).$onUpdateFn(() => sql`now()`),
+  },
+  (t) => ({
+    seaarchIndex: index("search_index").using(
+      "gin",
+      sql`(
+        setweight(to_tsvector('english', ${t.name}), 'A') ||
+        setweight(to_tsvector('english', ${t.description}), 'B')
+        setweight(to_tsvector('english', ${t.aiSearchText}), 'C')
+      )`,
+    ),
+  }),
+);
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
@@ -146,6 +180,9 @@ export const UpsertGroupSchema = createInsertSchema(Group, {
 }).omit({
   createdAt: true,
   updatedAt: true,
+  status: true,
+  moderationStatus: true,
+  aiSearchText: true,
 });
 
 export const GroupRelations = relations(Group, ({ many }) => ({
@@ -179,7 +216,7 @@ export const GroupMember = pgTable(
       .references(() => User.id, {
         onDelete: "cascade",
       }),
-    role: GroupMemberRole("member"),
+    role: GroupMemberRole("role"),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {
@@ -258,7 +295,7 @@ export const Attendee = pgTable(
       .references(() => User.id, {
         onDelete: "cascade",
       }),
-    status: MeetupAttendeeStatus("going"),
+    status: MeetupAttendeeStatus("status"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",

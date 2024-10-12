@@ -1,15 +1,38 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq } from "@laundryroom/db";
+import { and, desc, eq, sql } from "@laundryroom/db";
 import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const groupRouter = {
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.Group.findMany();
+    return ctx.db.query.Group.findMany({
+      columns: { id: true, name: true, description: true, image: true },
+      where: and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
+      orderBy: desc(Group.createdAt),
+    });
   }),
+
+  search: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.Group.findMany({
+        columns: { id: true, name: true, description: true, image: true },
+        where: and(
+          sql`(
+            setweight(to_tsvector("Group"."name"), 'A') ||
+            setweight(to_tsvector("Group"."description"), 'B') ||
+            setweight(to_tsvector("Group"."ai_search_text"), 'C')
+            @@ plainto_tsquery(${input.query})
+        )`,
+          eq(Group.moderationStatus, "ok"),
+          eq(Group.status, "active"),
+        ),
+        orderBy: desc(Group.createdAt),
+      });
+    }),
 
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
