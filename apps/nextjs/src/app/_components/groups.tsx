@@ -165,6 +165,9 @@ export function GroupDetail() {
   });
   const joinGroup = api.group.join.useMutation();
   const leaveGroup = api.group.leave.useMutation();
+  const listMeetups = api.meetup.byGroupId.useQuery({
+    groupId: params.groupId,
+  });
 
   if (groupQuery.error) {
     return <div>Failed to load group</div>;
@@ -201,7 +204,7 @@ export function GroupDetail() {
                   groupId={params.groupId}
                   onSaved={() => {
                     setShowCreateMeetup(false);
-                    groupQuery.refetch();
+                    listMeetups.refetch();
                   }}
                 />
               </DialogContent>
@@ -241,6 +244,24 @@ export function GroupDetail() {
         )}
       </div>
       {/* show events, discussions, etc */}
+      <div className="mb-16">
+        <h2 className="text-3xl">events</h2>
+        <div className="flex flex-col gap-3 pt-4">
+          {listMeetups.data?.map((meetup) => (
+            <div
+              key={meetup.id}
+              className="cursor-pointer rounded border-2 border-fancyorange p-4"
+            >
+              <h3 className="font-bold">{meetup.title}</h3>
+              <p>{meetup.description}</p>
+              <p>
+                {new Date(meetup.startTime).toLocaleString()} -{" "}
+                {new Date(meetup.endTime).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* don't show discussion etc if not logged in */}
     </div>
   );
