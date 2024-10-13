@@ -17,6 +17,7 @@ import {
   useForm,
 } from "@laundryroom/ui/form";
 import { Input } from "@laundryroom/ui/input";
+import {Select,SelectContent,SelectGroup,SelectItem, SelectTrigger, SelectValue} from "@laundryroom/ui/select";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
@@ -27,6 +28,46 @@ type Props = {
   groupId: string;
   isNew: boolean;
 };
+
+export function GroupStatusSwitcher(props: {
+  groupId: string;
+  status: "active" | "hidden" | "archived";
+}) {
+  const utils = api.useUtils();
+  const updateGroupStatus = api.group.updateStatus.useMutation({
+    async onSuccess() {
+      await utils.group.invalidate();
+      toast.success("Group status updated");
+    },
+    onError: (err) => {
+      toast.error("Failed to update group status");
+    },
+  });
+
+  return (
+    <Select
+      value={props.status}
+      disabled={updateGroupStatus.isPending}
+      onValueChange={(status) => {
+        updateGroupStatus.mutate({
+          groupId: props.groupId,
+          status: status as "active" | "hidden" | "archived",
+        });
+      }}
+    >
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select a status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="hidden">Hidden</SelectItem>
+          <SelectItem value="archived">Archived</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
 
 export function UpsertGroupForm(props: Props) {
   const router = useRouter();
@@ -178,7 +219,7 @@ export function GroupDetail() {
   const { membership, group } = groupQuery.data;
 
   return (
-    <div className="flex flex-col gap-4 max-h-svh">
+    <div className="flex max-h-svh flex-col gap-4">
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
         {group.name}
       </h1>
@@ -209,6 +250,10 @@ export function GroupDetail() {
                 />
               </DialogContent>
             </Dialog>
+            <GroupStatusSwitcher
+              groupId={params.groupId}
+              status={group.status!}
+            />
           </div>
         )}
         {/* show join button if no membership */}

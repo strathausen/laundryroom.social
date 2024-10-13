@@ -171,6 +171,30 @@ export const groupRouter = {
         );
     }),
 
+  updateStatus: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        status: z.enum(["active", "archived", "hidden"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // check if the current user is an admin or owner
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      if (!["owner", "admin"].includes(membership?.role ?? "")) {
+        throw new Error("not authorized");
+      }
+      return ctx.db
+        .update(Group)
+        .set({ status: input.status })
+        .where(eq(Group.id, input.groupId));
+    }),
+
   members: protectedProcedure
     .input(z.object({ groupId: z.string() }))
     .query(({ ctx, input }) => {
