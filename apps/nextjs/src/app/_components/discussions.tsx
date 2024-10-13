@@ -24,6 +24,7 @@ function DiscussionPost({
 }: {
   discussion: RouterOutputs["discussion"]["byGroupId"][number];
 }) {
+  const [commentContent, setCommentContent] = useState("");
   const createCommentMutation = api.discussion.createComment.useMutation();
   const commentsQuery = api.discussion.comments.useQuery(
     { discussionId: discussion.id },
@@ -37,15 +38,40 @@ function DiscussionPost({
       <p className="text-sm text-tahiti">{discussion.user.name}</p>
       <h2 className="font-bold">{discussion.title}</h2>
       <p>{discussion.content}</p>
-			<div>comments: {discussion.commentCount}</div>
-      <Input />
-      <div className="flex justify-between">
-        <Button>reply</Button>
-        <div className="flex gap-3">
-          <Button>flag</Button>
-          <Button>delete</Button>
-        </div>
+      <div>comments: {discussion.commentCount}</div>
+      <div className="flex flex-col gap-2">
+        {commentsQuery.data?.map((comment) => (
+          <div key={comment.id} className="flex flex-col gap-2">
+            <p className="text-sm text-tahiti">{comment.user.name}</p>
+            <p>{comment.content}</p>
+          </div>
+        ))}
       </div>
+      {!commentsQuery.isFetched && discussion.commentCount > 0 && (
+        <Button onClick={() => commentsQuery.refetch()}>load comments</Button>
+      )}
+      <form
+        className="flex gap-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          // TODO optimistic update
+          await createCommentMutation.mutateAsync({
+            discussionId: discussion.id,
+            content: commentContent,
+          });
+          commentsQuery.refetch();
+          setCommentContent("");
+        }}
+      >
+        <Input
+          value={commentContent}
+          disabled={createCommentMutation.isPending}
+          onChange={(e) => setCommentContent(e.target.value)}
+        />
+        <Button type="submit" disabled={createCommentMutation.isPending}>
+          reply
+        </Button>
+      </form>
     </div>
   );
 }
