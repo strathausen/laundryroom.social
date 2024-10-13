@@ -17,12 +17,20 @@ import {
   useForm,
 } from "@laundryroom/ui/form";
 import { Input } from "@laundryroom/ui/input";
-import {Select,SelectContent,SelectGroup,SelectItem, SelectTrigger, SelectValue} from "@laundryroom/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@laundryroom/ui/select";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 import { UpsertMeetupForm } from "./meetup";
+import { DiscussionWidget } from "./discussions";
 
 type Props = {
   groupId: string;
@@ -219,7 +227,7 @@ export function GroupDetail() {
   const { membership, group } = groupQuery.data;
 
   return (
-    <div className="flex max-h-svh flex-col gap-4">
+    <div className="flex max-h-svh flex-col gap-4 overflow-y-scroll">
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
         {group.name}
       </h1>
@@ -289,13 +297,15 @@ export function GroupDetail() {
         )}
       </div>
       {/* show events, discussions, etc */}
-      <div className="mb-16">
-        <h2 className="text-3xl">events</h2>
-        <div className="flex flex-col gap-3 pt-4">
+      <div className="my-8">
+        <h2 className="border-b-2 border-b-foreground text-3xl">
+          upcoming meetups
+        </h2>
+        <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-3">
           {listMeetups.data?.map((meetup) => (
             <div
               key={meetup.id}
-              className="cursor-pointer rounded border-2 border-fancyorange p-4"
+              className="cursor-pointer overflow-hidden rounded border-2 border-fancyorange p-4"
             >
               <h3 className="font-bold">{meetup.title}</h3>
               <p>{meetup.description}</p>
@@ -308,6 +318,8 @@ export function GroupDetail() {
         </div>
       </div>
       {/* don't show discussion etc if not logged in */}
+      <h2 className="border-b-2 border-b-foreground text-3xl">talk to each other</h2>
+      <DiscussionWidget groupId={params.groupId} />
     </div>
   );
 }

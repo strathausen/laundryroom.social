@@ -13,26 +13,6 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const Post = pgTable("post", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  title: varchar("name", { length: 256 }).notNull(),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", {
-    mode: "string",
-    withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
-});
-
-export const CreatePostSchema = createInsertSchema(Post, {
-  title: z.string().max(256),
-  content: z.string().max(256),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export const User = pgTable("user", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }),
@@ -165,7 +145,7 @@ export const Group = pgTable(
       "gin",
       sql`(
         setweight(to_tsvector('english', ${t.name}), 'A') ||
-        setweight(to_tsvector('english', ${t.description}), 'B')
+        setweight(to_tsvector('english', ${t.description}), 'B') ||
         setweight(to_tsvector('english', ${t.aiSearchText}), 'C')
       )`,
     ),
@@ -189,7 +169,7 @@ export const GroupRelations = relations(Group, ({ many }) => ({
   members: many(GroupMember),
   meetups: many(Meetup),
   comments: many(Comment),
-  messages: many(Message),
+  messages: many(Discussion),
   notifications: many(Notification),
 }));
 
@@ -349,7 +329,7 @@ export const CommentRelations = relations(Comment, ({ one }) => ({
   }),
 }));
 
-export const Message = pgTable("message", {
+export const Discussion = pgTable("discussion", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   groupId: uuid("group_id")
     .notNull()
@@ -361,6 +341,7 @@ export const Message = pgTable("message", {
     .references(() => User.id, {
       onDelete: "cascade",
     }),
+  title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
@@ -369,13 +350,24 @@ export const Message = pgTable("message", {
   }).$onUpdateFn(() => sql`now()`),
 });
 
-export const MessageRelations = relations(Message, ({ one }) => ({
+export const UpsertDiscussionSchema = createInsertSchema(Discussion, {
+  id: z.string().optional(),
+  groupId: z.string(),
+  title: z.string().max(255).min(3),
+  content: z.string().min(3).max(400),
+}).omit({
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const DiscussionRelations = relations(Discussion, ({ one }) => ({
   group: one(Group, {
-    fields: [Message.groupId],
+    fields: [Discussion.groupId],
     references: [Group.id],
   }),
   user: one(User, {
-    fields: [Message.userId],
+    fields: [Discussion.userId],
     references: [User.id],
   }),
 }));
