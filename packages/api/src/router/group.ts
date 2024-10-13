@@ -26,7 +26,7 @@ export const groupRouter = {
             setweight(to_tsvector("Group"."description"), 'B') ||
             setweight(to_tsvector("Group"."ai_search_text"), 'C')
             @@ plainto_tsquery(${input.query})
-        )`,
+          )`,
           eq(Group.moderationStatus, "ok"),
           eq(Group.status, "active"),
         ),

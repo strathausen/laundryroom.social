@@ -231,7 +231,7 @@ export function GroupDetail() {
       <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
         {group.name}
       </h1>
-      {/* the MDXRemote component can only run server side, and for good reason. meanwhile, we don't support mdx yet */}
+      {/* the MDXRemote component can only run server side, need to figur this out */}
       {/* <MDXRemote source={groupQuery.data.description} /> */}
       {group.description.split("\n").map((line, i) => (
         <p key={i}>{line}</p>

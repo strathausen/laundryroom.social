@@ -24,6 +24,11 @@ function DiscussionPost({
 }: {
   discussion: RouterOutputs["discussion"]["byGroupId"][number];
 }) {
+  const createCommentMutation = api.discussion.createComment.useMutation();
+  const commentsQuery = api.discussion.comments.useQuery(
+    { discussionId: discussion.id },
+    { enabled: false },
+  );
   return (
     <div
       key={discussion.id}
@@ -32,6 +37,7 @@ function DiscussionPost({
       <p className="text-sm text-tahiti">{discussion.user.name}</p>
       <h2 className="font-bold">{discussion.title}</h2>
       <p>{discussion.content}</p>
+			<div>comments: {discussion.commentCount}</div>
       <Input />
       <div className="flex justify-between">
         <Button>reply</Button>

@@ -310,6 +310,11 @@ export const Comment = pgTable("comment", {
     .references(() => User.id, {
       onDelete: "cascade",
     }),
+  discussionId: uuid("discussion_id")
+    .notNull()
+    .references(() => Discussion.id, {
+      onDelete: "cascade",
+    }),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
@@ -317,17 +322,6 @@ export const Comment = pgTable("comment", {
     withTimezone: true,
   }).$onUpdateFn(() => new Date()),
 });
-
-export const CommentRelations = relations(Comment, ({ one }) => ({
-  group: one(Group, {
-    fields: [Comment.groupId],
-    references: [Group.id],
-  }),
-  user: one(User, {
-    fields: [Comment.userId],
-    references: [User.id],
-  }),
-}));
 
 export const Discussion = pgTable("discussion", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
@@ -361,7 +355,7 @@ export const UpsertDiscussionSchema = createInsertSchema(Discussion, {
   updatedAt: true,
 });
 
-export const DiscussionRelations = relations(Discussion, ({ one }) => ({
+export const DiscussionRelations = relations(Discussion, ({ one, many }) => ({
   group: one(Group, {
     fields: [Discussion.groupId],
     references: [Group.id],
@@ -369,6 +363,22 @@ export const DiscussionRelations = relations(Discussion, ({ one }) => ({
   user: one(User, {
     fields: [Discussion.userId],
     references: [User.id],
+  }),
+  comments: many(Comment),
+}));
+
+export const CommentRelations = relations(Comment, ({ one }) => ({
+  group: one(Group, {
+    fields: [Comment.groupId],
+    references: [Group.id],
+  }),
+  user: one(User, {
+    fields: [Comment.userId],
+    references: [User.id],
+  }),
+  discussion: one(Discussion, {
+    fields: [Comment.discussionId],
+    references: [Discussion.id],
   }),
 }));
 
