@@ -22,7 +22,7 @@ export const User = pgTable("user", {
     withTimezone: true,
   }),
   image: varchar("image", { length: 255 }),
-  // good_person: timestamp("good_person"), // does not require llm reviews
+  good_person: timestamp("good_person"), // does not require llm reviews
 });
 
 export const UserRelations = relations(User, ({ many }) => ({

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { and, desc, eq, gt, sql } from "@laundryroom/db";
 import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
+import {classify}from '@laundryroom/llm'
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -97,6 +98,9 @@ export const groupRouter = {
         if (!["owner", "admin"].includes(membership?.role ?? "")) {
           throw new Error("not authorized");
         }
+        const classification = await classify(input.description)
+        console.log(classification.aiSearchText)
+        console.log(classification.class_label)
         return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
       }
       return ctx.db.transaction(async (tx) => {

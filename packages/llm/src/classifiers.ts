@@ -8,6 +8,11 @@ enum CLASSIFICATION_LABELS {
 }
 const SimpleClassificationSchema = z.object({
   class_label: z.nativeEnum(CLASSIFICATION_LABELS),
+  aiSearchText: z
+    .string()
+    .describe(
+      "add some related keywords that are not in the text, to help better find this text in searches",
+    ),
 });
 
 type SimpleClassification = z.infer<typeof SimpleClassificationSchema>;
