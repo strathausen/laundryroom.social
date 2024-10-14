@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-import { env } from "../../apps/nextjs/src/env";
+import { env } from "../../../apps/nextjs/src/env";
 
 const resend = new Resend(env.RESEND_KEY);
 
