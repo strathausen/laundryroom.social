@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { and, desc, eq, gt, sql } from "@laundryroom/db";
 import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
-import {classify}from '@laundryroom/llm'
+import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -30,20 +30,18 @@ export const groupRouter = {
         similarity(${Group.description}, ${input.query})
       )`;
       // setweight(to_tsvector(coalesce(${Group.aiSearchText}, '')), 'C')
-      return (
-        ctx.db
-          .select({
-            id: Group.id,
-            name: Group.name,
-            description: Group.description,
-            image: Group.image,
-            rank: sql`ts_rank_cd(${matchQuery})`,
-            similarity: similarityQuery
-          })
-          .from(Group)
-          .where((t) => gt(t.similarity, 0.1))
-          .orderBy((t) => desc(t.similarity))
-      );
+      return ctx.db
+        .select({
+          id: Group.id,
+          name: Group.name,
+          description: Group.description,
+          image: Group.image,
+          rank: sql`ts_rank_cd(${matchQuery})`,
+          similarity: similarityQuery,
+        })
+        .from(Group)
+        .where((t) => gt(t.similarity, 0.1))
+        .orderBy((t) => desc(t.similarity));
     }),
 
   byId: publicProcedure
@@ -94,19 +92,24 @@ export const groupRouter = {
             eq(GroupMember.groupId, input.id),
             eq(GroupMember.userId, ctx.session.user.id),
           ),
+          with: { user: { columns: { good_person: true } } },
         });
-        if (!["owner", "admin"].includes(membership?.role ?? "")) {
+        if (
+          !membership ||
+          !["owner", "admin"].includes(membership.role ?? "")
+        ) {
           throw new Error("not authorized");
         }
-        const classification = await classify(input.description)
-        console.log(classification.aiSearchText)
-        console.log(classification.class_label)
-        return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
+        const classification = await classify(input.description);
+        const data = { ...input, ...classification };
+        return ctx.db.update(Group).set(data).where(eq(Group.id, input.id));
       }
+      const classification = await classify(input.description);
+      const data = { ...input, ...classification };
       return ctx.db.transaction(async (tx) => {
         const [group] = await tx
           .insert(Group)
-          .values(input)
+          .values(data)
           .returning({ id: Group.id });
         if (!group) {
           throw new Error("failed to create group");

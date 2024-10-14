@@ -3,11 +3,13 @@ import { z } from "zod";
 import { instructorClient } from "./instructor_client";
 
 enum CLASSIFICATION_LABELS {
-  "SPAM" = "SPAM",
-  "NOT_SPAM" = "NOT_SPAM",
+  "ok" = "ok",
+  "spam" = "spam",
+  "offensive" = "offensive",
+  "inappropriate" = "inappropriate",
 }
 const SimpleClassificationSchema = z.object({
-  class_label: z.nativeEnum(CLASSIFICATION_LABELS),
+  moderationStatus: z.nativeEnum(CLASSIFICATION_LABELS),
   aiSearchText: z
     .string()
     .describe(
