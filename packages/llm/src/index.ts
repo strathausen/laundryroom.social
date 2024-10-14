@@ -1,1 +1,2 @@
-export const name = 'llm';
+export const name = "llm";
+export * from "./instructor_client";
