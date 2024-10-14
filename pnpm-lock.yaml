@@ -497,37 +497,6 @@ importers:
         specifier: 'catalog:'
         version: 5.6.3
 
-  packages/llm:
-    dependencies:
-      '@instructor-ai/instructor':
-        specifier: ^1.5.0
-        version: 1.5.0(openai@4.67.3(zod@3.23.8))(zod@3.23.8)
-      openai:
-        specifier: ^4.67.3
-        version: 4.67.3(zod@3.23.8)
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-    devDependencies:
-      '@laundryroom/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@laundryroom/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@laundryroom/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      eslint:
-        specifier: 'catalog:'
-        version: 9.7.0
-      prettier:
-        specifier: 'catalog:'
-        version: 3.3.3
-      typescript:
-        specifier: 'catalog:'
-        version: 5.6.3
-
   packages/ui:
     dependencies:
       '@hookform/resolvers':
@@ -4481,6 +4450,9 @@ packages:
     resolution: {integrity: sha512-/fITjgjGU50vjQ4FH6eUoYu+iUoUKIXws2hL15JJpIR+BbTxaXQsMuuyjtNh2WqsSBS5nsaZHFsFecyw5CCAng==}
     engines: {node: '>=0.10.0'}
 
+  curry@0.0.4:
+    resolution: {integrity: sha512-IPapCjuLQfb9u7HEU+l7XX10CmK5ojdvjt+0sNrZmSvSU31OZxPV78cmDj1Zm+ZX/tEh7jeYdaD4v89iJDOD0g==}
+
   dag-map@1.0.2:
     resolution: {integrity: sha512-+LSAiGFwQ9dRnRdOeaj7g47ZFJcOUPukAP8J3A3fuZ1g9Y44BG+P1sgApjLXTQPOzC4+7S9Wr8kXsfpINM4jpw==}
 
@@ -7855,6 +7827,9 @@ packages:
   remove-trailing-slash@0.1.1:
     resolution: {integrity: sha512-o4S4Qh6L2jpnCy83ysZDau+VORNvnFw07CKSAymkd6ICNVEPisMyzlc00KlvvicsxKck94SEwhDnMNdICzO+tA==}
 
+  render@0.1.4:
+    resolution: {integrity: sha512-mTNCTWXyulJhMFcsCZGwMjE3GjH40eE4r23Or7Sw4XnEBHO8gS5ZBHgxDGjFF1v0pe9GXx+c+8njbpry+11e3A==}
+
   repeating@2.0.1:
     resolution: {integrity: sha512-ZqtSMuVybkISo2OWvqvm7iHSWngvdaW3IpsT9/uP8v4gMi591LY6h35wdOfvQdWCKFWZWm2Y1Opp4kV7vQKT6A==}
     engines: {node: '>=0.10.0'}
@@ -8564,6 +8539,9 @@ packages:
   traverse@0.6.9:
     resolution: {integrity: sha512-7bBrcF+/LQzSgFmT0X5YclVqQxtv7TDJ1f8Wj7ibBu/U6BMLeOpUxuZjV7rMc44UtKxlnMFigdhFAIszSX1DMg==}
     engines: {node: '>= 0.4'}
+
+  traverser@0.0.5:
+    resolution: {integrity: sha512-8wq1H/gNr1PwGhmflklBTvZlY3aOgUmurSYD8PueKn1Btq01REtupQ8nY7VpcG4v2YPKBODxYKIdTt36W+Scwg==}
 
   trim-lines@3.0.1:
     resolution: {integrity: sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==}
@@ -13629,6 +13607,8 @@ snapshots:
     dependencies:
       array-find-index: 1.0.2
 
+  curry@0.0.4: {}
+
   dag-map@1.0.2: {}
 
   damerau-levenshtein@1.0.8: {}
@@ -17756,6 +17736,10 @@ snapshots:
 
   remove-trailing-slash@0.1.1: {}
 
+  render@0.1.4:
+    dependencies:
+      traverser: 0.0.5
+
   repeating@2.0.1:
     dependencies:
       is-finite: 1.1.0
@@ -18540,6 +18524,10 @@ snapshots:
       gopd: 1.0.1
       typedarray.prototype.slice: 1.0.3
       which-typed-array: 1.1.15
+
+  traverser@0.0.5:
+    dependencies:
+      curry: 0.0.4
 
   trim-lines@3.0.1: {}
 
