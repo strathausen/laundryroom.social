@@ -131,7 +131,7 @@ export const Group = pgTable(
     id: uuid("id").notNull().primaryKey().defaultRandom(),
     name: varchar("name", { length: 255 }).notNull().unique(),
     description: text("description").notNull(),
-    aiSearchText: text("ai_search_text"),
+    aiSearchText: text("ai_search_text").default("").notNull(),
     image: varchar("image", { length: 255 }),
     status: GroupStatus("status").default("active"),
     moderationStatus: GroupModerationStatus("moderation_status").default("ok"),

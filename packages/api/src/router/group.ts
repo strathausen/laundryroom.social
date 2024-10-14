@@ -23,13 +23,14 @@ export const groupRouter = {
       }
       const matchQuery = sql`(
         setweight(to_tsvector('english', ${Group.name}), 'A') ||
-        setweight(to_tsvector('english', ${Group.description}), 'B')
+        setweight(to_tsvector('english', ${Group.description}), 'B') ||
+        setweight(to_tsvector('english', ${Group.aiSearchText}), 'C')
       ), websearch_to_tsquery('english', ${input.query})`;
       const similarityQuery = sql`(
         similarity(${Group.name}, ${input.query}) +
-        similarity(${Group.description}, ${input.query})
+        similarity(${Group.description}, ${input.query}) + 
+        similarity(${Group.aiSearchText}, ${input.query})
       )`;
-      // setweight(to_tsvector(coalesce(${Group.aiSearchText}, '')), 'C')
       return ctx.db
         .select({
           id: Group.id,
