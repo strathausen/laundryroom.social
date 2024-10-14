@@ -21,7 +21,8 @@ export async function sendEmail<K extends keyof typeof templates>(
   const renderedTemplate = templates[template](params);
   await resend.emails.send({
     to,
-    from: "events@laundryroom.social",
+    from: "events@tomatovillage.com",
+    // from: "events@laundryroom.social",
     subject: renderedTemplate.subject,
     text: renderedTemplate.body,
   });

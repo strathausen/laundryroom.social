@@ -27,10 +27,11 @@ declare module "next-auth" {
 }
 
 const adapter = DrizzleAdapter(db, {
-  usersTable: User,
-  accountsTable: Account,
-  sessionsTable: Session,
-  verificationTokensTable: VerificationToken,
+  // TODO figure out how to type this, it suddenly broke :shrug:
+  usersTable: User as any,
+  accountsTable: Account as any,
+  sessionsTable: Session as any,
+  verificationTokensTable: VerificationToken as any,
 });
 
 export const isSecureContext = env.NODE_ENV !== "development";
@@ -49,7 +50,8 @@ export const authConfig = {
     Discord,
     Resend({
       apiKey: env.RESEND_KEY,
-      from: "Laundryroom Registration <noreply@laundryroom.social>"
+      from: "Laundryroom Registration <noreply@rhubarb.studio>"
+      // from: "Laundryroom Registration <noreply@laundryroom.social>"
     }),
   ],
   callbacks: {

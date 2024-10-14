@@ -8,6 +8,7 @@ import {
   Meetup,
   UpsertMeetupSchema,
 } from "@laundryroom/db/schema";
+import { sendEmail } from "@laundryroom/email";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -61,6 +62,15 @@ export const meetupRouter = createTRPCRouter({
       // check if user is admin or owner of the group
       const group = await ctx.db.query.Group.findFirst({
         where: eq(Group.id, input.groupId),
+        with: {
+          members: {
+            with: {
+              user: {
+                columns: { id: true, email: true, name: true },
+              },
+            },
+          },
+        },
       });
       if (!group) {
         throw new Error("Group not found");
@@ -93,6 +103,18 @@ export const meetupRouter = createTRPCRouter({
         return ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
       }
 
-      return ctx.db.insert(Meetup).values(data);
+      const meetup = await ctx.db.insert(Meetup).values(data).returning({
+        id: Meetup.id,
+      });
+      for (const member of group.members) {
+        if (member.user.id === user.id) {
+          continue;
+        }
+        await sendEmail(member.user.email, "newEvent", {
+          eventId: meetup[0]?.id!,
+          eventName: data.title,
+        });
+      }
+      return meetup;
     }),
 });

@@ -21,6 +21,8 @@
   "dependencies": {
     "@laundryroom/auth": "workspace:*",
     "@laundryroom/db": "workspace:*",
+    "@laundryroom/email": "workspace:*",
+    "@laundryroom/llm": "workspace:*",
     "@laundryroom/validators": "workspace:*",
     "@trpc/server": "catalog:",
     "superjson": "2.2.1",

@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@auth/core": "0.32.0",
-    "@auth/drizzle-adapter": "^1.4.1",
+    "@auth/drizzle-adapter": "^1.7.0",
     "@laundryroom/db": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",
     "next": "^14.2.4",
