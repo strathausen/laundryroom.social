@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, sql } from "@laundryroom/db";
+import { and, desc, eq, gt, sql } from "@laundryroom/db";
 import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -21,27 +21,28 @@ export const groupRouter = {
         });
       }
       const matchQuery = sql`(
-        setweight(to_tsvector("group"."name"), 'A') ||
-        setweight(to_tsvector("group"."description"), 'B') ||
-        setweight(to_tsvector("group"."ai_search_text"), 'C')
-      ), to_tsquery(${input.query})`;
-      return ctx.db
-        .select({
-          id: Group.id,
-          name: Group.name,
-          description: Group.description,
-          image: Group.image,
-          rank: sql`ts_rank_cd(${matchQuery})`,
-        })
-        .from(Group)
-        .where(
-          sql`(
-            setweight(to_tsvector("group"."name"), 'A') ||
-            setweight(to_tsvector("group"."description"), 'B') ||
-            setweight(to_tsvector("group"."ai_search_text"), 'C')
-          ) @@ to_tsquery(${input.query})`,
-        )
-        .orderBy((t) => desc(t.rank));
+        setweight(to_tsvector('english', ${Group.name}), 'A') ||
+        setweight(to_tsvector('english', ${Group.description}), 'B')
+      ), websearch_to_tsquery('english', ${input.query})`;
+      const similarityQuery = sql`(
+        similarity(${Group.name}, ${input.query}) +
+        similarity(${Group.description}, ${input.query})
+      )`;
+      // setweight(to_tsvector(coalesce(${Group.aiSearchText}, '')), 'C')
+      return (
+        ctx.db
+          .select({
+            id: Group.id,
+            name: Group.name,
+            description: Group.description,
+            image: Group.image,
+            rank: sql`ts_rank_cd(${matchQuery})`,
+            similarity: similarityQuery
+          })
+          .from(Group)
+          .where((t) => gt(t.similarity, 0.1))
+          .orderBy((t) => desc(t.similarity))
+      );
     }),
 
   byId: publicProcedure
