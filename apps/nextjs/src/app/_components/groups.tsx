@@ -29,8 +29,8 @@ import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
-import { UpsertMeetupForm } from "./meetup";
 import { DiscussionWidget } from "./discussions";
+import { UpsertMeetupForm } from "./meetup";
 
 type Props = {
   groupId: string;
@@ -173,35 +173,32 @@ export function UpsertGroupForm(props: Props) {
 }
 
 export function GroupList() {
-  const groupsQuery = api.group.all.useQuery();
+  const [query, setQuery] = useState("");
+  const groupsQuery = api.group.search.useQuery({ query });
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {groupsQuery.data?.map((group) => (
-        <Link
-          key={group.id}
-          className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-bubble-gum"
-          href={`/groups/${group.id}`}
-        >
-          <div>
-            <h2 className="text-xl font-bold underline decoration-bubble-gum decoration-2">
-              {group.name}
-            </h2>
-            <p>{group.description}</p>
-          </div>
-          {/* stats, with dummy data (no of events, most recent event, no of users) at the bottom of the box */}
-          {/* <div className="mt-2 flex gap-2">
-            <div className="flex gap-1">
-              <span className="font-bold">events:</span>
-              <span>3</span>
+    <div className="flex flex-col gap-5">
+      <Input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="search groups"
+      />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {groupsQuery.data?.map((group) => (
+          <Link
+            key={group.id}
+            className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-bubble-gum"
+            href={`/groups/${group.id}`}
+          >
+            <div>
+              <h2 className="text-xl font-bold underline decoration-bubble-gum decoration-2">
+                {group.name}
+              </h2>
+              <p>{group.description}</p>
             </div>
-            <div className="flex gap-1">
-              <span className="font-bold">users:</span>
-              <span>5</span>
-            </div>
-          </div> */}
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -318,7 +315,9 @@ export function GroupDetail() {
         </div>
       </div>
       {/* don't show discussion etc if not logged in */}
-      <h2 className="border-b-2 border-b-foreground text-3xl">talk to each other</h2>
+      <h2 className="border-b-2 border-b-foreground text-3xl">
+        talk to each other
+      </h2>
       <DiscussionWidget groupId={params.groupId} />
     </div>
   );

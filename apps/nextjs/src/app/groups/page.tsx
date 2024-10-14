@@ -2,7 +2,7 @@ import { api } from "~/trpc/server";
 import { GroupList } from "../_components/groups";
 
 export default async function GroupsPage() {
-  await api.group.all();
+  await api.group.search({});
   return (
     <main className="container h-screen max-w-screen-lg py-16 text-foreground">
       <div className="flex flex-col gap-4">

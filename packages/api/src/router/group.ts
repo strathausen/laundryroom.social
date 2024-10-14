@@ -7,31 +7,41 @@ import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const groupRouter = {
-  all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.Group.findMany({
-      columns: { id: true, name: true, description: true, image: true },
-      where: and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
-      orderBy: desc(Group.createdAt),
-    });
-  }),
-
   search: publicProcedure
-    .input(z.object({ query: z.string() }))
+    .input(z.object({ query: z.string().optional() }))
     .query(({ ctx, input }) => {
-      return ctx.db.query.Group.findMany({
-        columns: { id: true, name: true, description: true, image: true },
-        where: and(
+      if (!input.query || input.query.length < 3) {
+        return ctx.db.query.Group.findMany({
+          columns: { id: true, name: true, description: true, image: true },
+          where: and(
+            eq(Group.moderationStatus, "ok"),
+            eq(Group.status, "active"),
+          ),
+          orderBy: desc(Group.createdAt),
+        });
+      }
+      const matchQuery = sql`(
+        setweight(to_tsvector("group"."name"), 'A') ||
+        setweight(to_tsvector("group"."description"), 'B') ||
+        setweight(to_tsvector("group"."ai_search_text"), 'C')
+      ), to_tsquery(${input.query})`;
+      return ctx.db
+        .select({
+          id: Group.id,
+          name: Group.name,
+          description: Group.description,
+          image: Group.image,
+          rank: sql`ts_rank_cd(${matchQuery})`,
+        })
+        .from(Group)
+        .where(
           sql`(
-            setweight(to_tsvector("Group"."name"), 'A') ||
-            setweight(to_tsvector("Group"."description"), 'B') ||
-            setweight(to_tsvector("Group"."ai_search_text"), 'C')
-            @@ plainto_tsquery(${input.query})
-          )`,
-          eq(Group.moderationStatus, "ok"),
-          eq(Group.status, "active"),
-        ),
-        orderBy: desc(Group.createdAt),
-      });
+            setweight(to_tsvector("group"."name"), 'A') ||
+            setweight(to_tsvector("group"."description"), 'B') ||
+            setweight(to_tsvector("group"."ai_search_text"), 'C')
+          ) @@ to_tsquery(${input.query})`,
+        )
+        .orderBy((t) => desc(t.rank));
     }),
 
   byId: publicProcedure
