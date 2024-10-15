@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  CalendarIcon,
+  Heart,
+  MessageCircle,
+  Send,
+  Smile,
+  ThumbsUp,
+} from "lucide-react";
 
 import { RouterOutputs } from "@laundryroom/api";
 import { UpsertDiscussionSchema } from "@laundryroom/db/schema";
@@ -73,8 +81,15 @@ function DiscussionPost({
           disabled={createCommentMutation.isPending}
           onChange={(e) => setCommentContent(e.target.value)}
         />
-        <Button type="submit" disabled={createCommentMutation.isPending}>
-          reply
+        <Button
+          type="submit"
+          variant="brutal"
+          disabled={
+            createCommentMutation.isPending || commentContent.length < 4
+          }
+        >
+          <MessageCircle className="mr-2 h-4 w-4" />
+          comment
         </Button>
       </form>
     </div>
@@ -137,7 +152,7 @@ export function DiscussionWidget(props: { groupId: string }) {
                   <FormItem>
                     <FormLabel>content</FormLabel>
                     <FormControl>
-                      <Textarea {...field} />
+                      <Textarea {...field} rows={5} />
                     </FormControl>
                   </FormItem>
                 )}

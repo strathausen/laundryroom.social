@@ -103,7 +103,7 @@ export function UpsertMeetupForm(props: Props) {
               <FormItem>
                 <FormLabel>description</FormLabel>
                 <FormControl>
-                  <Textarea {...field} placeholder="" />
+                  <Textarea {...field} placeholder="" rows={5} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

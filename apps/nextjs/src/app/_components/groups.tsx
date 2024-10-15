@@ -150,6 +150,7 @@ export function UpsertGroupForm(props: Props) {
                   <Textarea
                     {...field}
                     placeholder="what is your group about?"
+                    rows={5}
                   />
                 </FormControl>
                 <FormMessage />
