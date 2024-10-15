@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { and, eq, inArray, sql } from "@laundryroom/db";
+import { and, asc, eq, gt, inArray, sql } from "@laundryroom/db";
 import {
   Attendee,
   Group,
@@ -34,8 +34,14 @@ export const meetupRouter = createTRPCRouter({
           ),
         ),
       });
+      // only show future meetups
       const meetupsQuery = ctx.db.query.Meetup.findMany({
-        where: eq(Meetup.groupId, input.groupId),
+        where: and(
+          eq(Meetup.groupId, input.groupId),
+          gt(Meetup.startTime, new Date()),
+        ),
+        orderBy: asc(Meetup.startTime),
+        limit: 3,
       });
       const [attendances, meetups] = await Promise.all([
         attendancesQuery,
