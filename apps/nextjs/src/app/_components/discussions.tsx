@@ -48,7 +48,12 @@ function DiscussionPost({
         ))}
       </div>
       {!commentsQuery.isFetched && discussion.commentCount > 0 && (
-        <Button onClick={() => commentsQuery.refetch()}>load comments</Button>
+        <Button
+          onClick={() => commentsQuery.refetch()}
+          disabled={commentsQuery.isFetching}
+        >
+          load comments
+        </Button>
       )}
       <form
         className="flex gap-4"
