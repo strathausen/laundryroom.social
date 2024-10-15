@@ -26,6 +26,7 @@ import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
+import { Box } from "@laundryroom/ui/box";
 
 function DiscussionPost({
   discussion,
@@ -39,9 +40,9 @@ function DiscussionPost({
     { enabled: false },
   );
   return (
-    <div
+    <Box
       key={discussion.id}
-      className="flex flex-col gap-2 rounded-md border-2 border-tahiti px-4 py-3"
+      className="flex flex-col gap-2 px-4 py-3"
     >
       <p className="text-sm text-tahiti">{discussion.user.name}</p>
       <h2 className="font-bold">{discussion.title}</h2>
@@ -92,7 +93,7 @@ function DiscussionPost({
           comment
         </Button>
       </form>
-    </div>
+    </Box>
   );
 }
 

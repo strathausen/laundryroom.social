@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
+import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@laundryroom/ui/dialog";
 import {
@@ -193,9 +194,7 @@ export function GroupList() {
             href={`/groups/${group.id}`}
           >
             <div>
-              <h2 className="text-xl font-bold underline decoration-bubble-gum decoration-2">
-                {group.name}
-              </h2>
+              <h2 className="text-xl uppercase">{group.name}</h2>
               <p>{group.description}</p>
             </div>
           </Link>
@@ -226,15 +225,17 @@ export function GroupDetail() {
   const { membership, group } = groupQuery.data;
 
   return (
-    <div className="flex max-h-svh flex-col gap-4 overflow-y-scroll">
-      <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
-        {group.name}
-      </h1>
-      {/* the MDXRemote component can only run server side, need to figur this out */}
-      {/* <MDXRemote source={groupQuery.data.description} /> */}
-      {group.description.split("\n").map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
+    <div className="flex flex-col gap-4 text-black">
+      <Box>
+        <h2 className="mb-2 text-xl uppercase">{group.name}</h2>
+        {/* the MDXRemote component can only run server side, need to figur this out */}
+        {/* <MDXRemote source={groupQuery.data.description} /> */}
+        {group.description.split("\n").map((line, i) => (
+          <p className="text-base" key={i}>
+            {line}
+          </p>
+        ))}
+      </Box>
       <div>
         {/* show edit button if I'm the owner */}
         {membership?.role === "owner" && (
@@ -297,34 +298,35 @@ export function GroupDetail() {
       </div>
       {/* show events, discussions, etc */}
       <div className="my-8">
-        <h2 className="border-b-2 border-b-foreground text-3xl">
+        <h2 className="border-b-2 border-black text-2xl uppercase">
           upcoming meetups
         </h2>
         <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-3">
           {listMeetups.data?.map((meetup) => (
-            <div
+            <Box
               key={meetup.id}
-              className="flex cursor-pointer flex-col justify-between overflow-hidden rounded border-2 border-fancyorange p-4"
+              className="flex flex-col justify-between gap-2"
             >
-              <div className="mb-2 flex flex-col space-y-2">
-                <h3 className="font-bold">{meetup.title}</h3>
+              <div className="flex flex-col space-y-2">
+                <h3 className="uppercase">{meetup.title}</h3>
                 <p>{meetup.description}</p>
+              </div>
+              <div className="flex flex-col space-y-2">
                 <p>start: {new Date(meetup.startTime).toLocaleString()}</p>
                 <p>end: {new Date(meetup.endTime).toLocaleString()}</p>
+                <RsvpSelect
+                  meetupId={meetup.id}
+                  rsvp={meetup.attendance?.status}
+                  onChange={() => {}}
+                />
               </div>
-              <RsvpSelect
-                meetupId={meetup.id}
-                rsvp={meetup.attendance?.status}
-                onChange={() => {}}
-              />
-            </div>
+            </Box>
           ))}
+          {!listMeetups.data?.length && <p>no upcoming meetups</p>}
         </div>
       </div>
       {/* don't show discussion etc if not logged in */}
-      <h2 className="border-b-2 border-b-foreground text-3xl">
-        talk to each other
-      </h2>
+      <h2 className="border-b-2 border-black text-2xl uppercase"> talk </h2>
       <DiscussionWidget groupId={params.groupId} />
     </div>
   );

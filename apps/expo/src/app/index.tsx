@@ -9,7 +9,7 @@ import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 
 function PostCard(props: {
-  post: RouterOutputs["post"]["all"][number];
+  post: RouterOutputs["discussion"]["byId"];
   onDelete: () => void;
 }) {
   return (
@@ -19,14 +19,14 @@ function PostCard(props: {
           asChild
           href={{
             pathname: "/post/[id]",
-            params: { id: props.post.id },
+            params: { id: props.post?.id! },
           }}
         >
           <Pressable className="">
             <Text className="text-xl font-semibold text-primary">
-              {props.post.title}
+              {props.post?.title}
             </Text>
-            <Text className="mt-2 text-foreground">{props.post.content}</Text>
+            <Text className="mt-2 text-foreground">{props.post?.content}</Text>
           </Pressable>
         </Link>
       </View>
@@ -43,11 +43,11 @@ function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const { mutate, error } = api.post.create.useMutation({
+  const { mutate, error } = api.discussion.create.useMutation({
     async onSuccess() {
       setTitle("");
       setContent("");
-      await utils.post.all.invalidate();
+      // await utils.post.all.invalidate();
     },
   });
 
@@ -79,6 +79,7 @@ function CreatePost() {
         className="flex items-center rounded bg-primary p-2"
         onPress={() => {
           mutate({
+            groupId: "1",
             title,
             content,
           });
@@ -117,10 +118,10 @@ function MobileAuth() {
 export default function Index() {
   const utils = api.useUtils();
 
-  const postQuery = api.post.all.useQuery();
+  const postQuery = api.group.search.useQuery({});
 
-  const deletePostMutation = api.post.delete.useMutation({
-    onSettled: () => utils.post.all.invalidate(),
+  const deletePostMutation = api.discussion.delete.useMutation({
+    // onSettled: () => utils.post.all.invalidate(),
   });
 
   return (
@@ -146,7 +147,7 @@ export default function Index() {
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
             <PostCard
-              post={p.item}
+              post={p.item as any}
               onDelete={() => deletePostMutation.mutate(p.item.id)}
             />
           )}

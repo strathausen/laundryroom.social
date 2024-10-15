@@ -10,9 +10,10 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/app/globals.css";
 
+import { auth } from "@laundryroom/auth";
+
 import { env } from "~/env";
 import { NavBar } from "./_components/navbar";
-import { auth } from "@laundryroom/auth";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -53,12 +54,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           GeistMono.variable,
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" /*enableSystem*/>
           <NavBar session={session} />
           <div className="pl-0 md:pl-32">
             <TRPCReactProvider>{props.children}</TRPCReactProvider>
           </div>
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute bottom-4 right-4 hidden">
             <ThemeToggle />
           </div>
           <Toaster />
