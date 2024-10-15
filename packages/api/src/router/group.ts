@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, gt, sql } from "@laundryroom/db";
-import { Group, GroupMember, Meetup } from "@laundryroom/db/schema";
+import { and, asc, desc, eq, gt, inArray, not, sql } from "@laundryroom/db";
+import { Attendee, Group, GroupMember, Meetup } from "@laundryroom/db/schema";
 import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -55,10 +55,7 @@ export const groupRouter = {
           members: {
             limit: 10,
             orderBy: desc(GroupMember.joinedAt),
-          },
-          meetups: {
-            limit: 10,
-            orderBy: desc(Meetup.createdAt),
+            with: { user: { columns: { name: true, id: true } } },
           },
         },
       });
@@ -67,6 +64,7 @@ export const groupRouter = {
             where: and(
               eq(GroupMember.groupId, input.id),
               eq(GroupMember.userId, user.id),
+              not(eq(GroupMember.role, "banned")),
             ),
           })
         : null;

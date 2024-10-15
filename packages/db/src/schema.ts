@@ -258,9 +258,7 @@ export const MeetupRelations = relations(Meetup, ({ one, many }) => ({
     fields: [Meetup.groupId],
     references: [Group.id],
   }),
-  attendees: many(Attendee, {
-    relationName: "meetup",
-  }),
+  attendees: many(Attendee),
 }));
 
 export const Attendee = pgTable(

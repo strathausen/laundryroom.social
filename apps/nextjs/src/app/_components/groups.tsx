@@ -31,6 +31,7 @@ import { toast } from "@laundryroom/ui/toast";
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
 import { UpsertMeetupForm } from "./meetup";
+import { RsvpSelect } from "./rsvp-select";
 
 type Props = {
   groupId: string;
@@ -302,14 +303,19 @@ export function GroupDetail() {
           {listMeetups.data?.map((meetup) => (
             <div
               key={meetup.id}
-              className="cursor-pointer overflow-hidden rounded border-2 border-fancyorange p-4"
+              className="flex cursor-pointer flex-col justify-between overflow-hidden rounded border-2 border-fancyorange p-4"
             >
-              <h3 className="font-bold">{meetup.title}</h3>
-              <p>{meetup.description}</p>
-              <p>
-                {new Date(meetup.startTime).toLocaleString()} -{" "}
-                {new Date(meetup.endTime).toLocaleString()}
-              </p>
+              <div className="mb-2 flex flex-col space-y-2">
+                <h3 className="font-bold">{meetup.title}</h3>
+                <p>{meetup.description}</p>
+                <p>start: {new Date(meetup.startTime).toLocaleString()}</p>
+                <p>end: {new Date(meetup.endTime).toLocaleString()}</p>
+              </div>
+              <RsvpSelect
+                meetupId={meetup.id}
+                rsvp={meetup.attendance?.status}
+                onChange={() => {}}
+              />
             </div>
           ))}
         </div>

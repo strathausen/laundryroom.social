@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { and, eq } from "@laundryroom/db";
+import { and, eq, inArray, sql } from "@laundryroom/db";
 import {
   Attendee,
   Group,
@@ -21,12 +21,31 @@ export const meetupRouter = createTRPCRouter({
       });
     }),
 
-  byGroupId: publicProcedure
+  byGroupId: protectedProcedure
     .input(z.object({ groupId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.query.Meetup.findMany({
+      const user = ctx.session.user;
+      const attendancesQuery = ctx.db.query.Attendee.findMany({
+        where: and(
+          eq(Attendee.userId, user.id),
+          inArray(
+            Attendee.meetupId,
+            sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
+          ),
+        ),
+      });
+      const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: eq(Meetup.groupId, input.groupId),
       });
+      const [attendances, meetups] = await Promise.all([
+        attendancesQuery,
+        meetupsQuery,
+      ]);
+      // combine meetups with attendance status
+      return meetups.map((meetup) => ({
+        ...meetup,
+        attendance: attendances.find((a) => a.meetupId === meetup.id),
+      }));
     }),
 
   rsvp: protectedProcedure
@@ -41,6 +60,16 @@ export const meetupRouter = createTRPCRouter({
       });
       if (!meetup) {
         throw new Error("Meetup not found");
+      }
+      // check if user is member of the group
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, meetup.groupId),
+          eq(GroupMember.userId, user.id),
+        ),
+      });
+      if (!membership || membership.role === "banned") {
+        throw new Error("Not authorized");
       }
       await ctx.db.insert(Attendee).values({
         meetupId: meetup.id,
