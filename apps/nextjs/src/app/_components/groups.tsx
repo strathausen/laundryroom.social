@@ -65,7 +65,7 @@ export function GroupStatusSwitcher(props: {
         });
       }}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[125px]">
         <SelectValue placeholder="Select a status" />
       </SelectTrigger>
       <SelectContent>
@@ -180,7 +180,7 @@ export function GroupList() {
   const groupsQuery = api.group.search.useQuery({ query });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 text-black">
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -188,15 +188,11 @@ export function GroupList() {
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groupsQuery.data?.map((group) => (
-          <Link
-            key={group.id}
-            className="flex cursor-pointer flex-col justify-between rounded-lg border-2 border-bermuda p-4 transition-colors hover:border-bubble-gum"
-            href={`/groups/${group.id}`}
-          >
-            <div>
-              <h2 className="text-xl uppercase">{group.name}</h2>
-              <p>{group.description}</p>
-            </div>
+          <Link key={group.id} href={`/groups/${group.id}`}>
+            <Box>
+              <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
+              <p className="">{group.description}</p>
+            </Box>
           </Link>
         ))}
       </div>
@@ -207,6 +203,7 @@ export function GroupList() {
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
   const [showCreateMeetup, setShowCreateMeetup] = useState(false);
+  const [editableEventId, setEditableEventId] = useState<string | undefined>();
   const groupQuery = api.group.byId.useQuery({
     id: params.groupId,
   });
@@ -225,9 +222,12 @@ export function GroupDetail() {
   const { membership, group } = groupQuery.data;
 
   return (
-    <div className="flex flex-col gap-4 text-black">
-      <Box>
-        <h2 className="mb-2 text-xl uppercase">{group.name}</h2>
+    <div className="flex flex-col gap-5 text-black">
+      <h2 className="border-b-2 border-black text-2xl uppercase">
+        {group.name}
+      </h2>
+      <Box className="mx-auto w-full max-w-2xl">
+        <h2 className="mb-2 text-xl uppercase">about this group</h2>
         {/* the MDXRemote component can only run server side, need to figur this out */}
         {/* <MDXRemote source={groupQuery.data.description} /> */}
         {group.description.split("\n").map((line, i) => (
@@ -243,16 +243,23 @@ export function GroupDetail() {
             <Link href={`/edit-group/${groupQuery.data.group.id}`}>
               <Button>edit</Button>
             </Link>
-            <Dialog open={showCreateMeetup} onOpenChange={setShowCreateMeetup}>
+            <Dialog
+              open={showCreateMeetup}
+              onOpenChange={(state) => {
+                setShowCreateMeetup(state);
+                setEditableEventId(undefined);
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>create event</Button>
               </DialogTrigger>
               <DialogContent>
                 <UpsertMeetupForm
-                  isNew={true}
                   groupId={params.groupId}
+                  eventId={editableEventId}
                   onSaved={() => {
                     setShowCreateMeetup(false);
+                    setEditableEventId(undefined);
                     listMeetups.refetch();
                   }}
                 />
@@ -278,7 +285,7 @@ export function GroupDetail() {
         )}
         {/* if user is not the owner and is a member, offer to leave the group */}
         {membership && membership.role !== "owner" && (
-          <div className="text-muted-foreground">
+          <div className="text-black/80">
             you're a member of this group,{" "}
             <Button
               className="p-1"
@@ -308,17 +315,31 @@ export function GroupDetail() {
               className="flex flex-col justify-between gap-2"
             >
               <div className="flex flex-col space-y-2">
-                <h3 className="uppercase">{meetup.title}</h3>
-                <p>{meetup.description}</p>
+                <h3 className="text-xl uppercase">{meetup.title}</h3>
+                <p className="underline decoration-green-400 decoration-4">
+                  {meetup.description}
+                </p>
               </div>
               <div className="flex flex-col space-y-2">
                 <p>start: {new Date(meetup.startTime).toLocaleString()}</p>
                 <p>end: {new Date(meetup.endTime).toLocaleString()}</p>
-                <RsvpSelect
-                  meetupId={meetup.id}
-                  rsvp={meetup.attendance?.status}
-                  onChange={() => {}}
-                />
+                <div className="flex gap-4">
+                  <RsvpSelect
+                    meetupId={meetup.id}
+                    rsvp={meetup.attendance?.status}
+                    onChange={(_status) => {}}
+                  />
+                  {membership?.role === "owner" && (
+                    <Button
+                      onClick={() => {
+                        setEditableEventId(meetup.id);
+                        setShowCreateMeetup(true);
+                      }}
+                    >
+                      edit
+                    </Button>
+                  )}
+                </div>
               </div>
             </Box>
           ))}
@@ -326,8 +347,9 @@ export function GroupDetail() {
         </div>
       </div>
       {/* don't show discussion etc if not logged in */}
-      <h2 className="border-b-2 border-black text-2xl uppercase"> talk </h2>
+      <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <DiscussionWidget groupId={params.groupId} />
+      <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
     </div>
   );
 }

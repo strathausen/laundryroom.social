@@ -77,12 +77,27 @@ export const meetupRouter = createTRPCRouter({
       if (!membership || membership.role === "banned") {
         throw new Error("Not authorized");
       }
+      const attendee = await ctx.db.query.Attendee.findFirst({
+        where: and(
+          eq(Attendee.meetupId, meetup.id),
+          eq(Attendee.userId, user.id),
+        ),
+      });
+      if (attendee) {
+        await ctx.db
+          .update(Attendee)
+          .set({ status: input.status })
+          .where(
+            and(eq(Attendee.meetupId, meetup.id), eq(Attendee.userId, user.id)),
+          );
+        return input.status;
+      }
       await ctx.db.insert(Attendee).values({
         meetupId: meetup.id,
         userId: user.id,
         status: input.status,
       });
-      return meetup;
+      return input.status;
     }),
 
   upsert: protectedProcedure

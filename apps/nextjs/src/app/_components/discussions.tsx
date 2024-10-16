@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   CalendarIcon,
+  ChevronDown,
   Heart,
   MessageCircle,
   Send,
@@ -12,6 +13,7 @@ import {
 
 import { RouterOutputs } from "@laundryroom/api";
 import { UpsertDiscussionSchema } from "@laundryroom/db/schema";
+import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import {
   Form,
@@ -26,7 +28,6 @@ import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
-import { Box } from "@laundryroom/ui/box";
 
 function DiscussionPost({
   discussion,
@@ -40,18 +41,17 @@ function DiscussionPost({
     { enabled: false },
   );
   return (
-    <Box
-      key={discussion.id}
-      className="flex flex-col gap-2 px-4 py-3"
-    >
-      <p className="text-sm text-tahiti">{discussion.user.name}</p>
-      <h2 className="font-bold">{discussion.title}</h2>
-      <p>{discussion.content}</p>
+    <Box key={discussion.id} className="flex flex-col gap-2 px-4 py-3">
+      <p className="text-sm font-semibold">{discussion.user.name}</p>
+      <h2 className="text-xl uppercase">{discussion.title}</h2>
+      <p className="underline decoration-green-400 decoration-4">
+        {discussion.content}
+      </p>
       <div>comments: {discussion.commentCount}</div>
       <div className="flex flex-col gap-2">
         {commentsQuery.data?.map((comment) => (
-          <div key={comment.id} className="flex flex-col gap-2">
-            <p className="text-sm text-tahiti">{comment.user.name}</p>
+          <div key={comment.id} className="flex gap-2 bg-gray-100 p-2">
+            <p className="font-semibold">{comment.user.name}:</p>
             <p>{comment.content}</p>
           </div>
         ))}
@@ -60,7 +60,9 @@ function DiscussionPost({
         <Button
           onClick={() => commentsQuery.refetch()}
           disabled={commentsQuery.isFetching}
+          variant="plattenbau"
         >
+          <ChevronDown className="mr-2 h-4 w-4" />
           load comments
         </Button>
       )}

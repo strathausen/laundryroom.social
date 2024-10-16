@@ -23,7 +23,6 @@ import { api } from "~/trpc/react";
 type Props = {
   eventId?: string;
   groupId: string;
-  isNew: boolean;
   onSaved?: () => void;
 };
 
@@ -46,6 +45,7 @@ export function UpsertMeetupForm(props: Props) {
   const form = useForm({
     schema: UpsertMeetupSchema,
     defaultValues: {
+      id: props.eventId,
       groupId: props.groupId,
       title: meetupQuery.data?.title ?? "",
       description: meetupQuery.data?.description || "",
@@ -69,20 +69,18 @@ export function UpsertMeetupForm(props: Props) {
         onSubmit={form.handleSubmit((data) => {
           upsertMeetup.mutate(data);
         })}
-        // simple frame
       >
         <fieldset
-          className="flex flex-col gap-4 rounded p-4"
+          className="flex flex-col gap-4 rounded p-4 text-black"
           disabled={upsertMeetup.isPending}
         >
-          {form.formState.errors && (
-            <div>
-              {Object.values(form.formState.errors).join(", ")}
-            </div>
-          )}
-          {upsertMeetup.error && (
-            <div>{upsertMeetup.error.message}</div>
-          )}
+          <h2 className="text-2xl uppercase">
+            {props.eventId ? "Edit event" : "New event"}
+          </h2>
+          {/* {form.formState.errors && (
+            <div>{Object.values(form.formState.errors).join(", ")}</div>
+          )} */}
+          {upsertMeetup.error && <div>{upsertMeetup.error.message}</div>}
           <FormField
             control={form.control}
             name="title"
