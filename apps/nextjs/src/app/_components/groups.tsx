@@ -236,7 +236,7 @@ export function GroupDetail() {
           </p>
         ))}
       </Box>
-      <div>
+      <div className="flex flec-col justify-center">
         {/* show edit button if I'm the owner */}
         {membership?.role === "owner" && (
           <div className="flex gap-4">
@@ -350,6 +350,7 @@ export function GroupDetail() {
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <DiscussionWidget groupId={params.groupId} />
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
+      <br className="mb-12"/>
     </div>
   );
 }

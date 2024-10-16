@@ -124,7 +124,7 @@ export function DiscussionWidget(props: { groupId: string }) {
   });
   return (
     <div>
-      <Button onClick={() => setShowNewDiscussionForm(true)}>
+      <Button onClick={() => setShowNewDiscussionForm(true)} className="mx-auto flex">
         open a new thread
       </Button>
       {showNewDiscussionForm && (
