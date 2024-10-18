@@ -2,7 +2,7 @@ import { cn } from ".";
 
 type Props = {
   children: React.ReactNode;
-	title?: string;
+  title?: string;
   className?: string;
 };
 

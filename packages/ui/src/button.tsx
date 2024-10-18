@@ -3,7 +3,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
-import { cn } from "@laundryroom/ui";
+import { cn } from ".";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
@@ -14,7 +14,8 @@ const buttonVariants = cva(
           "bg-tahiti px-2 py-1 font-bold text-background text-white shadow-hardrock shadow-hotpink transition-shadow hover:shadow-hardrock-lg hover:shadow-hotpink active:shadow-hardrock-sm active:shadow-hotpink",
         brutal:
           "rounded-none bg-black uppercase text-white shadow-[4px_4px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:bg-gray-800 hover:shadow-[6px_6px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[2px_2px_0px_0px_#ff00ff]",
-        plattenbau: "mt-2 bg-gray-200 text-black rounded-none uppercase hover:bg-gray-300 active:bg-gray-400 transition-all duration-300 shadow-[2px_2px_0px_0px_#ff00ff] hover:shadow-[4px_4px_0px_0px_#ff00ff] active:shadow-[1px_1px_0px_0px_#ff00ff] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0",
+        plattenbau:
+          "mt-2 rounded-none bg-gray-200 uppercase text-black shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-300 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-400 active:shadow-[1px_1px_0px_0px_#ff00ff]",
         destructive:
           "hover:bg-destructive/90 bg-destructive text-destructive-foreground shadow-sm",
         outline:

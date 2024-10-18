@@ -18,7 +18,7 @@ import {
   useFormContext,
 } from "react-hook-form";
 
-import { cn } from "@laundryroom/ui";
+import { cn } from ".";
 
 import { Label } from "./label";
 
