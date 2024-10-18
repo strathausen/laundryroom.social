@@ -213,7 +213,7 @@ export const groupRouter = {
     }),
 
   members: protectedProcedure
-    .input(z.object({ groupId: z.string() }))
+    .input(z.object({ groupId: z.string(), search: z.string().optional() }))
     .query(({ ctx, input }) => {
       // check if the user searching is also a member
       return ctx.db.query.GroupMember.findMany({
