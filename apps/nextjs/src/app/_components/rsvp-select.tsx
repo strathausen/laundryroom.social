@@ -14,7 +14,7 @@ import { api } from "~/trpc/react";
 type RsvpCoice = "going" | "not_going";
 type Rsvp = RsvpCoice | "waitlist";
 
-type Props = {
+interface Props {
   meetupId: string;
   rsvp?: Rsvp | null;
   onChange: (rsvp: Rsvp) => void;

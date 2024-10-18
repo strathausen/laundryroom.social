@@ -34,14 +34,14 @@ import { DiscussionWidget } from "./discussions";
 import { UpsertMeetupForm } from "./meetup";
 import { RsvpSelect } from "./rsvp-select";
 
-type Props = {
+interface Props {
   groupId: string;
   isNew: boolean;
-};
+}
 
 export function GroupStatusSwitcher(props: {
   groupId: string;
-  status: "active" | "hidden" | "archived";
+  status: "active" | "hidden" | "archived" | null;
 }) {
   const utils = api.useUtils();
   const updateGroupStatus = api.group.updateStatus.useMutation({
@@ -49,14 +49,14 @@ export function GroupStatusSwitcher(props: {
       await utils.group.invalidate();
       toast.success("Group status updated");
     },
-    onError: (err) => {
+    onError: (_err) => {
       toast.error("Failed to update group status");
     },
   });
 
   return (
     <Select
-      value={props.status}
+      value={props.status ?? undefined}
       disabled={updateGroupStatus.isPending}
       onValueChange={(status) => {
         updateGroupStatus.mutate({
@@ -98,6 +98,7 @@ export function UpsertGroupForm(props: Props) {
       form.setValue("name", groupQuery.data.group.name);
       form.setValue("description", groupQuery.data.group.description);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupQuery.data]);
 
   const utils = api.useUtils();
@@ -189,7 +190,7 @@ export function GroupList() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groupsQuery.data?.map((group) => (
           <Link key={group.id} href={`/groups/${group.id}`}>
-            <Box>
+            <Box className="min-h-36">
               <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
               <p className="">{group.description}</p>
             </Box>
@@ -236,7 +237,7 @@ export function GroupDetail() {
           </p>
         ))}
       </Box>
-      <div className="flex flec-col justify-center">
+      <div className="flec-col flex justify-center">
         {/* show edit button if I'm the owner */}
         {membership?.role === "owner" && (
           <div className="flex gap-4">
@@ -257,17 +258,17 @@ export function GroupDetail() {
                 <UpsertMeetupForm
                   groupId={params.groupId}
                   eventId={editableEventId}
-                  onSaved={() => {
+                  onSaved={async () => {
                     setShowCreateMeetup(false);
                     setEditableEventId(undefined);
-                    listMeetups.refetch();
+                    await listMeetups.refetch();
                   }}
                 />
               </DialogContent>
             </Dialog>
             <GroupStatusSwitcher
               groupId={params.groupId}
-              status={group.status!}
+              status={group.status}
             />
           </div>
         )}
@@ -276,8 +277,8 @@ export function GroupDetail() {
           <Button
             disabled={joinGroup.isPending || groupQuery.isRefetching}
             onClick={async () => {
-              await joinGroup.mutateAsync({ groupId: group?.id! });
-              groupQuery.refetch();
+              await joinGroup.mutateAsync({ groupId: group.id });
+              await groupQuery.refetch();
             }}
           >
             join this group
@@ -291,10 +292,11 @@ export function GroupDetail() {
               className="p-1"
               disabled={leaveGroup.isPending || groupQuery.isRefetching}
               onClick={async () => {
+                if (!groupQuery.data.group) return;
                 await leaveGroup.mutateAsync({
-                  groupId: groupQuery.data.group?.id!,
+                  groupId: groupQuery.data.group.id,
                 });
-                groupQuery.refetch();
+                await groupQuery.refetch();
               }}
               variant={"link"}
             >
@@ -327,7 +329,9 @@ export function GroupDetail() {
                   <RsvpSelect
                     meetupId={meetup.id}
                     rsvp={meetup.attendance?.status}
-                    onChange={(_status) => {}}
+                    onChange={(_status) => {
+                      //
+                    }}
                   />
                   {membership?.role === "owner" && (
                     <Button
@@ -350,7 +354,7 @@ export function GroupDetail() {
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <DiscussionWidget groupId={params.groupId} />
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
-      <br className="mb-12"/>
+      <br className="mb-12" />
     </div>
   );
 }

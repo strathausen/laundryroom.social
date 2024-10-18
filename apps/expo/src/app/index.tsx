@@ -12,6 +12,7 @@ function PostCard(props: {
   post: RouterOutputs["discussion"]["byId"];
   onDelete: () => void;
 }) {
+  if (!props.post) return <View />;
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4">
       <View className="flex-grow">
@@ -19,14 +20,14 @@ function PostCard(props: {
           asChild
           href={{
             pathname: "/post/[id]",
-            params: { id: props.post?.id! },
+            params: { id: props.post.id },
           }}
         >
           <Pressable className="">
             <Text className="text-xl font-semibold text-primary">
-              {props.post?.title}
+              {props.post.title}
             </Text>
-            <Text className="mt-2 text-foreground">{props.post?.content}</Text>
+            <Text className="mt-2 text-foreground">{props.post.content}</Text>
           </Pressable>
         </Link>
       </View>
@@ -38,13 +39,13 @@ function PostCard(props: {
 }
 
 function CreatePost() {
-  const utils = api.useUtils();
+  // const utils = api.useUtils();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
   const { mutate, error } = api.discussion.create.useMutation({
-    async onSuccess() {
+    onSuccess() {
       setTitle("");
       setContent("");
       // await utils.post.all.invalidate();
@@ -116,7 +117,7 @@ function MobileAuth() {
 }
 
 export default function Index() {
-  const utils = api.useUtils();
+  // const utils = api.useUtils();
 
   const postQuery = api.group.search.useQuery({});
 
@@ -147,6 +148,7 @@ export default function Index() {
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
             <PostCard
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
               post={p.item as any}
               onDelete={() => deletePostMutation.mutate(p.item.id)}
             />

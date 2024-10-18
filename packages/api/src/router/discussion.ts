@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, count, desc, eq, sql } from "@laundryroom/db";
+import { and, count, eq } from "@laundryroom/db";
 import {
   Comment,
   Discussion,
@@ -9,7 +9,7 @@ import {
   UpsertDiscussionSchema,
 } from "@laundryroom/db/schema";
 
-import { protectedProcedure, publicProcedure } from "../trpc";
+import { protectedProcedure } from "../trpc";
 
 export const discussionRouter = {
   byId: protectedProcedure
@@ -44,9 +44,9 @@ export const discussionRouter = {
 
   create: protectedProcedure
     .input(UpsertDiscussionSchema)
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const membership = ctx.db.query.GroupMember.findFirst({
+      const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
           eq(GroupMember.groupId, input.groupId),
           eq(GroupMember.userId, userId),

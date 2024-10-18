@@ -28,9 +28,13 @@ declare module "next-auth" {
 
 const adapter = DrizzleAdapter(db, {
   // TODO figure out how to type this, it suddenly broke :shrug:
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   usersTable: User as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   accountsTable: Account as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   sessionsTable: Session as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
   verificationTokensTable: VerificationToken as any,
 });
 

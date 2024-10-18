@@ -57,10 +57,7 @@ export const meetupRouter = createTRPCRouter({
   rsvp: protectedProcedure
     .input(z.object({ id: z.string(), status: z.enum(["going", "not_going"]) }))
     .mutation(async ({ ctx, input }) => {
-      const user = ctx.session?.user;
-      if (!user) {
-        throw new Error("Not authenticated");
-      }
+      const { user } = ctx.session;
       const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.id),
       });
@@ -131,7 +128,7 @@ export const meetupRouter = createTRPCRouter({
           eq(GroupMember.userId, user.id),
         ),
       });
-      if (!membership || !["owner", "admin"].includes(membership.role!)) {
+      if (!membership || !["owner", "admin"].includes(membership.role ?? "")) {
         throw new Error("Not authorized");
       }
       if (input.endTime && data.startTime > new Date(input.endTime)) {
@@ -157,14 +154,14 @@ export const meetupRouter = createTRPCRouter({
         id: Meetup.id,
       });
       for (const member of group.members) {
-        if (member.user.id === user.id) {
+        if (member.user.id === user.id || !meetup[0]) {
           continue;
         }
         await sendEmail(member.user.email, "newEvent", {
-          eventId: meetup[0]?.id!,
+          eventId: meetup[0].id,
           eventName: data.title,
         });
       }
-      return meetup;
+      return meetup[0];
     }),
 });

@@ -20,17 +20,18 @@ import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 
-type Props = {
+interface Props {
   eventId?: string;
   groupId: string;
   onSaved?: () => void;
-};
+}
 
 export function UpsertMeetupForm(props: Props) {
   const router = useRouter();
   const utils = api.useUtils();
   const upsertMeetup = api.meetup.upsert.useMutation({
     async onSuccess(data) {
+      if (!data) return;
       form.reset();
       await utils.meetup.invalidate();
       if ("id" in data) router.push(`/events?highlight=${data.id}`);
@@ -38,29 +39,32 @@ export function UpsertMeetupForm(props: Props) {
       props.onSaved?.();
     },
   });
-  const meetupQuery = api.meetup.byId.useQuery(
-    { id: props.eventId! },
-    { enabled: !!props.eventId },
-  );
+  const meetupQuery = props.eventId
+    ? api.meetup.byId.useQuery(
+        { id: props.eventId },
+        { enabled: !!props.eventId },
+      )
+    : { data: null };
   const form = useForm({
     schema: UpsertMeetupSchema,
     defaultValues: {
       id: props.eventId,
       groupId: props.groupId,
       title: meetupQuery.data?.title ?? "",
-      description: meetupQuery.data?.description || "",
-      location: meetupQuery.data?.location || "",
-      startTime: meetupQuery.data?.startTime.toISOString() || "",
-      endTime: meetupQuery.data?.endTime?.toISOString() || "",
+      description: meetupQuery.data?.description ?? "",
+      location: meetupQuery.data?.location ?? "",
+      startTime: meetupQuery.data?.startTime.toISOString() ?? "",
+      endTime: meetupQuery.data?.endTime.toISOString() ?? "",
     },
   });
 
   useEffect(() => {
     if (meetupQuery.data) {
       form.setValue("title", meetupQuery.data.title);
-      form.setValue("description", meetupQuery.data.description!);
-      form.setValue("location", meetupQuery.data.location!);
+      form.setValue("description", meetupQuery.data.description);
+      form.setValue("location", meetupQuery.data.location);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetupQuery.data]);
 
   return (

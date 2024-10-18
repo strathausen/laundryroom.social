@@ -24,7 +24,7 @@ export async function classify(data: string): Promise<SimpleClassification> {
     messages: [
       {
         role: "user",
-        content: `"Classify the following text: <text>${data.replace(/[<\/>]*/g, "")}</text>`,
+        content: `"Classify the following text: <text>${data.replace(/[</>]*/g, "")}</text>`,
       },
     ],
     model: "gpt-4o-mini",

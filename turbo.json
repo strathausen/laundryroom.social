@@ -50,6 +50,9 @@
     "AUTH_DISCORD_SECRET",
     "AUTH_REDIRECT_PROXY_URL",
     "AUTH_SECRET",
+    "OPENAI_API_KEY",
+    "OPENAI_ORG_ID",
+    "OPENAI_PROJECT_ID",
     "PORT"
   ],
   "globalPassThroughEnv": [

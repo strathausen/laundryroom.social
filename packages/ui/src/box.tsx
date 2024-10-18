@@ -1,6 +1,6 @@
 import { cn } from ".";
 
-type Props = {
+interface Props  {
   children: React.ReactNode;
   title?: string;
   className?: string;

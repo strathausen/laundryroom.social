@@ -1,17 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CalendarIcon,
-  ChevronDown,
-  Heart,
-  MessageCircle,
-  Send,
-  Smile,
-  ThumbsUp,
-} from "lucide-react";
+import { ChevronDown, MessageCircle } from "lucide-react";
 
-import { RouterOutputs } from "@laundryroom/api";
+import type { RouterOutputs } from "@laundryroom/api";
 import { UpsertDiscussionSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
@@ -75,7 +67,7 @@ function DiscussionPost({
             discussionId: discussion.id,
             content: commentContent,
           });
-          commentsQuery.refetch();
+          await commentsQuery.refetch();
           setCommentContent("");
         }}
       >
@@ -113,10 +105,10 @@ export function DiscussionWidget(props: { groupId: string }) {
     },
   });
   const upsertDiscussion = api.discussion.create.useMutation({
-    onSuccess() {
+    async onSuccess() {
       discussionForm.reset();
       setShowNewDiscussionForm(false);
-      discussionsQuery.refetch();
+      await discussionsQuery.refetch();
     },
     onError() {
       toast.error("Failed to create discussion");
@@ -124,7 +116,10 @@ export function DiscussionWidget(props: { groupId: string }) {
   });
   return (
     <div>
-      <Button onClick={() => setShowNewDiscussionForm(true)} className="mx-auto flex">
+      <Button
+        onClick={() => setShowNewDiscussionForm(true)}
+        className="mx-auto flex"
+      >
         open a new thread
       </Button>
       {showNewDiscussionForm && (

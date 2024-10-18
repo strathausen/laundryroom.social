@@ -1,14 +1,12 @@
 "use client";
 
 // import { api } from "@/trpc/react";
-import { useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 // import { useScopedI18n } from "locales/client";
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
-import { type Session } from "next-auth";
+import type { Session } from "next-auth";
 import {
   FaBowlRice,
   FaCalendar,
@@ -18,7 +16,7 @@ import {
   FaPlus,
 } from "react-icons/fa6";
 
-type Props = {
+interface Props {
   session: Session | null;
 };
 

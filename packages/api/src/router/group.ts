@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, asc, desc, eq, gt, inArray, not, sql } from "@laundryroom/db";
-import { Attendee, Group, GroupMember, Meetup } from "@laundryroom/db/schema";
+import { and, desc, eq, gt, not, sql } from "@laundryroom/db";
+import { Group, GroupMember } from "@laundryroom/db/schema";
 import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
