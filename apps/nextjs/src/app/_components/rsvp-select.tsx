@@ -18,7 +18,7 @@ interface Props {
   meetupId: string;
   rsvp?: Rsvp | null;
   onChange: (rsvp: Rsvp) => void;
-};
+}
 
 export function RsvpSelect(props: Props) {
   const rsvpMutation = api.meetup.rsvp.useMutation();

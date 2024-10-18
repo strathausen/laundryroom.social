@@ -5,7 +5,7 @@ export default function PlaygroundPage() {
   return (
     <main className="container h-screen py-16 text-foreground">
       <div className="flex flex-col gap-4">
-        <h1 className="decoration-fancyorange text-5xl font-bold underline decoration-4">
+        <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
           Playground
         </h1>
         <p>
@@ -13,11 +13,11 @@ export default function PlaygroundPage() {
           features or components.
         </p>
         <div className="flex gap-2">
-          <button className="shadow-hardrock hover:shadow-hardrock-lg active:shadow-hardrock-sm shadow-hotpink active:shadow-hotpink hover:shadow-hotpink bg-tahiti rounded-md px-2 py-1 font-bold text-background text-white transition-shadow">
+          <button className="rounded-md bg-tahiti px-2 py-1 font-bold text-background text-white shadow-hardrock shadow-hotpink transition-shadow hover:shadow-hardrock-lg hover:shadow-hotpink active:shadow-hardrock-sm active:shadow-hotpink">
             test test button
           </button>
           {/* bermuda tahiti button */}
-          <button className="bg-bermuda shadow-hardrock shadow-tahiti rounded-md px-2 py-1 font-bold text-foreground transition-all">
+          <button className="rounded-md bg-bermuda px-2 py-1 font-bold text-foreground shadow-hardrock shadow-tahiti transition-all">
             test test button
           </button>
           <div className="flex flex-col gap-4">

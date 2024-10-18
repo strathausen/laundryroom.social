@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: #FFFBEB;
+    --background: #fffbeb;
     --foreground: rgb(17 94 89 / 1);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(240 10% 3.9%);
@@ -28,7 +28,7 @@
 
   .dark {
     --background: rgb(17 94 89 / 1);
-    --foreground: #FFFBEB;
+    --foreground: #fffbeb;
     --card: hsl(240 10% 3.9%);
     --card-foreground: hsl(0 0% 98%);
     --popover: hsl(240 10% 3.9%);

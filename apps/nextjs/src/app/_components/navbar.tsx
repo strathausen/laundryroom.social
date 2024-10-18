@@ -1,12 +1,12 @@
 "use client";
 
 // import { api } from "@/trpc/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 // import { useScopedI18n } from "locales/client";
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
 import type { Session } from "next-auth";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   FaBowlRice,
   FaCalendar,
@@ -18,7 +18,7 @@ import {
 
 interface Props {
   session: Session | null;
-};
+}
 
 const menuLinks = [
   { label: "events", link: "playground", icon: <FaCalendar /> },
@@ -33,7 +33,7 @@ export function NavBar(props: Props) {
   // const t = useScopedI18n("navBar");
 
   return (
-    <div className="fixed text-black bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:border-none md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
+    <div className="fixed bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:border-none md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
       <div title="laundryroom.social" className="mt-2 hidden md:block">
         <Link href="/" className="flex items-center gap-2">
           <div></div>

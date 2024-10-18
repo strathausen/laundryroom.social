@@ -35,13 +35,13 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       boxShadow: {
-        "hardrock": "0px 4px 0px",
+        hardrock: "0px 4px 0px",
         "hardrock-sm": "0px 2px 0px",
         "hardrock-lg": "0px 6px 0px",
       },
       colors: {
         // "amber-50": "#FFFBEB",
-        "hotpink": "#FF508F",
+        hotpink: "#FF508F",
         tahiti: "#3ab7bf",
         "bubble-gum": "#ff77e9",
         bermuda: "#78dcca",

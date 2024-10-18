@@ -1,10 +1,10 @@
 import { cn } from ".";
 
-interface Props  {
+interface Props {
   children: React.ReactNode;
   title?: string;
   className?: string;
-};
+}
 
 export function Box(props: Props) {
   return (
