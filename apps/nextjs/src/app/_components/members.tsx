@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { api } from "~/trpc/react";
 
 interface MembersModerationProps {
@@ -8,8 +9,11 @@ interface MembersModerationProps {
 }
 
 export function MembersModeration(props: MembersModerationProps) {
-	const [search, setSearch] = useState("");
-  const fetchMembers = api.group.members.useQuery({ groupId: props.groupId, search });
+  const [search, setSearch] = useState("");
+  const fetchMembers = api.group.members.useQuery({
+    groupId: props.groupId,
+    search,
+  });
 
   if (fetchMembers.error) {
     return <div>Error: {fetchMembers.error.message}</div>;
@@ -17,12 +21,12 @@ export function MembersModeration(props: MembersModerationProps) {
   return (
     <div>
       <h2>Members</h2>
-			<input
-				type="text"
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				placeholder="Search members"
-			/>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search members"
+      />
       <ul>
         {fetchMembers.data?.map(({ user, ...member }) => (
           <li key={user.id}>
