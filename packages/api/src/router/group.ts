@@ -218,6 +218,7 @@ export const groupRouter = {
       // check if the user searching is also a member
       return ctx.db.query.GroupMember.findMany({
         where: eq(GroupMember.groupId, input.groupId),
+        with: { user: { columns: { name: true, id: true, image: true } } },
       });
     }),
 
