@@ -27,7 +27,7 @@ export function MembersWidget(props: MembersModerationProps) {
         placeholder="Search members"
       />
       <ul>
-        {fetchMembers.data?.map(({ userId, userName, role}) => (
+        {fetchMembers.data?.members.map(({ userId, userName, role}) => (
           <li key={userId}>
             {userName} ({role})
           </li>

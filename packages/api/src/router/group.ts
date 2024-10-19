@@ -217,6 +217,15 @@ export const groupRouter = {
     .query(async ({ ctx, input }) => {
       const { groupId, search } = input;
       // check if the user searching is also a member
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      if (!membership) {
+        throw new Error("not authorized");
+      }
       const members = await ctx.db
         .select({
           userId: User.id,
@@ -227,16 +236,22 @@ export const groupRouter = {
         .innerJoin(User, eq(GroupMember.userId, User.id))
         .where(
           search
-            ? and(eq(GroupMember.groupId, groupId), ilike(User.name, search))
+            ? and(
+                eq(GroupMember.groupId, groupId),
+                ilike(User.name, `%${search}%`),
+              )
             : eq(GroupMember.groupId, groupId),
-        );
-      return members;
-      // return ctx.db.query.GroupMember.findMany({
-      //   where:
-      //     // search?  and(eq(GroupMember.groupId, input.groupId), ilike(GroupMember.user.name, input.search)), :
-      //     eq(GroupMember.groupId, input.groupId),
-      //   with: { user: { columns: { name: true, id: true, image: true } } },
-      // });
+        )
+        .limit(10);
+
+      //  if the user is not an admin or owner, replace the role with "member"
+      if (!["owner", "admin"].includes(membership.role ?? "")) {
+        members.forEach((member) => {
+          member.role = "member";
+        });
+      }
+
+      return { members };
     }),
 
   changeRole: protectedProcedure
