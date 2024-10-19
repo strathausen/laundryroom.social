@@ -41,7 +41,13 @@ export const groupRouter = {
           similarity: similarityQuery,
         })
         .from(Group)
-        .where((t) => gt(t.similarity, 0.1))
+        .where((t) =>
+          and(
+            gt(t.similarity, 0.1),
+            eq(Group.moderationStatus, "ok"),
+            eq(Group.status, "active"),
+          ),
+        )
         .orderBy((t) => desc(t.similarity));
     }),
 
