@@ -14,18 +14,16 @@ import { protectedProcedure } from "../trpc";
 export const discussionRouter = {
   byId: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      // TODO check if user is a member of the group of the discussion
-      // const userId = ctx.session.user.id;
-      // const membership = ctx.db.query.GroupMember.findFirst({
-      //   where: and(
-      //     eq(GroupMember.groupId, input.groupId),
-      //     eq(GroupMember.userId, userId),
-      //   ),
-      // });
-      return ctx.db.query.Discussion.findFirst({
+    .query(async ({ ctx, input }) => {
+      const discussion = await ctx.db.query.Discussion.findFirst({
         where: eq(Discussion.id, input.id),
-        columns: { id: true, title: true, content: true, createdAt: true },
+        columns: {
+          id: true,
+          title: true,
+          content: true,
+          createdAt: true,
+          groupId: true,
+        },
         with: {
           user: {
             columns: { id: true, name: true, image: true },
@@ -40,6 +38,20 @@ export const discussionRouter = {
           },
         },
       });
+      if (!discussion) {
+        throw new Error("Discussion not found");
+      }
+      const userId = ctx.session.user.id;
+      const membership = ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, discussion.groupId),
+          eq(GroupMember.userId, userId),
+        ),
+      });
+      if (!membership) {
+        throw new Error("Not a member of the group");
+      }
+      return discussion;
     }),
 
   create: protectedProcedure
