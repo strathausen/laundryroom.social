@@ -32,6 +32,7 @@ import { toast } from "@laundryroom/ui/toast";
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
 import { UpsertMeetupForm } from "./meetup";
+import { MembersWidget } from "./members";
 import { RsvpSelect } from "./rsvp-select";
 
 interface Props {
@@ -354,6 +355,7 @@ export function GroupDetail() {
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <DiscussionWidget groupId={params.groupId} />
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
+      <MembersWidget groupId={params.groupId} />
       <br className="mb-12" />
     </div>
   );

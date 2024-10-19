@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, gt, not, sql } from "@laundryroom/db";
-import { Group, GroupMember } from "@laundryroom/db/schema";
+import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
+import { Group, GroupMember, User } from "@laundryroom/db/schema";
 import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -214,12 +214,29 @@ export const groupRouter = {
 
   members: protectedProcedure
     .input(z.object({ groupId: z.string(), search: z.string().optional() }))
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
+      const { groupId, search } = input;
       // check if the user searching is also a member
-      return ctx.db.query.GroupMember.findMany({
-        where: eq(GroupMember.groupId, input.groupId),
-        with: { user: { columns: { name: true, id: true, image: true } } },
-      });
+      const members = await ctx.db
+        .select({
+          userId: User.id,
+          userName: User.name,
+          role: GroupMember.role,
+        })
+        .from(GroupMember)
+        .innerJoin(User, eq(GroupMember.userId, User.id))
+        .where(
+          search
+            ? and(eq(GroupMember.groupId, groupId), ilike(User.name, search))
+            : eq(GroupMember.groupId, groupId),
+        );
+      return members;
+      // return ctx.db.query.GroupMember.findMany({
+      //   where:
+      //     // search?  and(eq(GroupMember.groupId, input.groupId), ilike(GroupMember.user.name, input.search)), :
+      //     eq(GroupMember.groupId, input.groupId),
+      //   with: { user: { columns: { name: true, id: true, image: true } } },
+      // });
     }),
 
   changeRole: protectedProcedure

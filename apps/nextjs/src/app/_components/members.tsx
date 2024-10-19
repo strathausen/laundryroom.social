@@ -8,7 +8,7 @@ interface MembersModerationProps {
   groupId: string;
 }
 
-export function MembersModeration(props: MembersModerationProps) {
+export function MembersWidget(props: MembersModerationProps) {
   const [search, setSearch] = useState("");
   const fetchMembers = api.group.members.useQuery({
     groupId: props.groupId,
@@ -20,7 +20,6 @@ export function MembersModeration(props: MembersModerationProps) {
   }
   return (
     <div>
-      <h2>Members</h2>
       <input
         type="text"
         value={search}
@@ -28,9 +27,9 @@ export function MembersModeration(props: MembersModerationProps) {
         placeholder="Search members"
       />
       <ul>
-        {fetchMembers.data?.map(({ user, ...member }) => (
-          <li key={user.id}>
-            {user.name} ({member.role}
+        {fetchMembers.data?.map(({ userId, userName, role}) => (
+          <li key={userId}>
+            {userName} ({role})
           </li>
         ))}
       </ul>

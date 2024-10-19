@@ -130,7 +130,7 @@ export function DiscussionWidget(props: { groupId: string }) {
               upsertDiscussion.mutate(data);
             })}
           >
-            <fieldset className="mx-auto mb-9 mt-5 flex max-w-3xl flex-col space-y-4 border-2 px-3 pb-5 pt-3">
+            <fieldset className="mx-auto mb-9 mt-5 flex max-w-3xl flex-col space-y-4 border-2 border-black px-3 pb-5 pt-3">
               <FormField
                 control={discussionForm.control}
                 name="title"
