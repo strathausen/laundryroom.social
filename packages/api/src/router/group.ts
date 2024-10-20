@@ -1,5 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
+import { number, z } from "zod";
 
 import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
 import { Group, GroupMember, User } from "@laundryroom/db/schema";
@@ -12,14 +12,24 @@ export const groupRouter = {
     .input(z.object({ query: z.string().optional() }))
     .query(({ ctx, input }) => {
       if (!input.query || input.query.length < 3) {
-        return ctx.db.query.Group.findMany({
-          columns: { id: true, name: true, description: true, image: true },
-          where: and(
-            eq(Group.moderationStatus, "ok"),
-            eq(Group.status, "active"),
-          ),
-          orderBy: desc(Group.createdAt),
-        });
+        return ctx.db
+          .select({
+            id: Group.id,
+            name: Group.name,
+            description: Group.description,
+            image: Group.image,
+            createdAt: Group.createdAt,
+            membersCount: sql`(
+              select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
+              and ${GroupMember.role} != 'banned'
+            )`.mapWith(Number),
+          })
+          .from(Group)
+          .where((t) =>
+            and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
+          )
+          .orderBy((t) => desc(t.createdAt))
+          .limit(10);
       }
       const matchQuery = sql`(
         setweight(to_tsvector('english', ${Group.name}), 'A') ||
@@ -37,8 +47,13 @@ export const groupRouter = {
           name: Group.name,
           description: Group.description,
           image: Group.image,
+          createdAt: Group.createdAt,
           rank: sql`ts_rank_cd(${matchQuery})`,
           similarity: similarityQuery,
+          membersCount: sql`(
+            select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
+            and ${GroupMember.role} != 'banned'
+          )`.mapWith(Number),
         })
         .from(Group)
         .where((t) =>
@@ -48,7 +63,8 @@ export const groupRouter = {
             eq(Group.status, "active"),
           ),
         )
-        .orderBy((t) => desc(t.similarity));
+        .orderBy((t) => desc(t.similarity))
+        .limit(10);
     }),
 
   byId: publicProcedure
@@ -244,11 +260,27 @@ export const groupRouter = {
           search
             ? and(
                 eq(GroupMember.groupId, groupId),
+                not(eq(GroupMember.role, "banned")),
                 ilike(User.name, `%${search}%`),
               )
-            : eq(GroupMember.groupId, groupId),
+            : and(
+                eq(GroupMember.groupId, groupId),
+                not(eq(GroupMember.role, "banned")),
+              ),
         )
         .limit(10);
+
+      const membersCount = await ctx.db
+        .select({
+          count: sql`count(*)`,
+        })
+        .from(GroupMember)
+        .where(
+          and(
+            eq(GroupMember.groupId, groupId),
+            not(eq(GroupMember.role, "banned")),
+          ),
+        );
 
       //  if the user is not an admin or owner, replace the role with "member"
       if (!["owner", "admin"].includes(membership.role ?? "")) {
@@ -257,7 +289,7 @@ export const groupRouter = {
         });
       }
 
-      return { members };
+      return { members, count: membersCount[0]?.count };
     }),
 
   changeRole: protectedProcedure

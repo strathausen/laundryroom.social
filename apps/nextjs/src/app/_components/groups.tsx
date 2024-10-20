@@ -33,6 +33,7 @@ import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
 import { UpsertMeetupForm } from "./meetup";
 import { MembersWidget } from "./members";
+import { MembersCount } from "./members-count";
 import { RsvpSelect } from "./rsvp-select";
 
 interface Props {
@@ -191,9 +192,16 @@ export function GroupList() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groupsQuery.data?.map((group) => (
           <Link key={group.id} href={`/groups/${group.id}`}>
-            <Box className="min-h-36">
-              <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
-              <p className="">{group.description}</p>
+            <Box className="flex min-h-36 flex-col justify-between">
+              <div>
+                <h2 className="text-xl font-semibold uppercase">
+                  {group.name}
+                </h2>
+                <p className="">{group.description}</p>
+              </div>
+              <div className="flex justify-end">
+                <MembersCount count={group.membersCount} />
+              </div>
             </Box>
           </Link>
         ))}
@@ -319,7 +327,7 @@ export function GroupDetail() {
             >
               <div className="flex flex-col space-y-2">
                 <h3 className="text-xl uppercase">{meetup.title}</h3>
-                <p className="underline decoration-green-400 decoration-4">
+                <p className="underline decoration-green-400 decoration-4 underline-offset-4">
                   {meetup.description}
                 </p>
               </div>
