@@ -241,7 +241,7 @@ export const Meetup = pgTable("meetup", {
 });
 
 export const UpsertMeetupSchema = createInsertSchema(Meetup, {
-  id: z.string().optional(),
+  id: z.string().optional().nullable(),
   groupId: z.string(),
   title: z.string().max(255).min(3),
   description: z.string().max(255).min(3),

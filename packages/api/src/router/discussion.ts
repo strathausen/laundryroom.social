@@ -42,7 +42,7 @@ export const discussionRouter = {
         throw new Error("Discussion not found");
       }
       const userId = ctx.session.user.id;
-      const membership = ctx.db.query.GroupMember.findFirst({
+      const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
           eq(GroupMember.groupId, discussion.groupId),
           eq(GroupMember.userId, userId),

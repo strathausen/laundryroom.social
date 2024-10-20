@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+// import { useRouter } from "next/navigation";
 
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -27,14 +28,14 @@ interface Props {
 }
 
 export function UpsertMeetupForm(props: Props) {
-  const router = useRouter();
+  // const router = useRouter();
   const utils = api.useUtils();
   const upsertMeetup = api.meetup.upsert.useMutation({
     async onSuccess(data) {
       if (!data) return;
       form.reset();
       await utils.meetup.invalidate();
-      if ("id" in data) router.push(`/events?highlight=${data.id}`);
+      // if ("id" in data) router.push(`/events?highlight=${data.id}`);
       toast.success("Event saved");
       props.onSaved?.();
     },

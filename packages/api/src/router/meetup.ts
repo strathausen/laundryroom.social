@@ -102,6 +102,7 @@ export const meetupRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const data = {
         ...input,
+        id: input.id ?? undefined,
         startTime: new Date(input.startTime),
         endTime: new Date(input.endTime),
       };
