@@ -257,13 +257,9 @@ export const groupRouter = {
           search
             ? and(
                 eq(GroupMember.groupId, groupId),
-                not(eq(GroupMember.role, "banned")),
                 ilike(User.name, `%${search}%`),
               )
-            : and(
-                eq(GroupMember.groupId, groupId),
-                not(eq(GroupMember.role, "banned")),
-              ),
+            : eq(GroupMember.groupId, groupId),
         )
         .limit(10);
 
@@ -272,18 +268,16 @@ export const groupRouter = {
           count: sql`count(*)`,
         })
         .from(GroupMember)
-        .where(
-          and(
-            eq(GroupMember.groupId, groupId),
-            not(eq(GroupMember.role, "banned")),
-          ),
-        );
+        .where(eq(GroupMember.groupId, groupId));
 
       //  if the user is not an admin or owner, replace the role with "member"
       if (!["owner", "admin"].includes(membership.role)) {
-        members.forEach((member) => {
-          member.role = "member";
-        });
+        // for non-admins, filter out banned members
+        members
+          .filter((member) => member.role !== "banned")
+          .forEach((member) => {
+            member.role = "member";
+          });
       }
 
       return { members, count: membersCount[0]?.count };
