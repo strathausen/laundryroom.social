@@ -1,5 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { number, z } from "zod";
+import { z } from "zod";
 
 import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
 import { Group, GroupMember, User } from "@laundryroom/db/schema";
@@ -25,7 +25,7 @@ export const groupRouter = {
             )`.mapWith(Number),
           })
           .from(Group)
-          .where((t) =>
+          .where((_t) =>
             and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
           )
           .orderBy((t) => desc(t.createdAt))
@@ -115,10 +115,7 @@ export const groupRouter = {
           ),
           with: { user: { columns: { good_person: true } } },
         });
-        if (
-          !membership ||
-          !["owner", "admin"].includes(membership.role ?? "")
-        ) {
+        if (!membership || !["owner", "admin"].includes(membership.role)) {
           throw new Error("not authorized");
         }
         const classification = await classify(input.description);
@@ -283,7 +280,7 @@ export const groupRouter = {
         );
 
       //  if the user is not an admin or owner, replace the role with "member"
-      if (!["owner", "admin"].includes(membership.role ?? "")) {
+      if (!["owner", "admin"].includes(membership.role)) {
         members.forEach((member) => {
           member.role = "member";
         });
@@ -297,14 +294,23 @@ export const groupRouter = {
       z.object({
         groupId: z.string(),
         userId: z.string(),
-        // role: GroupMemberRole,
-        // role: z.string(),
+        role: z.enum(["admin", "moderator", "member", "banned"]),
       }),
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // check if the current user is an admin or owner
+      const membership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      if (!["owner", "admin"].includes(membership?.role ?? "")) {
+        throw new Error("not authorized");
+      }
       return ctx.db
         .update(GroupMember)
-        .set({ role: "member" })
+        .set({ role: input.role })
         .where(
           and(
             eq(GroupMember.groupId, input.groupId),

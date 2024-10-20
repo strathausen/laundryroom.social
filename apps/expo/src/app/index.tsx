@@ -12,7 +12,6 @@ function PostCard(props: {
   post: RouterOutputs["discussion"]["byId"];
   onDelete: () => void;
 }) {
-  if (!props.post) return <View />;
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4">
       <View className="flex-grow">

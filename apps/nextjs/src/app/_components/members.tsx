@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 
+import { Input } from "@laundryroom/ui/input";
+
 import { api } from "~/trpc/react";
+import { UserModerator } from "./user-moderator";
 
 interface MembersModerationProps {
   groupId: string;
@@ -19,17 +22,22 @@ export function MembersWidget(props: MembersModerationProps) {
     return <div>Error: {fetchMembers.error.message}</div>;
   }
   return (
-    <div>
-      <input
+    <div className="mx-auto flex min-w-96 max-w-lg flex-col gap-4">
+      <Input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search members"
       />
-      <ul>
+      <ul className="flex flex-col gap-2">
         {fetchMembers.data?.members.map(({ userId, userName, role }) => (
           <li key={userId}>
-            {userName} ({role})
+            <UserModerator
+              userName={userName}
+              userId={userId}
+              userRole={role}
+              groupId={props.groupId}
+            />
           </li>
         ))}
       </ul>

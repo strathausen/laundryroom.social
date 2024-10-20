@@ -197,7 +197,7 @@ export const GroupMember = pgTable(
       .references(() => User.id, {
         onDelete: "cascade",
       }),
-    role: GroupMemberRole("role"),
+    role: GroupMemberRole("role").default("member").notNull(),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {

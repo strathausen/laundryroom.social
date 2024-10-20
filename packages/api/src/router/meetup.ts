@@ -129,7 +129,7 @@ export const meetupRouter = createTRPCRouter({
           eq(GroupMember.userId, user.id),
         ),
       });
-      if (!membership || !["owner", "admin"].includes(membership.role ?? "")) {
+      if (!membership || !["owner", "admin"].includes(membership.role)) {
         throw new Error("Not authorized");
       }
       if (input.endTime && data.startTime > new Date(input.endTime)) {
