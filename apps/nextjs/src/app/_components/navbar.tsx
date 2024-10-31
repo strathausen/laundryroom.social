@@ -21,7 +21,7 @@ interface Props {
 }
 
 const menuLinks = [
-  { label: "events", link: "playground", icon: <FaCalendar /> },
+  // { label: "my home", link: "playground", icon: <FaCalendar /> },
   { label: "groups", link: "groups", icon: <FaPeopleGroup /> },
   { label: "create", link: "edit-group/new", icon: <FaPlus /> },
   { label: "feed", link: "feed", icon: <FaBowlRice /> },

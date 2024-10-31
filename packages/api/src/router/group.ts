@@ -97,6 +97,31 @@ export const groupRouter = {
       return { group, membership };
     }),
 
+  myGroups: protectedProcedure.query(async ({ ctx }) => {
+    const user = ctx.session.user;
+    return ctx.db
+      .select({
+        id: Group.id,
+        name: Group.name,
+        description: Group.description,
+        image: Group.image,
+        createdAt: Group.createdAt,
+        membersCount: sql`(
+          select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
+          and ${GroupMember.role} != 'banned'
+        )`.mapWith(Number),
+      })
+      .from(Group)
+      .innerJoin(GroupMember, eq(GroupMember.groupId, Group.id))
+      .where(
+        and(
+          eq(GroupMember.userId, user.id),
+          not(eq(GroupMember.role, "banned")),
+        ),
+      )
+      .orderBy((t) => desc(t.createdAt));
+  }),
+
   upsert: protectedProcedure
     .input(
       z.object({

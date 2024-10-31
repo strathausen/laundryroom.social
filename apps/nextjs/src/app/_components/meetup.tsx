@@ -72,11 +72,10 @@ export function UpsertMeetupForm(props: Props) {
       >
         <fieldset
           className="flex flex-col gap-4 rounded p-4 text-black"
-          disabled={upsertMeetup.isPending || meetupQuery.isPending}
+          disabled={
+            upsertMeetup.isPending || (!!props.eventId && meetupQuery.isPending)
+          }
         >
-          <h2 className="text-2xl uppercase">
-            {props.eventId ? "Edit event" : "New event"}
-          </h2>
           {/* {form.formState.errors && (
             <div>{Object.values(form.formState.errors).join(", ")}</div>
           )} */}

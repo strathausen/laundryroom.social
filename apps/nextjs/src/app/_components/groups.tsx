@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
+import { RouterOutputs } from "@laundryroom/api";
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@laundryroom/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@laundryroom/ui/dialog";
 import {
   Form,
   FormControl,
@@ -180,9 +185,26 @@ export function UpsertGroupForm(props: Props) {
   );
 }
 
+export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
+  return (
+    <Link href={`/groups/${group.id}`}>
+      <Box className="flex min-h-36 flex-col justify-between">
+        <div>
+          <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
+          <p className="">{group.description}</p>
+        </div>
+        <div className="flex justify-end">
+          <MembersCount count={group.membersCount} />
+        </div>
+      </Box>
+    </Link>
+  );
+}
+
 export function GroupList() {
   const [query, setQuery] = useState("");
   const groupsQuery = api.group.search.useQuery({ query });
+  const myGroups = api.group.myGroups.useQuery();
 
   return (
     <div className="flex flex-col gap-5 text-black">
@@ -193,20 +215,19 @@ export function GroupList() {
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groupsQuery.data?.map((group) => (
-          <Link key={group.id} href={`/groups/${group.id}`}>
-            <Box className="flex min-h-36 flex-col justify-between">
-              <div>
-                <h2 className="text-xl font-semibold uppercase">
-                  {group.name}
-                </h2>
-                <p className="">{group.description}</p>
-              </div>
-              <div className="flex justify-end">
-                <MembersCount count={group.membersCount} />
-              </div>
-            </Box>
-          </Link>
+          <GroupCard key={group.id} {...group} />
         ))}
+      </div>
+      {/* show my groups with a divider */}
+      <div className="mb-7 mt-4 space-y-4 border-t-2 border-black pt-4">
+        <h2 className="text-xl uppercase underline decoration-green-400 decoration-4">
+          my groups
+        </h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {myGroups.data?.map((group) => (
+            <GroupCard key={group.id} {...group} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -214,7 +235,6 @@ export function GroupList() {
 
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
-  const session = useSession();
   const [showCreateMeetup, setShowCreateMeetup] = useState(false);
   const [editableEventId, setEditableEventId] = useState<string | undefined>();
   const groupQuery = api.group.byId.useQuery({
@@ -266,10 +286,10 @@ export function GroupDetail() {
               <DialogTrigger asChild>
                 <Button>create event</Button>
               </DialogTrigger>
-              <DialogTitle>
-                {editableEventId ? "Edit" : "Create"} Event
-              </DialogTitle>
-              <DialogContent>
+              <DialogContent className="text-black uppercase">
+                <DialogTitle>
+                  {editableEventId ? "Edit" : "Create"} Event
+                </DialogTitle>
                 <UpsertMeetupForm
                   groupId={params.groupId}
                   eventId={editableEventId}
