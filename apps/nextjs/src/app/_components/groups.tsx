@@ -342,8 +342,8 @@ export function GroupDetail() {
                 </p>
               </div>
               <div className="flex flex-col space-y-2">
-                <p>start: {new Date(meetup.startTime).toLocaleString()}</p>
-                <p>end: {new Date(meetup.endTime).toLocaleString()}</p>
+                <p>time: {new Date(meetup.startTime).toLocaleString()}</p>
+                {/* <p>end: {new Date(meetup.endTime).toLocaleString()}</p> */}
                 <div className="flex gap-4">
                   <RsvpSelect
                     meetupId={meetup.id}

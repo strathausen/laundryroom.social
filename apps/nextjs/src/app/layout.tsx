@@ -63,10 +63,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           forcedTheme="light" /*enableSystem*/
         >
           <NavBar session={session} />
-          <div className="pl-0 md:pl-32">
+          <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
             <TRPCReactProvider>{props.children}</TRPCReactProvider>
-            <div className="mt-4 flex flex-col items-center bg-white/30">
-              <div className="max-w-4xl">
+            <div className="mt-4 flex flex-col items-center">
+              <div className="max-w-5xl">
                 <Footer />
               </div>
             </div>

@@ -232,7 +232,7 @@ export const Meetup = pgTable("meetup", {
   description: text("description").default("").notNull(),
   location: varchar("location", { length: 255 }).default("").notNull(),
   startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
+  endTime: timestamp("end_time"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
@@ -247,7 +247,7 @@ export const UpsertMeetupSchema = createInsertSchema(Meetup, {
   description: z.string().max(255).min(3),
   location: z.string().max(255),
   startTime: z.string().min(3),
-  endTime: z.string().min(3),
+  endTime: z.string().min(3).optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,

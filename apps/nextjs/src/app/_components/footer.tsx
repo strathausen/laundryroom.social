@@ -12,22 +12,28 @@ export function Footer() {
           . all rights reserved.
         </span>
         <ul className="mt-3 flex flex-wrap items-center text-sm sm:mt-0">
-          {["team", "about", "imprint", "privacy policy", "contact"].map(
-            (link) => (
-              <li key={link}>
-                <a
-                  href={`/pages/${link.replaceAll(" ", "_")}`}
-                  className="mr-4 hover:underline hover:decoration-accent md:mr-6"
-                >
-                  {link}
-                </a>
-              </li>
-            ),
-          )}
+          {[
+            // "team",
+            // "about",
+						"terms",
+            "imprint",
+            "privacy policy",
+            // "contact",
+            "roadmap",
+          ].map((link) => (
+            <li key={link}>
+              <a
+                href={`/pages/${link.replaceAll(" ", "_")}`}
+                className="mr-4 hover:underline hover:decoration-accent md:mr-6"
+              >
+                {link}
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
       <div className="flex items-center justify-center gap-1 text-center text-sm">
-        made with <FaHeart className="text-gray-500" /> in berlin
+        made with <FaHeart /> in berlin
       </div>
     </footer>
   );

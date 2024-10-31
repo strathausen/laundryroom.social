@@ -104,7 +104,7 @@ export const meetupRouter = createTRPCRouter({
         ...input,
         id: input.id ?? undefined,
         startTime: new Date(input.startTime),
-        endTime: new Date(input.endTime),
+        endTime: input.endTime ? new Date(input.endTime) : undefined,
       };
       const { user } = ctx.session;
       // check if user is admin or owner of the group
