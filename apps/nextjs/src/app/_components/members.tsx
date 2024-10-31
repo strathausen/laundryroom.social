@@ -37,6 +37,10 @@ export function MembersWidget(props: MembersModerationProps) {
               userId={userId}
               userRole={role}
               groupId={props.groupId}
+              enableRoleChange={
+                role !== "owner" &&
+                ["owner", "admin"].includes(fetchMembers.data.role)
+              }
             />
           </li>
         ))}

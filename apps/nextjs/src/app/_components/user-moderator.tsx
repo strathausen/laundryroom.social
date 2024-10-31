@@ -9,6 +9,7 @@ import {
   UserX,
   X,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import type { RouterInputs } from "@laundryroom/api";
 import { Button } from "@laundryroom/ui/button";
@@ -23,6 +24,7 @@ interface Props {
   userId: string;
   userRole: UserRole;
   groupId: string;
+  enableRoleChange?: boolean;
 }
 
 const getRoleIcon = (role: UserRole) => {
@@ -42,7 +44,13 @@ const getRoleIcon = (role: UserRole) => {
   }
 };
 
-export function UserModerator({ userName, userId, userRole, groupId }: Props) {
+export function UserModerator({
+  userName,
+  userId,
+  userRole,
+  groupId,
+  enableRoleChange,
+}: Props) {
   const changeUserRole = api.group.changeRole.useMutation({
     onSuccess(_data) {
       toast.success("User role changed");
@@ -74,7 +82,8 @@ export function UserModerator({ userName, userId, userRole, groupId }: Props) {
             onClick={() => setExpanded(!expanded)}
             className="p-0 hover:bg-transparent"
           >
-            {userRole !== "owner" &&
+            {enableRoleChange &&
+              userRole !== "owner" &&
               (expanded ? (
                 <X className="h-5 w-5" />
               ) : (
@@ -83,7 +92,7 @@ export function UserModerator({ userName, userId, userRole, groupId }: Props) {
           </Button>
         </div>
       </div>
-      {expanded && (
+      {expanded && enableRoleChange && (
         <div className="border-t-2 border-black bg-gray-100 p-2">
           <p className="mb-2 font-bold">Change user status:</p>
           <div className="flex space-x-2">

@@ -55,7 +55,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           GeistMono.variable,
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" /*enableSystem*/>
+        {/* for now, only allow the light theme */}
+        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" /*enableSystem*/>
           <NavBar session={session} />
           <div className="pl-0 md:pl-32">
             <TRPCReactProvider>{props.children}</TRPCReactProvider>

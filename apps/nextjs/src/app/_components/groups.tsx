@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
@@ -212,6 +213,7 @@ export function GroupList() {
 
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
+  const session = useSession();
   const [showCreateMeetup, setShowCreateMeetup] = useState(false);
   const [editableEventId, setEditableEventId] = useState<string | undefined>();
   const groupQuery = api.group.byId.useQuery({
@@ -282,17 +284,25 @@ export function GroupDetail() {
           </div>
         )}
         {/* show join button if no membership */}
-        {!membership && (
-          <Button
-            disabled={joinGroup.isPending || groupQuery.isRefetching}
-            onClick={async () => {
-              await joinGroup.mutateAsync({ groupId: group.id });
-              await groupQuery.refetch();
-            }}
-          >
-            join this group
-          </Button>
-        )}
+        {!membership &&
+          (session.data?.user ? (
+            <Button
+              disabled={joinGroup.isPending || groupQuery.isRefetching}
+              onClick={async () => {
+                await joinGroup.mutateAsync({ groupId: group.id });
+                await groupQuery.refetch();
+              }}
+            >
+              join this group
+            </Button>
+          ) : (
+            <Link
+              href="/api/auth/signin"
+              className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
+            >
+              log in to join this group
+            </Link>
+          ))}
         {/* if user is not the owner and is a member, offer to leave the group */}
         {membership && membership.role !== "owner" && (
           <div className="text-black/80">
@@ -361,9 +371,27 @@ export function GroupDetail() {
       </div>
       {/* don't show discussion etc if not logged in */}
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
-      <DiscussionWidget groupId={params.groupId} />
+      {session.data?.user ? (
+        <DiscussionWidget groupId={params.groupId} />
+      ) : (
+        <Link
+          href="/api/auth/signin"
+          className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
+        >
+          log in to join the discussion
+        </Link>
+      )}
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
-      <MembersWidget groupId={params.groupId} />
+      {session.data?.user ? (
+        <MembersWidget groupId={params.groupId} />
+      ) : (
+        <Link
+          href="/api/auth/signin"
+          className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
+        >
+          log in to see members
+        </Link>
+      )}
       <br className="mb-12" />
     </div>
   );

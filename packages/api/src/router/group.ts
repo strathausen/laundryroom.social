@@ -280,7 +280,7 @@ export const groupRouter = {
           });
       }
 
-      return { members, count: membersCount[0]?.count };
+      return { members, count: membersCount[0]?.count, role: membership.role };
     }),
 
   changeRole: protectedProcedure
@@ -312,37 +312,4 @@ export const groupRouter = {
           ),
         );
     }),
-
-  // changeMemberStatus: protectedProcedure
-  //   .input(
-  //     z.object({
-  //       groupId: z.string(),
-  //       userId: z.string(),
-  //       // status: GroupMemberRole,
-  //       status: z.string(),
-  //     }),
-  //   )
-  //   .mutation(({ ctx, input }) => {
-  //     return ctx.db
-  //       .update(Group)
-  //       .set({ : 'going' })
-  //       .where(
-  //         and(
-  //           eq(GroupMember.groupId, input.groupId),
-  //           eq(GroupMember.userId, input.userId),
-  //         ),
-  //       );
-  //   }),
-
-  // search: publicProcedure
-  // 	.input(z.object({ query: z.string() }))
-  // 	.query(({ ctx, input }) => {
-  // 		return ctx.db.query.Group.findMany({
-  // 			where: {
-  // 				name: {
-  // 					contains: input.query,
-  // 				},
-  // 			},
-  // 		});
-  // 	}),
 } satisfies TRPCRouterRecord;
