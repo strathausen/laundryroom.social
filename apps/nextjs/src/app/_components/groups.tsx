@@ -229,7 +229,7 @@ export function GroupDetail() {
     return <div>Failed to load group</div>;
   }
   if (groupQuery.isLoading || !groupQuery.data?.group) {
-    return <div>Loading group...</div>;
+    return <div className="flex flex-col">Loading group...</div>;
   }
   const { membership, group } = groupQuery.data;
 

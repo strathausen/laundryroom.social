@@ -14,6 +14,7 @@ import "~/app/globals.css";
 import { auth } from "@laundryroom/auth";
 
 import { env } from "~/env";
+import { Footer } from "./_components/footer";
 import { NavBar } from "./_components/navbar";
 
 export const metadata: Metadata = {
@@ -56,10 +57,19 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         {/* for now, only allow the light theme */}
-        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" /*enableSystem*/>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light" /*enableSystem*/
+        >
           <NavBar session={session} />
           <div className="pl-0 md:pl-32">
             <TRPCReactProvider>{props.children}</TRPCReactProvider>
+            <div className="mt-4 flex flex-col items-center bg-white/30">
+              <div className="max-w-4xl">
+                <Footer />
+              </div>
+            </div>
           </div>
           <div className="absolute bottom-4 right-4 hidden">
             <ThemeToggle />
