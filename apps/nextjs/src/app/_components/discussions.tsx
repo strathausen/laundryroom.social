@@ -170,7 +170,7 @@ export function DiscussionWidget(props: { groupId: string }) {
       )}
       <div className="m-auto my-7 flex max-w-3xl flex-col gap-5">
         {discussionsQuery.data?.map((discussion) => (
-          <DiscussionPost discussion={discussion} />
+          <DiscussionPost discussion={discussion} key={discussion.id} />
         ))}
       </div>
     </div>

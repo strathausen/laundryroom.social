@@ -2,8 +2,6 @@
 
 import { useEffect } from "react";
 
-// import { useRouter } from "next/navigation";
-
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
 import {
@@ -39,12 +37,10 @@ export function UpsertMeetupForm(props: Props) {
       props.onSaved?.();
     },
   });
-  const meetupQuery = props.eventId
-    ? api.meetup.byId.useQuery(
-        { id: props.eventId },
-        { enabled: !!props.eventId },
-      )
-    : { data: null };
+  const meetupQuery = api.meetup.byId.useQuery(
+    { id: props.eventId ?? "" },
+    { enabled: !!props.eventId },
+  );
   const form = useForm({
     schema: UpsertMeetupSchema,
     defaultValues: {
@@ -76,7 +72,7 @@ export function UpsertMeetupForm(props: Props) {
       >
         <fieldset
           className="flex flex-col gap-4 rounded p-4 text-black"
-          disabled={upsertMeetup.isPending}
+          disabled={upsertMeetup.isPending || meetupQuery.isPending}
         >
           <h2 className="text-2xl uppercase">
             {props.eventId ? "Edit event" : "New event"}

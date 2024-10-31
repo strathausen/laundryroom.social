@@ -51,6 +51,9 @@ export const discussionRouter = {
       if (!membership) {
         throw new Error("Not a member of the group");
       }
+      if (membership.role === "banned") {
+        return { ...discussion, comments: [] };
+      }
       return discussion;
     }),
 
@@ -99,8 +102,17 @@ export const discussionRouter = {
           },
         },
       });
-      return Promise.all([countsQuery, discussionsQuery]).then(
-        ([counts, discussions]) => {
+      const membershipQuery = ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.userId, ctx.session.user.id),
+        ),
+      });
+      return Promise.all([countsQuery, discussionsQuery, membershipQuery]).then(
+        ([counts, discussions, membership]) => {
+          if (!membership || membership.role === "banned") {
+            return [];
+          }
           return discussions.map((discussion) => {
             const count = counts.find((c) => c.discussionId === discussion.id);
             return { ...discussion, commentCount: count?.count ?? 0 };
@@ -127,6 +139,9 @@ export const discussionRouter = {
       });
       if (!membership) {
         throw new Error("Not a member of the group");
+      }
+      if (membership.role === "banned") {
+        throw new Error("Something went wrong");
       }
       return ctx.db
         .insert(Comment)

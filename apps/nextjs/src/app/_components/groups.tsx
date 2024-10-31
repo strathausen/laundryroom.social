@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@laundryroom/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@laundryroom/ui/dialog";
 import {
   Form,
   FormControl,
@@ -32,6 +32,7 @@ import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
+import { LoginCta } from "./login-cta";
 import { UpsertMeetupForm } from "./meetup";
 import { MembersWidget } from "./members";
 import { MembersCount } from "./members-count";
@@ -265,6 +266,9 @@ export function GroupDetail() {
               <DialogTrigger asChild>
                 <Button>create event</Button>
               </DialogTrigger>
+              <DialogTitle>
+                {editableEventId ? "Edit" : "Create"} Event
+              </DialogTitle>
               <DialogContent>
                 <UpsertMeetupForm
                   groupId={params.groupId}
@@ -284,8 +288,8 @@ export function GroupDetail() {
           </div>
         )}
         {/* show join button if no membership */}
-        {!membership &&
-          (session.data?.user ? (
+        {!membership && (
+          <LoginCta message="log in to join this group">
             <Button
               disabled={joinGroup.isPending || groupQuery.isRefetching}
               onClick={async () => {
@@ -295,14 +299,8 @@ export function GroupDetail() {
             >
               join this group
             </Button>
-          ) : (
-            <Link
-              href="/api/auth/signin"
-              className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
-            >
-              log in to join this group
-            </Link>
-          ))}
+          </LoginCta>
+        )}
         {/* if user is not the owner and is a member, offer to leave the group */}
         {membership && membership.role !== "owner" && (
           <div className="text-black/80">
@@ -371,27 +369,13 @@ export function GroupDetail() {
       </div>
       {/* don't show discussion etc if not logged in */}
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
-      {session.data?.user ? (
+      <LoginCta message="log in to join the discussion">
         <DiscussionWidget groupId={params.groupId} />
-      ) : (
-        <Link
-          href="/api/auth/signin"
-          className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
-        >
-          log in to join the discussion
-        </Link>
-      )}
+      </LoginCta>
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
-      {session.data?.user ? (
+      <LoginCta message="log in to see members">
         <MembersWidget groupId={params.groupId} />
-      ) : (
-        <Link
-          href="/api/auth/signin"
-          className="underline decoration-[#ff00ff] decoration-4 underline-offset-4"
-        >
-          log in to see members
-        </Link>
-      )}
+      </LoginCta>
       <br className="mb-12" />
     </div>
   );

@@ -245,6 +245,10 @@ export const groupRouter = {
       if (!membership) {
         throw new Error("not authorized");
       }
+      // return nothing for banned members
+      if (membership.role === "banned") {
+        return { members: [], count: 0, role: "member" };
+      }
       const members = await ctx.db
         .select({
           userId: User.id,

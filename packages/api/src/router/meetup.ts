@@ -71,8 +71,12 @@ export const meetupRouter = createTRPCRouter({
           eq(GroupMember.userId, user.id),
         ),
       });
-      if (!membership || membership.role === "banned") {
+      if (!membership) {
         throw new Error("Not authorized");
+      }
+      // banned users cannot RSVP, but don't leak that they are banned
+      if (membership.role === "banned") {
+        return input.status;
       }
       const attendee = await ctx.db.query.Attendee.findFirst({
         where: and(
