@@ -104,7 +104,7 @@ export const meetupRouter = createTRPCRouter({
         ...input,
         id: input.id ?? undefined,
         startTime: new Date(input.startTime),
-        endTime: input.endTime ? new Date(input.endTime) : undefined,
+        // endTime: input.endTime ? new Date(input.endTime) : undefined,
       };
       const { user } = ctx.session;
       // check if user is admin or owner of the group
@@ -132,9 +132,9 @@ export const meetupRouter = createTRPCRouter({
       if (!membership || !["owner", "admin"].includes(membership.role)) {
         throw new Error("Not authorized");
       }
-      if (input.endTime && data.startTime > new Date(input.endTime)) {
-        throw new Error("Start time must be before end time");
-      }
+      // if (input.endTime && data.startTime > new Date(input.endTime)) {
+      //   throw new Error("Start time must be before end time");
+      // }
       // update existing meetup if id is provided
       if (input.id) {
         // check if group is the same, you cannot move meetups between groups

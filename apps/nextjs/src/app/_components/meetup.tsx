@@ -28,7 +28,6 @@ interface Props {
 }
 
 export function UpsertMeetupForm(props: Props) {
-  // const router = useRouter();
   const utils = api.useUtils();
   const upsertMeetup = api.meetup.upsert.useMutation({
     async onSuccess(data) {
@@ -55,7 +54,7 @@ export function UpsertMeetupForm(props: Props) {
       description: meetupQuery.data?.description ?? "",
       location: meetupQuery.data?.location ?? "",
       startTime: meetupQuery.data?.startTime.toISOString() ?? "",
-      endTime: meetupQuery.data?.endTime.toISOString() ?? "",
+      // endTime: undefined,
     },
   });
 
@@ -138,7 +137,7 @@ export function UpsertMeetupForm(props: Props) {
               </FormItem>
             )}
           />
-          <FormField
+          {/* <FormField
             control={form.control}
             name="endTime"
             render={({ field }) => (
@@ -150,7 +149,7 @@ export function UpsertMeetupForm(props: Props) {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
           <Button
             type="submit"
             disabled={!form.formState.isValid}
