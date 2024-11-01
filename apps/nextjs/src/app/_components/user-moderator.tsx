@@ -9,7 +9,6 @@ import {
   UserX,
   X,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 import type { RouterInputs } from "@laundryroom/api";
 import { Button } from "@laundryroom/ui/button";

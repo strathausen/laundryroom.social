@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-import { RouterOutputs } from "@laundryroom/api";
+import type { RouterOutputs } from "@laundryroom/api";
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
@@ -286,7 +286,7 @@ export function GroupDetail() {
               <DialogTrigger asChild>
                 <Button>create event</Button>
               </DialogTrigger>
-              <DialogContent className="text-black uppercase">
+              <DialogContent className="uppercase text-black">
                 <DialogTitle>
                   {editableEventId ? "Edit" : "Create"} Event
                 </DialogTitle>

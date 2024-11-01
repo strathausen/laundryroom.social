@@ -15,7 +15,7 @@ export function Footer() {
           {[
             // "team",
             // "about",
-						"terms",
+            "terms",
             "imprint",
             "privacy policy",
             // "contact",

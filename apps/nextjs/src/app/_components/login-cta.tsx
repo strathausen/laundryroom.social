@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
-type Props = {
+interface Props {
   message: string;
   children: React.ReactNode;
-};
+}
 
 export function LoginCta(props: Props) {
   const session = useSession();
