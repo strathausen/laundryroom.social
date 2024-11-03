@@ -1,21 +1,36 @@
 import { Resend } from "resend";
 
-import { env } from "../../../apps/nextjs/src/env";
+import { env } from "./env";
 
 const resend = new Resend(env.RESEND_KEY);
 
 const templates = {
-  newEvent(params: {
-    eventId: string;
-    eventName: string;
-    groupName: string;
-    groupId: string;
+  newEvent({
+    isNew,
+    group,
+    meetup,
+  }: {
+    isNew: boolean;
+    meetup: {
+      id: string;
+      title: string;
+      description?: string;
+      startTime: Date;
+      location?: string;
+    };
+    group: {
+      id: string;
+      name: string;
+    };
   }) {
     return {
-      subject: `New Meetup ${params.eventName}`,
+      subject: `New Meetup ${meetup} in ${group.name}`,
       body: `Dear human,
 
-A new event has been created in your group "${params.groupName}" on https://www.laundromat.social/groups/${params.groupId}
+An event has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+
+Title: ${meetup.title}
+${meetup.description ? `Description: ${meetup.description}` : ""}
 
 Have a great rest of your day!`,
     };
@@ -30,8 +45,7 @@ export async function sendEmail<K extends keyof typeof templates>(
   const renderedTemplate = templates[template](params);
   await resend.emails.send({
     to,
-    from: "events@tomatovillage.com",
-    // from: "events@laundryroom.social",
+    from: "events@laundryroom.social",
     subject: renderedTemplate.subject,
     text: renderedTemplate.body,
   });

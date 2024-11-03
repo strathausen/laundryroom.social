@@ -139,7 +139,9 @@ export const meetupRouter = createTRPCRouter({
       // if (input.endTime && data.startTime > new Date(input.endTime)) {
       //   throw new Error("Start time must be before end time");
       // }
-      // update existing meetup if id is provided
+
+      // Some additional checks when updating a meetup
+      let meetupId: string | undefined;
       if (input.id) {
         // check if group is the same, you cannot move meetups between groups
         const meetup = await ctx.db.query.Meetup.findFirst({
@@ -151,24 +153,25 @@ export const meetupRouter = createTRPCRouter({
         if (meetup.groupId !== input.groupId) {
           throw new Error("Group mismatch");
         }
-        // all seems good, update the meetup
-        return ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
+        await ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
+        meetupId = input.id;
+      } else {
+        const res = await ctx.db.insert(Meetup).values(data).returning({
+          id: Meetup.id,
+        });
+        meetupId = res[0]?.id;
       }
 
-      const meetup = await ctx.db.insert(Meetup).values(data).returning({
-        id: Meetup.id,
-      });
       for (const member of group.members) {
-        if (member.user.id === user.id || !meetup[0]) {
+        if (member.user.id === user.id || !meetupId) {
           continue;
         }
         await sendEmail(member.user.email, "newEvent", {
-          eventId: meetup[0].id,
-          eventName: data.title,
-          groupName: group.name,
-          groupId: group.id,
+          isNew: !data.id,
+          meetup: { ...data, id: meetupId },
+          group,
         });
       }
-      return meetup[0];
+      return { id: meetupId };
     }),
 });
