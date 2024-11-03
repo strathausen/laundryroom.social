@@ -107,7 +107,7 @@ export const meetupRouter = createTRPCRouter({
       const data = {
         ...input,
         id: input.id ?? undefined,
-        startTime: new Date(input.startTime),
+        startTime: input.startTime,
         // endTime: input.endTime ? new Date(input.endTime) : undefined,
       };
       const { user } = ctx.session;
