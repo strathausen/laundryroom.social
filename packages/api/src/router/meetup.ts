@@ -165,6 +165,8 @@ export const meetupRouter = createTRPCRouter({
         await sendEmail(member.user.email, "newEvent", {
           eventId: meetup[0].id,
           eventName: data.title,
+          groupName: group.name,
+          groupId: group.id,
         });
       }
       return meetup[0];

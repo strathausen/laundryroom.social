@@ -5,10 +5,19 @@ import { env } from "../../../apps/nextjs/src/env";
 const resend = new Resend(env.RESEND_KEY);
 
 const templates = {
-  newEvent(params: { eventId: string; eventName: string }) {
+  newEvent(params: {
+    eventId: string;
+    eventName: string;
+    groupName: string;
+    groupId: string;
+  }) {
     return {
       subject: `New Meetup ${params.eventName}`,
-      body: `A new event has been created on www.laundromat.social in your group with the id ${params.eventId}`,
+      body: `Dear human,
+
+A new event has been created in your group "${params.groupName}" on https://www.laundromat.social/groups/${params.groupId}
+
+Have a great rest of your day!`,
     };
   },
 };
