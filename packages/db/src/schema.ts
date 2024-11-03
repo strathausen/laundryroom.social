@@ -114,7 +114,7 @@ export const GroupStatus = pgEnum("group_status", [
   "hidden",
 ]);
 
-export const GroupModerationStatus = pgEnum("group_moderation_tags", [
+export const ModerationStatus = pgEnum("group_moderation_tags", [
   "ok",
   "pending",
   "rejected",
@@ -134,7 +134,7 @@ export const Group = pgTable(
     aiSearchText: text("ai_search_text").default("").notNull(),
     image: varchar("image", { length: 255 }),
     status: GroupStatus("status").default("active"),
-    moderationStatus: GroupModerationStatus("moderation_status").default("ok"),
+    moderationStatus: ModerationStatus("moderation_status").default("ok"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -316,6 +316,7 @@ export const Comment = pgTable("comment", {
       onDelete: "cascade",
     }),
   content: text("content").notNull(),
+  moderationStatus: ModerationStatus("moderation_status").default("ok"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
@@ -337,6 +338,7 @@ export const Discussion = pgTable("discussion", {
     }),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
+  moderationStatus: ModerationStatus("moderation_status").default("ok"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",

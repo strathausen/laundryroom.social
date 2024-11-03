@@ -8,6 +8,7 @@ import {
   GroupMember,
   UpsertDiscussionSchema,
 } from "@laundryroom/db/schema";
+import { classifyModeration } from "@laundryroom/llm";
 
 import { protectedProcedure } from "../trpc";
 
@@ -70,7 +71,10 @@ export const discussionRouter = {
       if (!membership) {
         throw new Error("Not a member of the group");
       }
-      return ctx.db.insert(Discussion).values({ ...input, userId });
+      const { moderationStatus } = await classifyModeration(input.content);
+      return ctx.db
+        .insert(Discussion)
+        .values({ ...input, userId, moderationStatus });
     }),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
@@ -94,7 +98,10 @@ export const discussionRouter = {
         .from(Comment)
         .groupBy(Comment.discussionId);
       const discussionsQuery = ctx.db.query.Discussion.findMany({
-        where: eq(Discussion.groupId, input.groupId),
+        where: and(
+          eq(Discussion.groupId, input.groupId),
+          eq(Discussion.moderationStatus, "ok"),
+        ),
         columns: { id: true, title: true, content: true, createdAt: true },
         with: {
           user: {
@@ -143,9 +150,13 @@ export const discussionRouter = {
       if (membership.role === "banned") {
         throw new Error("Something went wrong");
       }
-      return ctx.db
-        .insert(Comment)
-        .values({ ...input, userId, groupId: discussion.groupId });
+      const { moderationStatus } = await classifyModeration(input.content);
+      return ctx.db.insert(Comment).values({
+        ...input,
+        userId,
+        groupId: discussion.groupId,
+        moderationStatus,
+      });
     }),
 
   comments: protectedProcedure
@@ -153,7 +164,10 @@ export const discussionRouter = {
     .query(async ({ ctx, input }) => {
       // TODO check if user is a member of the group of the discussion
       return ctx.db.query.Comment.findMany({
-        where: eq(Comment.discussionId, input.discussionId),
+        where: and(
+          eq(Comment.discussionId, input.discussionId),
+          eq(Comment.moderationStatus, "ok"),
+        ),
         columns: { id: true, content: true, createdAt: true },
         with: {
           user: {
