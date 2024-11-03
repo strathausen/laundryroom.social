@@ -114,14 +114,14 @@ export function UpsertMeetupForm(props: Props) {
             upsertMeetup.isPending || (!!props.eventId && meetupQuery.isPending)
           }
         >
-          {form.formState.errors && (
+          {/* {form.formState.errors && (
             <div>{Object.values(form.formState.errors).join(", ")}</div>
           )}
           {form.formState.isValid ? (
             <div> form is valid</div>
           ) : (
             <div> form is not valid</div>
-          )}
+          )} */}
           {upsertMeetup.error && <div>{upsertMeetup.error.message}</div>}
           <FormField
             control={form.control}
