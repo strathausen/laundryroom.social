@@ -24,10 +24,10 @@ const templates = {
     };
   }) {
     return {
-      subject: `New Meetup ${meetup.title} in ${group.name}`,
+      subject: `${isNew ? "New Meetup:" : "Meetup changed:"} ${meetup.title} in ${group.name}`,
       body: `Dear human,
 
-An event has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
 
 Title: ${meetup.title}
 ${meetup.description ? `Description: ${meetup.description}` : ""}
