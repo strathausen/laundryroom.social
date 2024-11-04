@@ -10,6 +10,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        default:
+          "hover:bg-primary/90 bg-primary text-primary-foreground shadow",
         primary:
           "bg-tahiti px-2 py-1 font-bold text-background text-white shadow-hardrock shadow-hotpink transition-shadow hover:shadow-hardrock-lg hover:shadow-hotpink active:shadow-hardrock-sm active:shadow-hotpink",
         brutal:

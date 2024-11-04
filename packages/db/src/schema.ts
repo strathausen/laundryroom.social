@@ -246,7 +246,7 @@ export const UpsertMeetupSchema = createInsertSchema(Meetup, {
   title: z.string().max(255).min(3),
   description: z.string().max(255).min(3),
   location: z.string().max(255),
-  startTime: z.date(),
+  startTime: z.coerce.date(),
   // endTime: z.string().min(3).optional(),
 }).omit({
   createdAt: true,

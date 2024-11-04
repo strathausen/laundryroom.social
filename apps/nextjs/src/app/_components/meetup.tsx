@@ -11,7 +11,6 @@ import { Calendar } from "@laundryroom/ui/calendar";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -60,7 +59,10 @@ export function UpsertMeetupForm(props: Props) {
       title: meetupQuery.data?.title ?? "",
       description: meetupQuery.data?.description ?? "",
       location: meetupQuery.data?.location ?? "",
-      startTime: meetupQuery.data?.startTime ?? new Date(),
+      // default to tomorrow at 6pm
+      startTime:
+        meetupQuery.data?.startTime ??
+        new Date(new Date().setHours(18, 0, 0, 0) + 24 * 60 * 60 * 1000),
     },
   });
 
@@ -167,8 +169,8 @@ export function UpsertMeetupForm(props: Props) {
             name="startTime"
             render={({ field }) => (
               <FormItem className="my-2 flex flex-col">
-                <FormLabel>Enter your date & time (12h)</FormLabel>
-                <Popover>
+                <FormLabel>date & time</FormLabel>
+                <Popover modal>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -183,7 +185,7 @@ export function UpsertMeetupForm(props: Props) {
                         ) : (
                           <span>MM/DD/YYYY hh:mm aa</span>
                         )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="ml-auto h-4 w-4" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -207,7 +209,7 @@ export function UpsertMeetupForm(props: Props) {
                                   variant={
                                     field.value &&
                                     field.value.getHours() % 12 === hour % 12
-                                      ? "plattenbau"
+                                      ? "default"
                                       : "ghost"
                                   }
                                   className="aspect-square shrink-0 sm:w-full"
@@ -234,7 +236,7 @@ export function UpsertMeetupForm(props: Props) {
                                   variant={
                                     field.value &&
                                     field.value.getMinutes() === minute
-                                      ? "plattenbau"
+                                      ? "default"
                                       : "ghost"
                                   }
                                   className="aspect-square shrink-0 sm:w-full"
@@ -267,7 +269,7 @@ export function UpsertMeetupForm(props: Props) {
                                     field.value.getHours() < 12) ||
                                     (ampm === "PM" &&
                                       field.value.getHours() >= 12))
-                                    ? "plattenbau"
+                                    ? "default"
                                     : "ghost"
                                 }
                                 className="aspect-square shrink-0 sm:w-full"
@@ -301,7 +303,7 @@ export function UpsertMeetupForm(props: Props) {
           /> */}
           <Button
             type="submit"
-            disabled={!form.formState.isValid}
+            disabled={upsertMeetup.isPending}
             title={!form.formState.isValid ? "Please fill out all fields" : ""}
           >
             save
