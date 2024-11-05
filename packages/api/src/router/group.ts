@@ -138,7 +138,7 @@ export const groupRouter = {
             eq(GroupMember.groupId, input.id),
             eq(GroupMember.userId, ctx.session.user.id),
           ),
-          with: { user: { columns: { good_person: true } } },
+          with: { user: { columns: { goodPerson: true } } },
         });
         if (!membership || !["owner", "admin"].includes(membership.role)) {
           throw new Error("not authorized");

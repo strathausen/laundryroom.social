@@ -54,7 +54,7 @@ export const authConfig = {
     Discord,
     Resend({
       apiKey: env.RESEND_KEY,
-      from: "Laundryroom Registration <noreply@laundryroom.social>"
+      from: "Laundryroom Registration <noreply@laundryroom.social>",
     }),
   ],
   callbacks: {

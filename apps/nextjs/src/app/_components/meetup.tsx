@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
-import { cn } from "@laundryroom/ui";
 import { Button } from "@laundryroom/ui/button";
 import { Calendar } from "@laundryroom/ui/calendar";
 import {
@@ -38,8 +36,7 @@ interface Props {
 export function UpsertMeetupForm(props: Props) {
   const utils = api.useUtils();
   const upsertMeetup = api.meetup.upsert.useMutation({
-    async onSuccess(data) {
-      if (!data) return;
+    async onSuccess(_data) {
       form.reset();
       await utils.meetup.invalidate();
       // if ("id" in data) router.push(`/events?highlight=${data.id}`);
@@ -73,20 +70,26 @@ export function UpsertMeetupForm(props: Props) {
   }
 
   function handleTimeChange(type: "hour" | "minute" | "ampm", value: string) {
-    const currentDate = form.getValues("startTime") || new Date();
-    let newDate = new Date(currentDate);
+    const currentDate = form.getValues("startTime");
+    const newDate = new Date(currentDate);
 
-    if (type === "hour") {
-      const hour = parseInt(value, 10);
-      newDate.setHours(newDate.getHours() >= 12 ? hour + 12 : hour);
-    } else if (type === "minute") {
-      newDate.setMinutes(parseInt(value, 10));
-    } else if (type === "ampm") {
-      const hours = newDate.getHours();
-      if (value === "AM" && hours >= 12) {
-        newDate.setHours(hours - 12);
-      } else if (value === "PM" && hours < 12) {
-        newDate.setHours(hours + 12);
+    switch (type) {
+      case "hour": {
+        const hour = parseInt(value, 10);
+        newDate.setHours(newDate.getHours() >= 12 ? hour + 12 : hour);
+        break;
+      }
+      case "minute":
+        newDate.setMinutes(parseInt(value, 10));
+        break;
+      case "ampm": {
+        const hours = newDate.getHours();
+        if (value === "AM" && hours >= 12) {
+          newDate.setHours(hours - 12);
+        } else if (value === "PM" && hours < 12) {
+          newDate.setHours(hours + 12);
+        }
+        break;
       }
     }
 
@@ -175,16 +178,11 @@ export function UpsertMeetupForm(props: Props) {
                     <FormControl>
                       <Button
                         variant="plattenbau"
-                        className={cn(
-                          "w-full border-2 border-black px-2 text-left font-normal",
-                          !field.value && "text-muted-foreground",
-                        )}
+                        className={
+                          "w-full border-2 border-black px-2 text-left font-normal"
+                        }
                       >
-                        {field.value ? (
-                          format(field.value, "MM/dd/yyyy hh:mm aa")
-                        ) : (
-                          <span>MM/DD/YYYY hh:mm aa</span>
-                        )}
+                        format(field.value, "MM/dd/yyyy hh:mm aa")
                         <CalendarIcon className="ml-auto h-4 w-4" />
                       </Button>
                     </FormControl>
@@ -207,7 +205,6 @@ export function UpsertMeetupForm(props: Props) {
                                   key={hour}
                                   size="icon"
                                   variant={
-                                    field.value &&
                                     field.value.getHours() % 12 === hour % 12
                                       ? "default"
                                       : "ghost"
@@ -234,7 +231,6 @@ export function UpsertMeetupForm(props: Props) {
                                   key={minute}
                                   size="icon"
                                   variant={
-                                    field.value &&
                                     field.value.getMinutes() === minute
                                       ? "default"
                                       : "ghost"
@@ -264,11 +260,10 @@ export function UpsertMeetupForm(props: Props) {
                                 key={ampm}
                                 size="icon"
                                 variant={
-                                  field.value &&
-                                  ((ampm === "AM" &&
+                                  (ampm === "AM" &&
                                     field.value.getHours() < 12) ||
-                                    (ampm === "PM" &&
-                                      field.value.getHours() >= 12))
+                                  (ampm === "PM" &&
+                                    field.value.getHours() >= 12)
                                     ? "default"
                                     : "ghost"
                                 }

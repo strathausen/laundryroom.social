@@ -22,7 +22,8 @@ export const User = pgTable("user", {
     withTimezone: true,
   }),
   image: varchar("image", { length: 255 }),
-  good_person: timestamp("good_person"), // does not require llm reviews
+  bio: text("bio"),
+  goodPerson: timestamp("good_person"), // this person is so good, it does not require llm reviews
 });
 
 export const UserRelations = relations(User, ({ many }) => ({
@@ -409,3 +410,14 @@ export const NotificationRelations = relations(Notification, ({ one }) => ({
     references: [User.id],
   }),
 }));
+
+export const UpdateProfileSchema = createInsertSchema(User, {
+  name: z.string().max(255).optional(),
+  // email: z.string().email(),
+  bio: z.string().optional(),
+  image: z.string().max(255).optional(),
+}).omit({
+  email: true,
+  emailVerified: true,
+  goodPerson: true,
+});
