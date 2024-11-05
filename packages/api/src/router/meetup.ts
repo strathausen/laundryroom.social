@@ -21,19 +21,21 @@ export const meetupRouter = createTRPCRouter({
       });
     }),
 
-  byGroupId: protectedProcedure
+  byGroupId: publicProcedure
     .input(z.object({ groupId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const user = ctx.session.user;
-      const attendancesQuery = ctx.db.query.Attendee.findMany({
-        where: and(
-          eq(Attendee.userId, user.id),
-          inArray(
-            Attendee.meetupId,
-            sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
-          ),
-        ),
-      });
+      const user = ctx.session?.user;
+      const attendancesQuery = user
+        ? ctx.db.query.Attendee.findMany({
+            where: and(
+              eq(Attendee.userId, user.id),
+              inArray(
+                Attendee.meetupId,
+                sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
+              ),
+            ),
+          })
+        : [];
       // only show future meetups
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(

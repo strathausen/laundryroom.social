@@ -17,7 +17,8 @@ type Rsvp = RsvpCoice | "waitlist";
 interface Props {
   meetupId: string;
   rsvp?: Rsvp | null;
-  onChange: (rsvp: Rsvp) => void;
+  onChange?: (rsvp: Rsvp) => void;
+  disabled?: boolean;
 }
 
 export function RsvpSelect(props: Props) {
@@ -31,9 +32,10 @@ export function RsvpSelect(props: Props) {
           id: props.meetupId,
           status: rsvp,
         });
-        props.onChange(rsvp);
+        props.onChange?.(rsvp);
       }}
-      disabled={rsvpMutation.isPending}
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      disabled={props.disabled || rsvpMutation.isPending}
     >
       <SelectTrigger className="w-[125px]">
         <SelectValue placeholder="RSVP" />

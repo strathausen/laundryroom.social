@@ -366,9 +366,7 @@ export function GroupDetail() {
                   <RsvpSelect
                     meetupId={meetup.id}
                     rsvp={meetup.attendance?.status}
-                    onChange={(_status) => {
-                      //
-                    }}
+                    disabled={!meetup.attendance}
                   />
                   {membership?.role === "owner" && (
                     <Button
