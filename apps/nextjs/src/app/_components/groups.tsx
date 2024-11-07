@@ -217,8 +217,13 @@ export function GroupList() {
         {groupsQuery.data?.map((group) => (
           <GroupCard key={group.id} {...group} />
         ))}
+        {groupsQuery.isLoading && (
+          <p className="col-span-3">loading groups...</p>
+        )}
+        {!groupsQuery.data?.length && groupsQuery.isFetched && (
+          <p className="col-span-3">no groups found</p>
+        )}
       </div>
-      {/* show my groups with a divider */}
       <div className="mb-7 mt-4 space-y-4 border-t-2 border-black pt-4">
         <h2 className="text-xl uppercase underline decoration-green-400 decoration-4">
           my groups
