@@ -188,10 +188,10 @@ export function UpsertGroupForm(props: Props) {
 export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
   return (
     <Link href={`/groups/${group.id}`}>
-      <Box className="flex min-h-36 flex-col justify-between">
-        <div>
+      <Box className="flex h-40 flex-col justify-between">
+        <div className="flex flex-col gap-2">
           <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
-          <p className="">{group.description}</p>
+          <p className="line-clamp-2 pr-2">{group.description}</p>
         </div>
         <div className="flex justify-end">
           <MembersCount count={group.membersCount} />
