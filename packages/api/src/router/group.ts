@@ -16,7 +16,7 @@ export const groupRouter = {
           .select({
             id: Group.id,
             name: Group.name,
-            description: Group.description,
+            description: sql`left(${Group.description}, 100)`.mapWith(String),
             image: Group.image,
             createdAt: Group.createdAt,
             membersCount: sql`(
