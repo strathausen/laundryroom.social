@@ -344,7 +344,7 @@ export const Discussion = pgTable("discussion", {
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
-  }).$onUpdateFn(() => sql`now()`),
+  }).$onUpdateFn(() => new Date()),
 });
 
 export const UpsertDiscussionSchema = createInsertSchema(Discussion, {

@@ -1,45 +1,116 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, MessageCircle } from "lucide-react";
+import {
+  ChevronDown,
+  Edit3,
+  MenuIcon,
+  MessageCircle,
+  Trash,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import type { RouterOutputs } from "@laundryroom/api";
-import { UpsertDiscussionSchema } from "@laundryroom/db/schema";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  useForm,
-} from "@laundryroom/ui/form";
 import { Input } from "@laundryroom/ui/input";
-import { Textarea } from "@laundryroom/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@laundryroom/ui/popover";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
+import { DiscussionForm } from "./discussion-form";
 
 function DiscussionPost({
   discussion,
+  onDeleted,
+  onEdited,
+  groupId,
 }: {
   discussion: RouterOutputs["discussion"]["byGroupId"][number];
+  onDeleted: () => void;
+  onEdited: () => void;
+  groupId: string;
 }) {
+  const session = useSession();
   const [commentContent, setCommentContent] = useState("");
   const createCommentMutation = api.discussion.createComment.useMutation();
+  const deleteDiscussionMutation = api.discussion.delete.useMutation();
+  const [editMode, setEditMode] = useState(false);
   const commentsQuery = api.discussion.comments.useQuery(
     { discussionId: discussion.id },
     { enabled: false },
   );
   return (
-    <Box key={discussion.id} className="flex flex-col gap-2 px-4 py-3">
-      <p className="text-sm font-semibold">{discussion.user.name}</p>
-      <h2 className="text-xl uppercase">{discussion.title}</h2>
-      <p className="underline decoration-green-400 decoration-4">
-        {discussion.content}
-      </p>
-      <div>comments: {discussion.commentCount}</div>
+    <Box
+      key={discussion.id}
+      className={`flex flex-col gap-2 px-4 py-3 ${deleteDiscussionMutation.isPending ? "opacity-50" : ""}`}
+    >
+      <div className="flex justify-between">
+        <p className="text-sm font-semibold">{discussion.user.name}</p>
+        {session.data?.user.id === discussion.user.id && (
+          <div className="opacity-50 transition-opacity hover:opacity-100">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="p-2">
+                  <MenuIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                sideOffset={4}
+                className="flex w-auto flex-col p-2"
+              >
+                <Button
+                  onClick={async () => {
+                    await deleteDiscussionMutation.mutateAsync(discussion.id);
+                    onDeleted();
+                  }}
+                  variant={"ghost"}
+                  className="flex justify-between gap-2"
+                >
+                  delete <Trash className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={"ghost"}
+                  className="flex justify-between gap-2"
+                  onClick={() => setEditMode(true)}
+                >
+                  edit
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
+      </div>
+      {editMode ? (
+        <DiscussionForm
+          initialValues={{
+            id: discussion.id,
+            title: discussion.title,
+            content: discussion.content,
+          }}
+          onSuccess={() => {
+            onEdited();
+            setEditMode(false);
+          }}
+          onError={() => {
+            toast.error("Oh darn it. Something went wrong. ¯\\_(ツ)_/¯");
+          }}
+          onCancel={() => setEditMode(false)}
+          groupId={groupId}
+        />
+      ) : (
+        <>
+          <h2 className="text-xl uppercase">{discussion.title}</h2>
+          <p className="underline decoration-green-400 decoration-4">
+            {discussion.content}
+          </p>
+        </>
+      )}
       <div className="flex flex-col gap-2">
         {commentsQuery.data?.map((comment) => (
           <div key={comment.id} className="flex gap-2 bg-gray-100 p-2">
@@ -55,7 +126,8 @@ function DiscussionPost({
           variant="plattenbau"
         >
           <ChevronDown className="mr-2 h-4 w-4" />
-          load comments
+          load {discussion.commentCount} comment
+          {discussion.commentCount > 1 && "s"}
         </Button>
       )}
       <form
@@ -96,81 +168,36 @@ export function DiscussionWidget(props: { groupId: string }) {
   const discussionsQuery = api.discussion.byGroupId.useQuery({
     groupId: props.groupId,
   });
-  const discussionForm = useForm({
-    schema: UpsertDiscussionSchema,
-    defaultValues: {
-      groupId: props.groupId,
-      title: "",
-      content: "",
-    },
-  });
-  const upsertDiscussion = api.discussion.create.useMutation({
-    async onSuccess() {
-      discussionForm.reset();
-      setShowNewDiscussionForm(false);
-      await discussionsQuery.refetch();
-    },
-    onError() {
-      toast.error("Failed to create discussion");
-    },
-  });
   return (
     <div>
       <Button
         onClick={() => setShowNewDiscussionForm(true)}
         className="mx-auto flex"
       >
-        open a new thread
+        write something
       </Button>
       {showNewDiscussionForm && (
-        <Form {...discussionForm}>
-          <form
-            onSubmit={discussionForm.handleSubmit((data) => {
-              console.log(data);
-              upsertDiscussion.mutate(data);
-            })}
-          >
-            <fieldset className="mx-auto mb-9 mt-5 flex max-w-3xl flex-col space-y-4 border-2 border-black px-3 pb-5 pt-3">
-              <FormField
-                control={discussionForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={discussionForm.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>content</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} rows={5} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <div className="flex gap-4">
-                <Button type="submit">post</Button>
-                <Button
-                  type="button"
-                  onClick={() => setShowNewDiscussionForm(false)}
-                >
-                  cancel
-                </Button>
-              </div>
-            </fieldset>
-          </form>
-        </Form>
+        <DiscussionForm
+          groupId={props.groupId}
+          onSuccess={async () => {
+            await discussionsQuery.refetch();
+            setShowNewDiscussionForm(false);
+          }}
+          onError={() => {
+            toast.error("Oh darn it. Something went wrong. ¯\\_(ツ)_/¯");
+          }}
+          onCancel={() => setShowNewDiscussionForm(false)}
+        />
       )}
       <div className="m-auto my-7 flex max-w-3xl flex-col gap-5">
         {discussionsQuery.data?.map((discussion) => (
-          <DiscussionPost discussion={discussion} key={discussion.id} />
+          <DiscussionPost
+            discussion={discussion}
+            key={discussion.id}
+            groupId={props.groupId}
+            onDeleted={() => discussionsQuery.refetch()}
+            onEdited={() => discussionsQuery.refetch()}
+          />
         ))}
       </div>
     </div>

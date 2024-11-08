@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, count, eq } from "@laundryroom/db";
+import { and, count, desc, eq } from "@laundryroom/db";
 import {
   Comment,
   Discussion,
@@ -58,7 +58,7 @@ export const discussionRouter = {
       return discussion;
     }),
 
-  create: protectedProcedure
+  upsert: protectedProcedure
     .input(UpsertDiscussionSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -72,6 +72,14 @@ export const discussionRouter = {
         throw new Error("Not a member of the group");
       }
       const { moderationStatus } = await classifyModeration(input.content);
+      if (input.id) {
+        return ctx.db
+          .update(Discussion)
+          .set({ ...input, moderationStatus })
+          .where(
+            and(eq(Discussion.id, input.id), eq(Discussion.userId, userId)),
+          );
+      }
       return ctx.db
         .insert(Discussion)
         .values({ ...input, userId, moderationStatus });
@@ -108,6 +116,7 @@ export const discussionRouter = {
             columns: { id: true, name: true, image: true },
           },
         },
+        orderBy: desc(Discussion.createdAt),
       });
       const membershipQuery = ctx.db.query.GroupMember.findFirst({
         where: and(
@@ -174,6 +183,7 @@ export const discussionRouter = {
             columns: { id: true, name: true, image: true },
           },
         },
+        orderBy: desc(Comment.createdAt),
       });
     }),
 } satisfies TRPCRouterRecord;
