@@ -98,12 +98,19 @@ export const discussionRouter = {
   byGroupId: protectedProcedure
     .input(z.object({ groupId: z.string() }))
     .query(async ({ ctx, input }) => {
+      // TODO: paginate discussions
       const countsQuery = ctx.db
         .select({
           count: count(Comment.id),
           discussionId: Comment.discussionId,
         })
         .from(Comment)
+        .where(
+          and(
+            eq(Comment.groupId, input.groupId),
+            eq(Comment.moderationStatus, "ok"),
+          ),
+        )
         .groupBy(Comment.discussionId);
       const discussionsQuery = ctx.db.query.Discussion.findMany({
         where: and(
@@ -180,17 +187,20 @@ export const discussionRouter = {
       const discussionQuery = ctx.db
         .select({ id: Discussion.id, groupId: Discussion.groupId })
         .from(Discussion)
-        .where(eq(Discussion.id, input.discussionId))
-        .as("discussionGroupId");
-      const membershipQuery = ctx.db
-        .select({ role: GroupMember.role })
-        .from(GroupMember)
-        .where(
-          and(
-            eq(GroupMember.groupId, discussionQuery.groupId),
-            eq(GroupMember.userId, ctx.session.user.id),
-          ),
-        );
+        .where(eq(Discussion.id, input.discussionId));
+      const membershipQuery = discussionQuery.then(([discussion]) =>
+        discussion
+          ? ctx.db
+              .select({ role: GroupMember.role })
+              .from(GroupMember)
+              .where(
+                and(
+                  eq(GroupMember.groupId, discussion.groupId),
+                  eq(GroupMember.userId, ctx.session.user.id),
+                ),
+              )
+          : [],
+      );
       const commentsQuery = await ctx.db.query.Comment.findMany({
         where: and(
           eq(Comment.discussionId, input.discussionId),
@@ -213,13 +223,14 @@ export const discussionRouter = {
         commentsQuery,
       ]);
       if (!membership || membership.role === "banned") {
-        return { comments: [] };
+        return { comments: [], nextCursor: undefined, prevCursor: undefined };
       }
-      const lastComment =
+      const nextComment =
         comments.length > input.limit ? comments.pop() : undefined;
       return {
-        comments,
-        nextCursor: lastComment?.createdAt.toISOString() ?? undefined,
+        comments: comments.reverse(),
+        nextCursor: undefined,
+        prevCursor: nextComment?.createdAt.toISOString() ?? undefined,
       };
     }),
 } satisfies TRPCRouterRecord;

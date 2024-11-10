@@ -31,7 +31,7 @@ function PostCard(props: {
         </Link>
       </View>
       <Pressable onPress={props.onDelete}>
-        <Text className="font-bold uppercase text-primary">Delete</Text>
+        <Text className="font-bold uppercase text-primary">delete</Text>
       </Pressable>
     </View>
   );

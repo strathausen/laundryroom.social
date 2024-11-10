@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   ChevronDown,
+  ChevronUp,
   Edit3,
   MenuIcon,
   MessageCircle,
@@ -45,6 +46,7 @@ function DiscussionPost({
     {
       enabled: false,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      getPreviousPageParam: (lastPage) => lastPage.prevCursor,
     },
   );
   return (
@@ -117,10 +119,25 @@ function DiscussionPost({
         </>
       )}
       <div className="my-2">
+        {commentsQuery.hasPreviousPage && (
+          <Button
+            onClick={() => commentsQuery.fetchPreviousPage()}
+            disabled={commentsQuery.isFetchingPreviousPage}
+            variant="plattenbau"
+            className="mb-2"
+          >
+            <ChevronUp className="mr-2 h-4 w-4" />
+            load older comments
+          </Button>
+        )}
         <div className="flex flex-col gap-2">
           {commentsQuery.data?.pages.map((page) =>
             page.comments.map((comment) => (
-              <div key={comment.id} className="flex gap-2 bg-gray-100 p-2">
+              <div
+                key={comment.id}
+                className="flex gap-2 bg-gray-100 p-2"
+                title={comment.createdAt.toDateString()}
+              >
                 <p className="font-semibold">
                   {comment.user.name ?? "anonymous"}:
                 </p>
@@ -138,16 +155,6 @@ function DiscussionPost({
             <ChevronDown className="mr-2 h-4 w-4" />
             load {discussion.commentCount} comment
             {discussion.commentCount > 1 && "s"}
-          </Button>
-        )}
-        {commentsQuery.hasNextPage && (
-          <Button
-            onClick={() => commentsQuery.fetchNextPage()}
-            disabled={commentsQuery.isFetchingNextPage}
-            variant="plattenbau"
-          >
-            <ChevronDown className="mr-2 h-4 w-4" />
-            load more comments
           </Button>
         )}
       </div>
