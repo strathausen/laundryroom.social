@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
 import { Group, GroupMember, User } from "@laundryroom/db/schema";
+import { sendEmail } from "@laundryroom/email";
 import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -184,12 +185,33 @@ export const groupRouter = {
 
   join: protectedProcedure
     .input(z.object({ groupId: z.string() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.db.insert(GroupMember).values({
+    .mutation(async ({ ctx, input }) => {
+      const res = await ctx.db.insert(GroupMember).values({
         groupId: input.groupId,
         userId: ctx.session.user.id,
         role: "member",
       });
+      // send a notification to the group owner
+      const ownerMembership = await ctx.db.query.GroupMember.findFirst({
+        where: and(
+          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.role, "owner"),
+        ),
+        with: {
+          user: { columns: { id: true, name: true, email: true } },
+          group: true,
+        },
+      });
+      if (!ownerMembership) {
+        // should not happen™
+        throw new Error("group has no owner");
+      }
+      await sendEmail(ownerMembership.user.email, "newMember", {
+        member: ctx.session.user,
+        group: ownerMembership.group,
+        user: ownerMembership.user,
+      });
+      return res;
     }),
 
   leave: protectedProcedure
