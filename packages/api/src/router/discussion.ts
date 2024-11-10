@@ -177,8 +177,21 @@ export const discussionRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      // TODO check if user is a member of the group of the discussion
-      const comments = await ctx.db.query.Comment.findMany({
+      const discussionQuery = ctx.db
+        .select({ id: Discussion.id, groupId: Discussion.groupId })
+        .from(Discussion)
+        .where(eq(Discussion.id, input.discussionId))
+        .as("discussionGroupId");
+      const membershipQuery = ctx.db
+        .select({ role: GroupMember.role })
+        .from(GroupMember)
+        .where(
+          and(
+            eq(GroupMember.groupId, discussionQuery.groupId),
+            eq(GroupMember.userId, ctx.session.user.id),
+          ),
+        );
+      const commentsQuery = await ctx.db.query.Comment.findMany({
         where: and(
           eq(Comment.discussionId, input.discussionId),
           eq(Comment.moderationStatus, "ok"),
@@ -195,6 +208,13 @@ export const discussionRouter = {
         limit: input.limit + 1,
         orderBy: desc(Comment.createdAt),
       });
+      const [[membership], comments] = await Promise.all([
+        membershipQuery,
+        commentsQuery,
+      ]);
+      if (!membership || membership.role === "banned") {
+        return { comments: [] };
+      }
       const lastComment =
         comments.length > input.limit ? comments.pop() : undefined;
       return {
