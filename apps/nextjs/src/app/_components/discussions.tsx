@@ -49,6 +49,9 @@ function DiscussionPost({
       getPreviousPageParam: (lastPage) => lastPage.prevCursor,
     },
   );
+  const [postedComments, setPostedComments] = useState<
+    RouterOutputs["discussion"]["comments"]["comments"]
+  >([]);
   return (
     <Box
       key={discussion.id}
@@ -131,8 +134,10 @@ function DiscussionPost({
           </Button>
         )}
         <div className="flex flex-col gap-2">
-          {commentsQuery.data?.pages.map((page) =>
-            page.comments.map((comment) => (
+          {(commentsQuery.data?.pages ?? [])
+            .flatMap((page) => page.comments)
+            .concat(postedComments)
+            .map((comment) => (
               <div
                 key={comment.id}
                 className="flex gap-2 bg-gray-100 p-2"
@@ -143,12 +148,14 @@ function DiscussionPost({
                 </p>
                 <p>{comment.content}</p>
               </div>
-            )),
-          )}
+            ))}
         </div>
         {!commentsQuery.isFetched && discussion.commentCount > 0 && (
           <Button
-            onClick={() => commentsQuery.refetch()}
+            onClick={async () => {
+              await commentsQuery.refetch();
+              setPostedComments([]);
+            }}
             disabled={commentsQuery.isFetching}
             variant="plattenbau"
           >
@@ -162,12 +169,27 @@ function DiscussionPost({
         className="flex gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
-          // TODO optimistic update
+          if (!session.data?.user.id) {
+            toast.error("You need to be signed in to comment");
+            return;
+          }
+          setPostedComments((postedComments) => [
+            ...postedComments,
+            {
+              id: Math.random().toString(),
+              content: commentContent,
+              user: {
+                ...session.data.user,
+                name: session.data.user.name ?? "anonymous",
+                image: session.data.user.image ?? null,
+              },
+              createdAt: new Date(),
+            },
+          ]);
           await createCommentMutation.mutateAsync({
             discussionId: discussion.id,
             content: commentContent,
           });
-          await commentsQuery.refetch();
           setCommentContent("");
         }}
       >
