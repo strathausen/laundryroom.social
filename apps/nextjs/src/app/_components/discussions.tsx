@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   ChevronDown,
-  ChevronUp,
   Edit3,
   MenuIcon,
   MessageCircle,
@@ -122,14 +121,29 @@ function DiscussionPost({
         </>
       )}
       <div className="my-2">
+        {!commentsQuery.isFetched && discussion.commentCount > 0 && (
+          <Button
+            onClick={async () => {
+              await commentsQuery.refetch();
+              setPostedComments([]);
+            }}
+            disabled={commentsQuery.isFetching}
+            variant="plattenbau"
+            className="mb-3"
+          >
+            <ChevronDown className="mr-2 h-4 w-4" />
+            load {discussion.commentCount} comment
+            {discussion.commentCount > 1 && "s"}
+          </Button>
+        )}
         {commentsQuery.hasPreviousPage && (
           <Button
             onClick={() => commentsQuery.fetchPreviousPage()}
             disabled={commentsQuery.isFetchingPreviousPage}
             variant="plattenbau"
-            className="mb-2"
+            className="mb-3"
           >
-            <ChevronUp className="mr-2 h-4 w-4" />
+            <ChevronDown className="mr-2 h-4 w-4" />
             load older comments
           </Button>
         )}
@@ -150,20 +164,6 @@ function DiscussionPost({
               </div>
             ))}
         </div>
-        {!commentsQuery.isFetched && discussion.commentCount > 0 && (
-          <Button
-            onClick={async () => {
-              await commentsQuery.refetch();
-              setPostedComments([]);
-            }}
-            disabled={commentsQuery.isFetching}
-            variant="plattenbau"
-          >
-            <ChevronDown className="mr-2 h-4 w-4" />
-            load {discussion.commentCount} comment
-            {discussion.commentCount > 1 && "s"}
-          </Button>
-        )}
       </div>
       <form
         className="flex gap-4"

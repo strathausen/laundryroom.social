@@ -71,11 +71,12 @@ check it out and join the conversation!`,
     discussion,
     comment,
     user,
+    groupId,
   }: {
     comment: {
-      id: string;
       content: string;
     };
+    groupId: string;
   } & UserInput &
     DiscussionInput) {
     return {
@@ -83,7 +84,7 @@ check it out and join the conversation!`,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       body: `Dear ${user.name || "human"},
 
-A new comment has been posted on the discussion "${discussion.title}" on https://www.laundromat.social/discussions/${discussion.id}
+A new comment has been posted on the discussion "${discussion.title}" on https://www.laundromat.social/groups/${groupId}
 
 Content: ${comment.content}
 

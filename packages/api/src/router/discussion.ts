@@ -8,6 +8,7 @@ import {
   GroupMember,
   UpsertDiscussionSchema,
 } from "@laundryroom/db/schema";
+import { sendEmail } from "@laundryroom/email";
 import { classifyModeration } from "@laundryroom/llm";
 
 import { protectedProcedure } from "../trpc";
@@ -167,6 +168,29 @@ export const discussionRouter = {
         throw new Error("Something went wrong");
       }
       const { moderationStatus } = await classifyModeration(input.content);
+      // get all users involved in the discussion
+      const comments = await ctx.db.query.Comment.findMany({
+        where: eq(Comment.discussionId, input.discussionId),
+        with: { user: true },
+      });
+      const users: Record<string, (typeof comments)[number]["user"]> = {};
+      comments.forEach((comment) => (users[comment.userId] = comment.user));
+      // notify participating users
+      await Promise.all(
+        Object.keys(users).map(async (userId) => {
+          const user = users[userId];
+          if (!user?.email) {
+            return;
+          }
+          const { email } = user;
+          await sendEmail(email, "newComment", {
+            user: { ...user, email },
+            discussion,
+            comment: input,
+            groupId: discussion.groupId,
+          });
+        }),
+      );
       return ctx.db.insert(Comment).values({
         ...input,
         userId,
