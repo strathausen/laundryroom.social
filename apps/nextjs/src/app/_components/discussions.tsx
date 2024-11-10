@@ -40,9 +40,12 @@ function DiscussionPost({
   const createCommentMutation = api.discussion.createComment.useMutation();
   const deleteDiscussionMutation = api.discussion.delete.useMutation();
   const [editMode, setEditMode] = useState(false);
-  const commentsQuery = api.discussion.comments.useQuery(
-    { discussionId: discussion.id },
-    { enabled: false },
+  const commentsQuery = api.discussion.comments.useInfiniteQuery(
+    { discussionId: discussion.id, limit: 5 },
+    {
+      enabled: false,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
   );
   return (
     <Box
@@ -50,7 +53,9 @@ function DiscussionPost({
       className={`flex flex-col gap-2 px-4 py-3 ${deleteDiscussionMutation.isPending ? "opacity-50" : ""}`}
     >
       <div className="flex justify-between">
-        <p className="text-sm font-semibold">{discussion.user.name}</p>
+        <p className="text-sm font-semibold">
+          {discussion.user.name ?? "anonymous"}
+        </p>
         {session.data?.user.id === discussion.user.id && (
           <div className="opacity-50 transition-opacity hover:opacity-100">
             <Popover>
@@ -111,25 +116,41 @@ function DiscussionPost({
           </p>
         </>
       )}
-      <div className="flex flex-col gap-2">
-        {commentsQuery.data?.map((comment) => (
-          <div key={comment.id} className="flex gap-2 bg-gray-100 p-2">
-            <p className="font-semibold">{comment.user.name}:</p>
-            <p>{comment.content}</p>
-          </div>
-        ))}
+      <div className="my-2">
+        <div className="flex flex-col gap-2">
+          {commentsQuery.data?.pages.map((page) =>
+            page.comments.map((comment) => (
+              <div key={comment.id} className="flex gap-2 bg-gray-100 p-2">
+                <p className="font-semibold">
+                  {comment.user.name ?? "anonymous"}:
+                </p>
+                <p>{comment.content}</p>
+              </div>
+            )),
+          )}
+        </div>
+        {!commentsQuery.isFetched && discussion.commentCount > 0 && (
+          <Button
+            onClick={() => commentsQuery.refetch()}
+            disabled={commentsQuery.isFetching}
+            variant="plattenbau"
+          >
+            <ChevronDown className="mr-2 h-4 w-4" />
+            load {discussion.commentCount} comment
+            {discussion.commentCount > 1 && "s"}
+          </Button>
+        )}
+        {commentsQuery.hasNextPage && (
+          <Button
+            onClick={() => commentsQuery.fetchNextPage()}
+            disabled={commentsQuery.isFetchingNextPage}
+            variant="plattenbau"
+          >
+            <ChevronDown className="mr-2 h-4 w-4" />
+            load more comments
+          </Button>
+        )}
       </div>
-      {!commentsQuery.isFetched && discussion.commentCount > 0 && (
-        <Button
-          onClick={() => commentsQuery.refetch()}
-          disabled={commentsQuery.isFetching}
-          variant="plattenbau"
-        >
-          <ChevronDown className="mr-2 h-4 w-4" />
-          load {discussion.commentCount} comment
-          {discussion.commentCount > 1 && "s"}
-        </Button>
-      )}
       <form
         className="flex gap-4"
         onSubmit={async (e) => {

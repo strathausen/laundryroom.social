@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, count, desc, eq } from "@laundryroom/db";
+import { and, count, desc, eq, lt } from "@laundryroom/db";
 import {
   Comment,
   Discussion,
@@ -169,13 +169,22 @@ export const discussionRouter = {
     }),
 
   comments: protectedProcedure
-    .input(z.object({ discussionId: z.string() }))
+    .input(
+      z.object({
+        discussionId: z.string(),
+        cursor: z.string().nullish(),
+        limit: z.number().max(50).default(10),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       // TODO check if user is a member of the group of the discussion
-      return ctx.db.query.Comment.findMany({
+      const comments = await ctx.db.query.Comment.findMany({
         where: and(
           eq(Comment.discussionId, input.discussionId),
           eq(Comment.moderationStatus, "ok"),
+          input.cursor
+            ? lt(Comment.createdAt, new Date(input.cursor))
+            : undefined,
         ),
         columns: { id: true, content: true, createdAt: true },
         with: {
@@ -183,7 +192,14 @@ export const discussionRouter = {
             columns: { id: true, name: true, image: true },
           },
         },
+        limit: input.limit + 1,
         orderBy: desc(Comment.createdAt),
       });
+      const lastComment =
+        comments.length > input.limit ? comments.pop() : undefined;
+      return {
+        comments,
+        nextCursor: lastComment?.createdAt.toISOString() ?? undefined,
+      };
     }),
 } satisfies TRPCRouterRecord;
