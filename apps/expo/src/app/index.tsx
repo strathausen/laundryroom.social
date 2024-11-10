@@ -43,7 +43,7 @@ function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const { mutate, error } = api.discussion.create.useMutation({
+  const { mutate, error } = api.discussion.upsert.useMutation({
     onSuccess() {
       setTitle("");
       setContent("");
