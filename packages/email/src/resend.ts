@@ -1,48 +1,17 @@
 import { Resend } from "resend";
 
+import { emailTemplates } from "./email-templates";
 import { env } from "./env";
 
 const resend = new Resend(env.RESEND_KEY);
 
-const templates = {
-  newEvent({
-    isNew,
-    group,
-    meetup,
-  }: {
-    isNew: boolean;
-    meetup: {
-      id: string;
-      title: string;
-      description?: string;
-      startTime: Date;
-      location?: string;
-    };
-    group: {
-      id: string;
-      name: string;
-    };
-  }) {
-    return {
-      subject: `${isNew ? "New Meetup:" : "Meetup changed:"} ${meetup.title} in ${group.name}`,
-      body: `Dear human,
-
-A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
-
-Title: ${meetup.title}
-${meetup.description ? `Description: ${meetup.description}` : ""}
-
-Have a great rest of your day!`,
-    };
-  },
-};
-
-export async function sendEmail<K extends keyof typeof templates>(
+export async function sendEmail<K extends keyof typeof emailTemplates>(
   to: string,
   template: K,
-  params: Parameters<(typeof templates)[K]>[0],
+  params: Parameters<(typeof emailTemplates)[K]>[0],
 ): Promise<void> {
-  const renderedTemplate = templates[template](params);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+  const renderedTemplate = emailTemplates[template](params as any);
   await resend.emails.send({
     to,
     from: "events@laundryroom.social",
