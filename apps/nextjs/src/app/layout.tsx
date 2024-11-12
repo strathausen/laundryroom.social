@@ -12,6 +12,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import "~/app/globals.css";
 
 import { auth } from "@laundryroom/auth";
+import { CookieConsent } from "@laundryroom/ui/cookie-consent";
 
 import { env } from "~/env";
 import { Footer } from "./_components/footer";
@@ -75,6 +76,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <ThemeToggle />
           </div>
           <Toaster />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
