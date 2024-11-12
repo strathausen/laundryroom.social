@@ -213,19 +213,28 @@ function DiscussionPost({
   );
 }
 
-export function DiscussionWidget(props: { groupId: string }) {
+export function DiscussionWidget(props: {
+  groupId: string;
+  isMember: boolean;
+}) {
   const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false);
   const discussionsQuery = api.discussion.byGroupId.useQuery({
     groupId: props.groupId,
   });
   return (
     <div>
-      <Button
-        onClick={() => setShowNewDiscussionForm(true)}
-        className="mx-auto flex"
-      >
-        write something
-      </Button>
+      {props.isMember ? (
+        <Button
+          onClick={() => setShowNewDiscussionForm(true)}
+          className="mx-auto flex"
+        >
+          write something
+        </Button>
+      ) : (
+        <div>
+          <p>you need to be a member to post</p>
+        </div>
+      )}
       {showNewDiscussionForm && (
         <DiscussionForm
           groupId={props.groupId}

@@ -393,11 +393,11 @@ export function GroupDetail() {
       {/* don't show discussion etc if not logged in */}
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <LoginCta message="log in to join the discussion">
-        <DiscussionWidget groupId={params.groupId} />
+        <DiscussionWidget groupId={params.groupId} isMember={!!membership} />
       </LoginCta>
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
       <LoginCta message="log in to see members">
-        <MembersWidget groupId={params.groupId} />
+        {membership && <MembersWidget groupId={params.groupId} />}
       </LoginCta>
       <br className="mb-12" />
     </div>
