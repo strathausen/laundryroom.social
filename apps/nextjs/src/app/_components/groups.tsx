@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@laundryroom/ui/select";
+import { ShareMenu } from "@laundryroom/ui/share-menu";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
@@ -273,6 +274,12 @@ export function GroupDetail() {
             {line}
           </p>
         ))}
+        <div className="flex items-end justify-end">
+          <ShareMenu
+            url={document.baseURI}
+            title={groupQuery.data.group.name}
+          />
+        </div>
       </Box>
       <div className="flec-col flex justify-center">
         {/* show edit button if I'm the owner */}
