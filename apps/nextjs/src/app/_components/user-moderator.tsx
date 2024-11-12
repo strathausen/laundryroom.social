@@ -98,21 +98,27 @@ export function UserModerator({
             <Button
               onClick={() => changeRole("admin")}
               className={`rounded-none ${role === "admin" ? "bg-green-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
-              disabled={changeUserRole.isPending}
+              disabled={
+                changeUserRole.isPending || ["owner", "admin"].includes(role)
+              }
             >
               admin
             </Button>
             <Button
               onClick={() => changeRole("member")}
               className={`rounded-none ${role === "member" ? "bg-yellow-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
-              disabled={changeUserRole.isPending}
+              disabled={
+                changeUserRole.isPending || ["owner", "member"].includes(role)
+              }
             >
               member
             </Button>
             <Button
               onClick={() => changeRole("banned")}
               className={`rounded-none ${role === "banned" ? "bg-red-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
-              disabled={changeUserRole.isPending}
+              disabled={
+                changeUserRole.isPending || ["owner", "banned"].includes(role)
+              }
             >
               ban
             </Button>
