@@ -20,6 +20,7 @@ export const groupRouter = {
             description: sql`left(${Group.description}, 100)`.mapWith(String),
             image: Group.image,
             createdAt: Group.createdAt,
+            status: Group.status,
             membersCount: sql`(
               select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
               and ${GroupMember.role} != 'banned'
@@ -49,6 +50,7 @@ export const groupRouter = {
           description: Group.description,
           image: Group.image,
           createdAt: Group.createdAt,
+          status: Group.status,
           rank: sql`ts_rank_cd(${matchQuery})`,
           similarity: similarityQuery,
           membersCount: sql`(
@@ -107,6 +109,7 @@ export const groupRouter = {
         description: Group.description,
         image: Group.image,
         createdAt: Group.createdAt,
+        status: Group.status,
         membersCount: sql`(
           select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
           and ${GroupMember.role} != 'banned'
