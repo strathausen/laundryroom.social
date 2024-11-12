@@ -23,8 +23,8 @@ export const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-2 left-2 right-2 z-50 flex flex-col items-center justify-around bg-gray-800/70 p-4 text-white backdrop-blur-xl sm:flex-row">
-      <p className="mb-2 sm:mb-0">
+    <div className="fixed bottom-3 left-3 right-3 z-50 flex flex-col items-center justify-center gap-4 border-2 border-black bg-gray-800/75 p-2 text-white shadow-[2px_2px_0px_0px_#4ade80] backdrop-blur-xl sm:flex-row">
+      <p>
         🍪🍪🍪 this website uses cookies for basic functionality. no tracking.
         no ads. no analytics.{" "}
         <Link
@@ -36,8 +36,8 @@ export const CookieConsent = () => {
         </Link>{" "}
         🍪🍪🍪
       </p>
-      <Button onClick={handleAccept} variant="plattenbau">
-        ok. got it. 🌟
+      <Button onClick={handleAccept} variant="plattenbau" className="mb-2">
+        ok fine. 🌟
       </Button>
     </div>
   );
