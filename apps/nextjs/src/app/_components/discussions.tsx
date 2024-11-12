@@ -40,6 +40,7 @@ function DiscussionPost({
   const createCommentMutation = api.discussion.createComment.useMutation();
   const deleteDiscussionMutation = api.discussion.delete.useMutation();
   const [editMode, setEditMode] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const commentsQuery = api.discussion.comments.useInfiniteQuery(
     { discussionId: discussion.id, limit: 5 },
     {
@@ -72,24 +73,50 @@ function DiscussionPost({
                 sideOffset={4}
                 className="flex w-auto flex-col p-2"
               >
-                <Button
-                  onClick={async () => {
-                    await deleteDiscussionMutation.mutateAsync(discussion.id);
-                    onDeleted();
-                  }}
-                  variant={"ghost"}
-                  className="flex justify-between gap-2"
-                >
-                  delete <Trash className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={"ghost"}
-                  className="flex justify-between gap-2"
-                  onClick={() => setEditMode(true)}
-                >
-                  edit
-                  <Edit3 className="h-4 w-4" />
-                </Button>
+                {showDeleteConfirmation ? (
+                  <div className="flex flex-col items-center gap-2">
+                    really delete??
+                    <Button
+                      onClick={async () => {
+                        await deleteDiscussionMutation.mutateAsync(
+                          discussion.id,
+                        );
+                        onDeleted();
+                      }}
+                      variant={"destructive"}
+                      className="flex p-2"
+                    >
+                      yes delete!! 🔥🗑️
+                    </Button>
+                    <Button
+                      onClick={() => setShowDeleteConfirmation(false)}
+                      variant={"ghost"}
+                      className="flex p-2"
+                    >
+                      nope 🙅 keep it
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setShowDeleteConfirmation(true);
+                      }}
+                      variant={"ghost"}
+                      className="flex justify-between gap-2"
+                    >
+                      delete <Trash className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={"ghost"}
+                      className="flex justify-between gap-2"
+                      onClick={() => setEditMode(true)}
+                    >
+                      edit
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </PopoverContent>
             </Popover>
           </div>
