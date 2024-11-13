@@ -23,7 +23,7 @@ export const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-3 left-3 right-3 z-50 flex flex-col items-center justify-center gap-4 border-2 border-black bg-gray-800/75 p-2 text-white shadow-[2px_2px_0px_0px_#4ade80] backdrop-blur-xl sm:flex-row">
+    <div className="font-bold fixed bottom-3 left-3 right-3 z-50 flex flex-col items-center justify-center gap-4 border-2 border-black bg-gray-800/75 p-2 text-white shadow-[2px_2px_0px_0px_#4ade80] backdrop-blur-xl sm:flex-row">
       <p>
         🍪🍪🍪 this website uses cookies for basic functionality. no tracking.
         no ads. no analytics.{" "}
