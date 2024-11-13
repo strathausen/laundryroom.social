@@ -2,7 +2,12 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
-import { Group, GroupMember, User } from "@laundryroom/db/schema";
+import {
+  Group,
+  GroupMember,
+  GroupPromotion,
+  User,
+} from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 import { classify } from "@laundryroom/llm";
 
@@ -75,6 +80,13 @@ export const groupRouter = {
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
       const groupQuery = ctx.db.query.Group.findFirst({
+        columns: {
+          id: true,
+          name: true,
+          description: true,
+          image: true,
+          status: true,
+        },
         where: eq(Group.id, input.id),
         with: {
           members: {
@@ -83,6 +95,13 @@ export const groupRouter = {
             with: { user: { columns: { name: true, id: true } } },
           },
         },
+      });
+      const promotionQuery = ctx.db.query.GroupPromotion.findFirst({
+        columns: { id: true },
+        where: and(
+          eq(GroupPromotion.groupId, input.id),
+          eq(GroupPromotion.promotionStatus, "promotable"),
+        ),
       });
       const membershipQuery = user
         ? ctx.db.query.GroupMember.findFirst({
@@ -93,11 +112,12 @@ export const groupRouter = {
             ),
           })
         : null;
-      const [group, membership] = await Promise.all([
+      const [group, membership, promotion] = await Promise.all([
         groupQuery,
         membershipQuery,
+        promotionQuery,
       ]);
-      return { group, membership };
+      return { group, membership, promotion };
     }),
 
   myGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -142,11 +162,14 @@ export const groupRouter = {
             eq(GroupMember.groupId, input.id),
             eq(GroupMember.userId, ctx.session.user.id),
           ),
-          with: { user: { columns: { goodPerson: true } } },
+          with: { user: { columns: { role: true } } },
         });
         if (!membership || !["owner", "admin"].includes(membership.role)) {
           throw new Error("not authorized");
         }
+        // todo don't classify if the user role is admin or owner or good person
+        // todo classify only if the description/name has changed
+        // todo also classify name
         const classification = await classify(input.description);
         const data = { ...input, ...classification };
         return ctx.db.update(Group).set(data).where(eq(Group.id, input.id));

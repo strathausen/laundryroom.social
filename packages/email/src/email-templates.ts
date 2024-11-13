@@ -103,4 +103,26 @@ ${member.name} has joined your group "${group.name}" on https://www.laundromat.s
 Say hi and welcome them to the group!`,
     };
   },
+  promotionStatusChange({
+    group,
+    user,
+    status,
+    message,
+  }: {
+    status: "not_interested" | "pending";
+    message: string;
+  } & GroupInput &
+    UserInput) {
+    return {
+      subject: `Promotion status changed: ${group.name}`,
+      body: `Dear platform owner,
+      
+  The user ${user.email} has requested promotion for the group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+
+  Status: ${status}
+  Message: ${message}
+
+  Have a great rest of your day!`,
+    };
+  },
 };

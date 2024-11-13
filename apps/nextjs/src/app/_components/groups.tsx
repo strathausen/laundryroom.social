@@ -39,6 +39,7 @@ import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
+import { GroupPromoter } from "./group/group-promoter";
 import { LoginCta } from "./login-cta";
 import { UpsertMeetupForm } from "./meetup";
 import { MembersWidget } from "./members";
@@ -267,7 +268,7 @@ export function GroupDetail() {
   if (groupQuery.isLoading || !groupQuery.data?.group) {
     return <div className="flex flex-col">Loading group...</div>;
   }
-  const { membership, group } = groupQuery.data;
+  const { membership, group, promotion } = groupQuery.data;
 
   return (
     <div className="flex flex-col gap-5 text-black">
@@ -326,6 +327,12 @@ export function GroupDetail() {
               groupId={params.groupId}
               status={group.status}
             />
+            {promotion && (
+              <GroupPromoter
+                groupId={params.groupId}
+                onDone={() => groupQuery.refetch()}
+              />
+            )}
           </div>
         )}
         {/* show join button if no membership */}
@@ -419,10 +426,7 @@ export function GroupDetail() {
         {membership ? (
           <MembersWidget groupId={params.groupId} />
         ) : (
-          <p>
-            there are {group.members.length} members. join this group to see
-            more.
-          </p>
+          <p>join this group to get to know the members.</p>
         )}
       </LoginCta>
       <br className="mb-12" />

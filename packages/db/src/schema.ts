@@ -13,6 +13,14 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const UserRole = pgEnum("user_role", [
+  "user",
+  "good_person", // a user that has been verified as a good person and doesn't need LLMs to check their contributions
+  "moderator", // can moderate all groups and discussions
+  "admin", // can manage all groups and users
+  "owner",
+]);
+
 export const User = pgTable("user", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }),
@@ -23,7 +31,8 @@ export const User = pgTable("user", {
   }),
   image: varchar("image", { length: 255 }),
   bio: text("bio"),
-  goodPerson: timestamp("good_person"), // this person is so good, it does not require llm reviews
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  role: UserRole("role").default("user").notNull(),
 });
 
 export const UserRelations = relations(User, ({ many }) => ({
@@ -126,6 +135,19 @@ export const ModerationStatus = pgEnum("group_moderation_tags", [
   "inappropriate",
 ]);
 
+// as a groth hack, I offer to manually promote chosen groups free of charge
+// this is a way to get more users to use the platform and get feedback
+// e.g. by printing out a QR code to the group page and sticking it to a wall
+// or on a traffic light pole, or by sharing the group on social media
+export const GroupPromotionStatus = pgEnum("group_promotion_status", [
+  "promotable",
+  "pending",
+  "approved",
+  "rejected",
+  "promoted",
+  "not_interested",
+]);
+
 export const Group = pgTable(
   "group",
   {
@@ -167,12 +189,16 @@ export const UpsertGroupSchema = createInsertSchema(Group, {
   aiSearchText: true,
 });
 
-export const GroupRelations = relations(Group, ({ many }) => ({
+export const GroupRelations = relations(Group, ({ many, one }) => ({
   members: many(GroupMember),
   meetups: many(Meetup),
   comments: many(Comment),
   messages: many(Discussion),
   notifications: many(Notification),
+  promotion: one(GroupPromotion, {
+    fields: [Group.id],
+    references: [GroupPromotion.groupId],
+  }),
 }));
 
 export const CreateGroupSchema = createInsertSchema(Group, {
@@ -419,5 +445,38 @@ export const UpdateProfileSchema = createInsertSchema(User, {
 }).omit({
   email: true,
   emailVerified: true,
-  goodPerson: true,
+  role: true,
 });
+
+export const GroupPromotion = pgTable("group_promotion", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  groupId: uuid("group_id")
+    .notNull()
+    .unique()
+    .references(() => Group.id, {
+      onDelete: "cascade",
+    }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => User.id, {
+      onDelete: "cascade",
+    }),
+  message: text("message"),
+  promotionStatus: GroupPromotionStatus("promotion_status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdateFn(() => new Date()),
+});
+
+export const GroupPromotionRelations = relations(GroupPromotion, ({ one }) => ({
+  group: one(Group, {
+    fields: [GroupPromotion.groupId],
+    references: [Group.id],
+  }),
+  user: one(User, {
+    fields: [GroupPromotion.userId],
+    references: [User.id],
+  }),
+}));
