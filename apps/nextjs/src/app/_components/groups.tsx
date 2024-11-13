@@ -406,14 +406,24 @@ export function GroupDetail() {
           {!listMeetups.data?.length && <p>no upcoming meetups</p>}
         </div>
       </div>
-      {/* don't show discussion etc if not logged in */}
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <LoginCta message="log in to join the discussion">
-        <DiscussionWidget groupId={params.groupId} isMember={!!membership} />
+        {membership ? (
+          <DiscussionWidget groupId={params.groupId} />
+        ) : (
+          <p>join this group to participate in the discussion</p>
+        )}
       </LoginCta>
       <h2 className="border-b-2 border-black text-2xl uppercase">members</h2>
       <LoginCta message="log in to see members">
-        {membership && <MembersWidget groupId={params.groupId} />}
+        {membership ? (
+          <MembersWidget groupId={params.groupId} />
+        ) : (
+          <p>
+            there are {group.members.length} members. join this group to see
+            more.
+          </p>
+        )}
       </LoginCta>
       <br className="mb-12" />
     </div>
