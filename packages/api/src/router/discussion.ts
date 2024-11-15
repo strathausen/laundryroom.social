@@ -191,12 +191,15 @@ export const discussionRouter = {
           });
         }),
       );
-      return ctx.db.insert(Comment).values({
-        ...input,
-        userId,
-        groupId: discussion.groupId,
-        moderationStatus,
-      });
+      return ctx.db
+        .insert(Comment)
+        .values({
+          ...input,
+          userId,
+          groupId: discussion.groupId,
+          moderationStatus,
+        })
+        .returning({ id: Comment.id });
     }),
 
   comments: protectedProcedure
@@ -255,6 +258,16 @@ export const discussionRouter = {
         comments: comments.reverse(),
         nextCursor: undefined,
         prevCursor: nextComment?.createdAt.toISOString() ?? undefined,
+        cursor: input.cursor,
       };
+    }),
+
+  deleteComment: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      return ctx.db
+        .delete(Comment)
+        .where(and(eq(Comment.id, input), eq(Comment.userId, userId)));
     }),
 } satisfies TRPCRouterRecord;

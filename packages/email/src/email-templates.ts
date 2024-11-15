@@ -44,7 +44,7 @@ export const emailTemplates = {
       subject: `${isNew ? "New Meetup:" : "Meetup changed:"} ${meetup.title} in ${group.name}`,
       body: `Dear human,
 
-A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundryroom.social/groups/${group.id}?meetupId=${meetup.id}
 
 Title: ${meetup.title}
 ${meetup.description ? `Description: ${meetup.description}` : ""}
@@ -58,7 +58,7 @@ Have a great rest of your day!`,
       subject: `New Discussion: ${discussion.title} in ${group.name}`,
       body: `Dear human,
 
-A discussion has been created in your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+A discussion has been created in your group "${group.name}" on https://www.laundryroom.social/groups/${group.id}?discussionId=${discussion.id}
 
 Title: ${discussion.title}
 Content: ${discussion.content}
@@ -84,7 +84,7 @@ check it out and join the conversation!`,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       body: `Dear ${user.name || "human"},
 
-A new comment has been posted on the discussion "${discussion.title}" on https://www.laundromat.social/groups/${groupId}
+A new comment has been posted on the discussion "${discussion.title}" on https://www.laundryroom.social/groups/${groupId}?discussionId=${discussion.id}
 
 Content: ${comment.content}
 
@@ -98,7 +98,7 @@ check it out!`,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       body: `Dear ${user.name || "human"},
 
-${member.name} has joined your group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+${member.name} has joined your group "${group.name}" on https://www.laundryroom.social/groups/${group.id}
 
 Say hi and welcome them to the group!`,
     };
@@ -117,12 +117,12 @@ Say hi and welcome them to the group!`,
       subject: `Promotion status changed: ${group.name}`,
       body: `Dear platform owner,
       
-  The user ${user.email} has requested promotion for the group "${group.name}" on https://www.laundromat.social/groups/${group.id}
+The user ${user.email} has requested promotion for the group "${group.name}" on https://www.laundryroom.social/groups/${group.id}
 
-  Status: ${status}
-  Message: ${message}
+Status: ${status}
+Message: ${message}
 
-  Have a great rest of your day!`,
+Have a great rest of your day!`,
     };
   },
 };
