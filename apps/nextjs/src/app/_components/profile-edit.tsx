@@ -100,6 +100,7 @@ export function EditProfileForm(props: Props) {
                     {...field}
                     value={field.value ?? ""}
                     placeholder="tell us about yourself"
+                    rows={4}
                   />
                 </FormControl>
                 <FormMessage />

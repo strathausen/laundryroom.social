@@ -48,4 +48,7 @@ export const authRouter = {
       }
       return ctx.db.update(User).set(updateData).where(eq(User.id, userId));
     }),
+  deleteMe: protectedProcedure.mutation(({ ctx }) => {
+    return ctx.db.delete(User).where(eq(User.id, ctx.session.user.id));
+  }),
 } satisfies TRPCRouterRecord;
