@@ -182,7 +182,8 @@ export function UpsertMeetupForm(props: Props) {
                           "w-full border-2 border-black px-2 text-left font-normal"
                         }
                       >
-                        format(field.value, "MM/dd/yyyy hh:mm aa")
+                        {field.value.toLocaleDateString()}
+                        {/* {DateTime.format(field.value, "MM/dd/yyyy hh:mm aa")} */}
                         <CalendarIcon className="ml-auto h-4 w-4" />
                       </Button>
                     </FormControl>

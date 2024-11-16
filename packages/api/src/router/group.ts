@@ -6,6 +6,7 @@ import {
   Group,
   GroupMember,
   GroupPromotion,
+  Meetup,
   User,
 } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
@@ -30,13 +31,22 @@ export const groupRouter = {
               select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
               and ${GroupMember.role} != 'banned'
             )`.mapWith(Number),
+            nextMeetupDate: sql`(
+              select ${Meetup.startTime} from ${Meetup}
+              where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
+              order by ${Meetup.startTime} asc limit 1
+            )`.mapWith(String),
           })
           .from(Group)
           .where((_t) =>
             and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
           )
           .orderBy((t) => desc(t.createdAt))
-          .limit(10);
+          .limit(10)
+          .then((groups) => {
+            console.dir(groups);
+            return groups;
+          });
       }
       const matchQuery = sql`(
         setweight(to_tsvector('english', ${Group.name}), 'A') ||
@@ -62,6 +72,11 @@ export const groupRouter = {
             select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
             and ${GroupMember.role} != 'banned'
           )`.mapWith(Number),
+          nextMeetupDate: sql`(
+            select ${Meetup.startTime} from ${Meetup}
+            where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
+            order by ${Meetup.startTime} asc limit 1
+          )`.mapWith(String),
         })
         .from(Group)
         .where((t) =>
@@ -134,6 +149,11 @@ export const groupRouter = {
           select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
           and ${GroupMember.role} != 'banned'
         )`.mapWith(Number),
+        nextMeetupDate: sql`(
+          select ${Meetup.startTime} from ${Meetup}
+          where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
+          order by ${Meetup.startTime} asc limit 1
+        )`.mapWith(String),
       })
       .from(Group)
       .innerJoin(GroupMember, eq(GroupMember.groupId, Group.id))

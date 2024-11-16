@@ -143,6 +143,7 @@ export function DiscussionComments({
               createdAt: new Date(),
             },
           ]);
+          setCommentContent("");
           const [newComment] = await createCommentMutation.mutateAsync({
             discussionId,
             content: commentContent,
@@ -158,7 +159,6 @@ export function DiscussionComments({
               comment.id === tempId ? { ...comment, ...newComment } : comment,
             ),
           );
-          setCommentContent("");
         }}
       >
         <Input
