@@ -220,7 +220,7 @@ export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
 export function GroupList() {
   const [query, setQuery] = useState("");
   const groupsQuery = api.group.search.useQuery({ query });
-  const myGroups = api.group.myGroups.useQuery();
+  const myGroupsQuery = api.group.myGroups.useQuery();
 
   return (
     <div className="flex flex-col gap-5 text-black">
@@ -245,7 +245,7 @@ export function GroupList() {
           my groups
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {myGroups.data?.map((group) => (
+          {myGroupsQuery.data?.map((group) => (
             <GroupCard key={group.id} {...group} />
           ))}
         </div>
