@@ -33,7 +33,7 @@ export const groupRouter = {
             )`.mapWith(Number),
             nextMeetupDate: sql`(
               select ${Meetup.startTime} from ${Meetup}
-              where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
+              where ${Meetup.groupId} = "group".id and ${Meetup.startTime} > now()
               order by ${Meetup.startTime} asc limit 1
             )`.mapWith(String),
           })
@@ -74,7 +74,7 @@ export const groupRouter = {
           )`.mapWith(Number),
           nextMeetupDate: sql`(
             select ${Meetup.startTime} from ${Meetup}
-            where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
+            where ${Meetup.groupId} = "group".id and ${Meetup.startTime} > now()
             order by ${Meetup.startTime} asc limit 1
           )`.mapWith(String),
         })
