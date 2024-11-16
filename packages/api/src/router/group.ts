@@ -18,75 +18,66 @@ export const groupRouter = {
   search: publicProcedure
     .input(z.object({ query: z.string().optional() }))
     .query(({ ctx, input }) => {
-      if (!input.query || input.query.length < 3) {
+      const { query } = input;
+      const baseSelect = {
+        id: Group.id,
+        name: Group.name,
+        description: sql`left(${Group.description}, 100)`.mapWith(String),
+        image: Group.image,
+        createdAt: Group.createdAt,
+        status: Group.status,
+        membersCount: sql`(
+          SELECT COUNT(*) FROM ${GroupMember}
+          WHERE ${GroupMember.groupId} = ${Group.id}
+          AND ${GroupMember.role} != 'banned'
+        )`.mapWith(Number),
+        nextMeetupDate: sql`(
+          SELECT ${Meetup.startTime} FROM ${Meetup}
+          WHERE ${Meetup.groupId} = "group".id
+          AND ${Meetup.startTime} > NOW()
+          ORDER BY ${Meetup.startTime} ASC LIMIT 1
+        )`.mapWith(String),
+      };
+
+      if (!query || query.length < 3) {
         return ctx.db
-          .select({
-            id: Group.id,
-            name: Group.name,
-            description: sql`left(${Group.description}, 100)`.mapWith(String),
-            image: Group.image,
-            createdAt: Group.createdAt,
-            status: Group.status,
-            membersCount: sql`(
-              select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
-              and ${GroupMember.role} != 'banned'
-            )`.mapWith(Number),
-            nextMeetupDate: sql`(
-              select ${Meetup.startTime} from ${Meetup}
-              where ${Meetup.groupId} = "group".id and ${Meetup.startTime} > now()
-              order by ${Meetup.startTime} asc limit 1
-            )`.mapWith(String),
-          })
+          .select(baseSelect)
           .from(Group)
-          .where((_t) =>
+          .where(
             and(eq(Group.moderationStatus, "ok"), eq(Group.status, "active")),
           )
-          .orderBy((t) => desc(t.createdAt))
-          .limit(10)
-          .then((groups) => {
-            console.dir(groups);
-            return groups;
-          });
+          .orderBy(desc(Group.createdAt))
+          .limit(10);
       }
+
       const matchQuery = sql`(
         setweight(to_tsvector('english', ${Group.name}), 'A') ||
         setweight(to_tsvector('english', ${Group.description}), 'B') ||
         setweight(to_tsvector('english', ${Group.aiSearchText}), 'C')
-      ), websearch_to_tsquery('english', ${input.query})`;
+      ), websearch_to_tsquery('english', ${query})`;
+
       const similarityQuery = sql`(
-        similarity(${Group.name}, ${input.query}) +
-        similarity(${Group.description}, ${input.query}) + 
-        similarity(${Group.aiSearchText}, ${input.query})
+        similarity(${Group.name}, ${query}) +
+        similarity(${Group.description}, ${query}) + 
+        similarity(${Group.aiSearchText}, ${query})
       )`;
+
       return ctx.db
         .select({
-          id: Group.id,
-          name: Group.name,
+          ...baseSelect,
           description: Group.description,
-          image: Group.image,
-          createdAt: Group.createdAt,
-          status: Group.status,
           rank: sql`ts_rank_cd(${matchQuery})`,
           similarity: similarityQuery,
-          membersCount: sql`(
-            select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
-            and ${GroupMember.role} != 'banned'
-          )`.mapWith(Number),
-          nextMeetupDate: sql`(
-            select ${Meetup.startTime} from ${Meetup}
-            where ${Meetup.groupId} = "group".id and ${Meetup.startTime} > now()
-            order by ${Meetup.startTime} asc limit 1
-          )`.mapWith(String),
         })
         .from(Group)
-        .where((t) =>
+        .where(
           and(
-            gt(t.similarity, 0.1),
+            gt(similarityQuery, 0.1),
             eq(Group.moderationStatus, "ok"),
             eq(Group.status, "active"),
           ),
         )
-        .orderBy((t) => desc(t.similarity))
+        .orderBy(desc(similarityQuery))
         .limit(10);
     }),
 
@@ -136,7 +127,8 @@ export const groupRouter = {
     }),
 
   myGroups: protectedProcedure.query(async ({ ctx }) => {
-    const user = ctx.session.user;
+    const userId = ctx.session.user.id;
+
     return ctx.db
       .select({
         id: Group.id,
@@ -146,24 +138,26 @@ export const groupRouter = {
         createdAt: Group.createdAt,
         status: Group.status,
         membersCount: sql`(
-          select count(*) from ${GroupMember} where ${GroupMember.groupId} = ${Group.id}
-          and ${GroupMember.role} != 'banned'
+          SELECT COUNT(*) FROM ${GroupMember}
+          WHERE ${GroupMember.groupId} = ${Group.id}
+          AND ${GroupMember.role} != 'banned'
         )`.mapWith(Number),
         nextMeetupDate: sql`(
-          select ${Meetup.startTime} from ${Meetup}
-          where ${Meetup.groupId} = ${Group.id} and ${Meetup.startTime} > now()
-          order by ${Meetup.startTime} asc limit 1
+          SELECT ${Meetup.startTime} FROM ${Meetup}
+          WHERE ${Meetup.groupId} = ${Group.id}
+          AND ${Meetup.startTime} > NOW()
+          ORDER BY ${Meetup.startTime} ASC LIMIT 1
         )`.mapWith(String),
       })
       .from(Group)
       .innerJoin(GroupMember, eq(GroupMember.groupId, Group.id))
       .where(
         and(
-          eq(GroupMember.userId, user.id),
+          eq(GroupMember.userId, userId),
           not(eq(GroupMember.role, "banned")),
         ),
       )
-      .orderBy((t) => desc(t.createdAt));
+      .orderBy(desc(Group.createdAt));
   }),
 
   upsert: protectedProcedure
@@ -175,89 +169,102 @@ export const groupRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { user } = ctx.session;
+      const userId = user.id;
+
+      const classifyAndUpdate = async (data: typeof input) => {
+        const classification = await classify(data.description);
+        return { ...data, ...classification };
+      };
+
       if (input.id) {
-        // also check for user permissions, only group admins or owners can update
         const membership = await ctx.db.query.GroupMember.findFirst({
           where: and(
             eq(GroupMember.groupId, input.id),
-            eq(GroupMember.userId, ctx.session.user.id),
+            eq(GroupMember.userId, userId),
           ),
-          with: { user: { columns: { role: true } } },
         });
+
         if (!membership || !["owner", "admin"].includes(membership.role)) {
-          throw new Error("not authorized");
+          throw new Error("Not authorized");
         }
-        // todo don't classify if the user role is admin or owner or good person
-        // todo classify only if the description/name has changed
-        // todo also classify name
-        const classification = await classify(input.description);
-        const data = { ...input, ...classification };
+
+        const data = await classifyAndUpdate(input);
         return ctx.db.update(Group).set(data).where(eq(Group.id, input.id));
       }
-      const classification = await classify(input.description);
-      const data = { ...input, ...classification };
+
+      const data = await classifyAndUpdate(input);
+
       return ctx.db.transaction(async (tx) => {
         const [group] = await tx
           .insert(Group)
           .values(data)
           .returning({ id: Group.id });
-        if (!group) {
-          throw new Error("failed to create group");
-        }
+
+        if (!group) throw new Error("Failed to create group");
+
         await tx.insert(GroupMember).values({
           groupId: group.id,
-          userId: ctx.session.user.id,
+          userId,
           role: "owner",
         });
+
         return group;
       });
     }),
 
   delete: protectedProcedure
     .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      // check if the current user is the owner
+    .mutation(async ({ ctx, input: groupId }) => {
+      const userId = ctx.session.user.id;
+
       const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input),
-          eq(GroupMember.userId, ctx.session.user.id),
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, userId),
         ),
       });
+
       if (membership?.role !== "owner") {
-        throw new Error("not authorized");
+        throw new Error("Not authorized");
       }
-      return ctx.db.delete(Group).where(eq(Group.id, input));
+
+      return ctx.db.delete(Group).where(eq(Group.id, groupId));
     }),
 
   join: protectedProcedure
     .input(z.object({ groupId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const res = await ctx.db.insert(GroupMember).values({
-        groupId: input.groupId,
-        userId: ctx.session.user.id,
+      const userId = ctx.session.user.id;
+      const { groupId } = input;
+
+      await ctx.db.insert(GroupMember).values({
+        groupId,
+        userId,
         role: "member",
       });
-      // send a notification to the group owner
+
       const ownerMembership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.groupId, groupId),
           eq(GroupMember.role, "owner"),
         ),
         with: {
-          user: { columns: { id: true, name: true, email: true } },
-          group: true,
+          user: { columns: { id: true, email: true } },
+          group: { columns: { id: true, name: true } },
         },
       });
-      if (!ownerMembership) {
-        // should not happen™
-        throw new Error("group has no owner");
-      }
+
+      // Ideally this should not happen, we need to find a way to handle this
+      if (!ownerMembership) throw new Error("Group has no owner");
+
       await sendEmail(ownerMembership.user.email, "newMember", {
         member: ctx.session.user,
         group: ownerMembership.group,
         user: ownerMembership.user,
       });
-      return res;
+
+      return { success: true };
     }),
 
   leave: protectedProcedure
@@ -276,26 +283,30 @@ export const groupRouter = {
   removeMember: protectedProcedure
     .input(z.object({ groupId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // check if the current user is an admin or owner
+      const userId = ctx.session.user.id;
+      const { groupId, userId: targetUserId } = input;
+
       const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input.groupId),
-          eq(GroupMember.userId, ctx.session.user.id),
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, userId),
         ),
       });
+
       if (!["owner", "admin"].includes(membership?.role ?? "")) {
-        throw new Error("not authorized");
+        throw new Error("Not authorized");
       }
-      // user to remove should not be the owner
-      if (membership?.userId === input.userId) {
-        throw new Error("cannot remove owner");
+
+      if (membership?.userId === targetUserId) {
+        throw new Error("Cannot remove owner");
       }
+
       return ctx.db
         .delete(GroupMember)
         .where(
           and(
-            eq(GroupMember.groupId, input.groupId),
-            eq(GroupMember.userId, input.userId),
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, targetUserId),
           ),
         );
     }),
@@ -308,20 +319,21 @@ export const groupRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // check if the current user is an admin or owner
+      const userId = ctx.session.user.id;
+      const { groupId, status } = input;
+
       const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input.groupId),
-          eq(GroupMember.userId, ctx.session.user.id),
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, userId),
         ),
       });
+
       if (!["owner", "admin"].includes(membership?.role ?? "")) {
-        throw new Error("not authorized");
+        throw new Error("Not authorized");
       }
-      return ctx.db
-        .update(Group)
-        .set({ status: input.status })
-        .where(eq(Group.id, input.groupId));
+
+      return ctx.db.update(Group).set({ status }).where(eq(Group.id, groupId));
     }),
 
   members: protectedProcedure
@@ -389,23 +401,27 @@ export const groupRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // check if the current user is an admin or owner
+      const userId = ctx.session.user.id;
+      const { groupId, userId: targetUserId, role } = input;
+
       const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input.groupId),
-          eq(GroupMember.userId, ctx.session.user.id),
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, userId),
         ),
       });
+
       if (!["owner", "admin"].includes(membership?.role ?? "")) {
-        throw new Error("not authorized");
+        throw new Error("Not authorized");
       }
+
       return ctx.db
         .update(GroupMember)
-        .set({ role: input.role })
+        .set({ role })
         .where(
           and(
-            eq(GroupMember.groupId, input.groupId),
-            eq(GroupMember.userId, input.userId),
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, targetUserId),
           ),
         );
     }),
