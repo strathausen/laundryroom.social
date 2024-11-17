@@ -258,8 +258,10 @@ export const Meetup = pgTable("meetup", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").default("").notNull(),
   location: varchar("location", { length: 255 }).default("").notNull(),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time"),
+  startTime: timestamp("start_time", {
+    withTimezone: true,
+  }).notNull(),
+  duration: integer("duration").default(60).notNull(), // in minutes
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
@@ -274,11 +276,10 @@ export const UpsertMeetupSchema = createInsertSchema(Meetup, {
   description: z.string().max(255).min(3),
   location: z.string().max(255),
   startTime: z.coerce.date(),
-  // endTime: z.string().min(3).optional(),
+  duration: z.number().int().positive(),
 }).omit({
   createdAt: true,
   updatedAt: true,
-  endTime: true,
 });
 
 export const MeetupRelations = relations(Meetup, ({ one, many }) => ({
@@ -344,7 +345,9 @@ export const Comment = pgTable("comment", {
     }),
   content: text("content").notNull(),
   moderationStatus: ModerationStatus("moderation_status").default("ok"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  // if used as a cursor, this should be a string based timestamp for more accurate pagination
+  // javascript date would chop off milliseconds and cause items to be skipped in infinite scroll
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
@@ -366,7 +369,8 @@ export const Discussion = pgTable("discussion", {
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
   moderationStatus: ModerationStatus("moderation_status").default("ok"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  // see Comment.createdAt for why this is a string
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,

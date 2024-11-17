@@ -24,7 +24,7 @@ function DiscussionPost({
   onEdited,
   groupId,
 }: {
-  discussion: RouterOutputs["discussion"]["byGroupId"][number];
+  discussion: RouterOutputs["discussion"]["byGroupId"]["discussions"][number];
   onDeleted: () => void;
   onEdited: () => void;
   groupId: string;
@@ -138,9 +138,10 @@ function DiscussionPost({
 
 export function DiscussionWidget(props: { groupId: string }) {
   const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false);
-  const discussionsQuery = api.discussion.byGroupId.useQuery({
-    groupId: props.groupId,
-  });
+  const discussionsQuery = api.discussion.byGroupId.useInfiniteQuery(
+    { groupId: props.groupId },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor },
+  );
   return (
     <div>
       <Button
@@ -163,15 +164,25 @@ export function DiscussionWidget(props: { groupId: string }) {
         />
       )}
       <div className="m-auto my-7 flex max-w-3xl flex-col gap-5">
-        {discussionsQuery.data?.map((discussion) => (
-          <DiscussionPost
-            discussion={discussion}
-            key={discussion.id}
-            groupId={props.groupId}
-            onDeleted={() => discussionsQuery.refetch()}
-            onEdited={() => discussionsQuery.refetch()}
-          />
-        ))}
+        {discussionsQuery.data?.pages
+          .flatMap((page) => page.discussions)
+          .map((discussion) => (
+            <DiscussionPost
+              discussion={discussion}
+              key={discussion.id}
+              groupId={props.groupId}
+              onDeleted={() => discussionsQuery.refetch()}
+              onEdited={() => discussionsQuery.refetch()}
+            />
+          ))}
+        {discussionsQuery.hasNextPage && (
+          <Button
+            onClick={() => discussionsQuery.fetchNextPage()}
+            className="mx-auto"
+          >
+            load more
+          </Button>
+        )}
       </div>
     </div>
   );

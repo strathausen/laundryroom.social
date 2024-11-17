@@ -6,12 +6,12 @@ import { api } from "~/trpc/react";
 
 export function useComments(discussionId: string) {
   const [postedComments, setPostedComments] = useState<
-    RouterOutputs["discussion"]["comments"]["comments"]
+    RouterOutputs["comment"]["comments"]["comments"]
   >([]);
   const [deletedComments, setDeletedComments] = useState<string[]>([]);
 
-  const commentsQuery = api.discussion.comments.useInfiniteQuery(
-    { discussionId, limit: 10 },
+  const commentsQuery = api.comment.comments.useInfiniteQuery(
+    { discussionId, limit: 3 },
     {
       enabled: false,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -19,8 +19,8 @@ export function useComments(discussionId: string) {
     },
   );
 
-  const createCommentMutation = api.discussion.createComment.useMutation();
-  const deleteCommentMutation = api.discussion.deleteComment.useMutation();
+  const createCommentMutation = api.comment.createComment.useMutation();
+  const deleteCommentMutation = api.comment.deleteComment.useMutation();
 
   useEffect(() => {
     if (commentsQuery.isFetched) {
@@ -52,7 +52,7 @@ export function useComments(discussionId: string) {
           name: user.name ?? "anonymous",
           image: user.image ?? null,
         },
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       },
     ]);
 
@@ -89,7 +89,7 @@ export function useComments(discussionId: string) {
     isFetchingPreviousPage: commentsQuery.isFetchingPreviousPage,
     isCreating: createCommentMutation.isPending,
     isFetched: commentsQuery.isFetched,
-    hasPreviousPage: commentsQuery.hasNextPage,
+    hasPreviousPage: commentsQuery.hasPreviousPage,
     comments:
       commentsQuery.data?.pages
         .flatMap((page) => page.comments)

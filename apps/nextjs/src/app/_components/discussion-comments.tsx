@@ -68,35 +68,39 @@ export function DiscussionComments({
               className={`flex gap-2 bg-gray-100 p-2 ${
                 comment.isDeleting ? "line-through opacity-50" : ""
               } ${comment.id.startsWith("temp-") ? "animate-pulse" : ""}`}
-              title={comment.createdAt.toDateString()}
+              title={new Date(comment.createdAt).toDateString()}
             >
               <p className="font-semibold">
                 {comment.user.name ?? "anonymous"}:
               </p>
               <p className="flex-1">{comment.content}</p>
-              {comment.user.id === session.data?.user.id && !comment.isDeleting && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" className="h-6 p-0 pr-1 opacity-50">
-                      <MenuIcon className="h-4 w-4 p-0" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    sideOffset={4}
-                    className="flex w-auto flex-col p-2"
-                  >
-                    <Button
-                      onClick={async () => {
-                        await deleteComment(comment.id);
-                      }}
-                      variant="ghost"
-                      className="flex justify-between gap-2"
+              {comment.user.id === session.data?.user.id &&
+                !comment.isDeleting && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-6 p-0 pr-1 opacity-50"
+                      >
+                        <MenuIcon className="h-4 w-4 p-0" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      sideOffset={4}
+                      className="flex w-auto flex-col p-2"
                     >
-                      delete <Trash className="h-4 w-4" />
-                    </Button>
-                  </PopoverContent>
-                </Popover>
-              )}
+                      <Button
+                        onClick={async () => {
+                          await deleteComment(comment.id);
+                        }}
+                        variant="ghost"
+                        className="flex justify-between gap-2"
+                      >
+                        delete <Trash className="h-4 w-4" />
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                )}
             </div>
           ))}
         </div>
