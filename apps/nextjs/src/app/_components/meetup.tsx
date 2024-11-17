@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
@@ -9,6 +10,7 @@ import { Calendar } from "@laundryroom/ui/calendar";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -60,6 +62,7 @@ export function UpsertMeetupForm(props: Props) {
       startTime:
         meetupQuery.data?.startTime ??
         new Date(new Date().setHours(18, 0, 0, 0) + 24 * 60 * 60 * 1000),
+      duration: meetupQuery.data?.duration ?? 60,
     },
   });
 
@@ -102,6 +105,7 @@ export function UpsertMeetupForm(props: Props) {
       form.setValue("description", meetupQuery.data.description);
       form.setValue("location", meetupQuery.data.location);
       form.setValue("startTime", meetupQuery.data.startTime);
+      form.setValue("duration", meetupQuery.data.duration);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetupQuery.data]);
@@ -182,8 +186,7 @@ export function UpsertMeetupForm(props: Props) {
                           "w-full border-2 border-black px-2 text-left font-normal"
                         }
                       >
-                        {field.value.toLocaleDateString()}
-                        {/* {DateTime.format(field.value, "MM/dd/yyyy hh:mm aa")} */}
+                        {format(field.value, "dd MMM yyyy, h:mm aa")}
                         <CalendarIcon className="ml-auto h-4 w-4" />
                       </Button>
                     </FormControl>
@@ -284,19 +287,28 @@ export function UpsertMeetupForm(props: Props) {
               </FormItem>
             )}
           />
-          {/* <FormField
+          <FormField
             control={form.control}
-            name="endTime"
+            name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>ends at</FormLabel>
+                <FormLabel>duration</FormLabel>
                 <FormControl>
-                  <Input {...field} type="datetime-local" />
+                  <Input
+                    {...field}
+                    type="number"
+                    onChange={(e) =>
+                      form.setValue("duration", Number(e.target.value))
+                    }
+                  />
                 </FormControl>
+                <FormDescription>
+                  {field.value ? `${field.value} minutes` : ""}
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
-          /> */}
+          />
           <Button
             type="submit"
             disabled={upsertMeetup.isPending}
