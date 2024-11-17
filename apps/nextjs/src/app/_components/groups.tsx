@@ -258,11 +258,20 @@ export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
   const [showCreateMeetup, setShowCreateMeetup] = useState(false);
   const [editableEventId, setEditableEventId] = useState<string | undefined>();
+  const utils = api.useUtils();
   const groupQuery = api.group.byId.useQuery({
     id: params.groupId,
   });
-  const joinGroup = api.group.join.useMutation();
-  const leaveGroup = api.group.leave.useMutation();
+  const joinGroup = api.group.join.useMutation({
+    async onMutate(_variables) {
+      await utils.group.myGroups.invalidate();
+    },
+  });
+  const leaveGroup = api.group.leave.useMutation({
+    async onMutate(_variables) {
+      await utils.group.myGroups.invalidate();
+    },
+  });
   const listMeetups = api.meetup.byGroupId.useQuery({
     groupId: params.groupId,
   });

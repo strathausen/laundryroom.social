@@ -42,11 +42,11 @@ export function NavBar(props: Props) {
               className="relative text-lg"
               style={{ lineHeight: 0.65, left: 12 }}
             >
-              laundry
+              meetup
               <br />
-              room
+              society
               <br />
-              .social
+              .com
             </span>
           </p>
         </Link>
