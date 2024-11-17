@@ -11,7 +11,7 @@ export function useComments(discussionId: string) {
   const [deletedComments, setDeletedComments] = useState<string[]>([]);
 
   const commentsQuery = api.comment.comments.useInfiniteQuery(
-    { discussionId, limit: 3 },
+    { discussionId },
     {
       enabled: false,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
