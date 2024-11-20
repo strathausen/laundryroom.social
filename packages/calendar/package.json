@@ -1,0 +1,30 @@
+{
+  "name": "@laundryroom/calendar",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "tsc",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  },
+  "prettier": "@laundryroom/prettier-config",
+  "dependencies": {
+    "ics": "^3.8.1"
+  }
+}

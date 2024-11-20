@@ -11,7 +11,7 @@ import {
 } from "@laundryroom/ui/popover";
 import { toast } from "@laundryroom/ui/toast";
 
-import { useComments } from "~/hooks/comment-hooks";
+import { useComments } from "~/hooks/use-comments";
 
 export function DiscussionComments({
   discussionId,

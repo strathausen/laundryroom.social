@@ -262,7 +262,8 @@ export const Meetup = pgTable("meetup", {
     withTimezone: true,
   }).notNull(),
   duration: integer("duration").default(60).notNull(), // in minutes
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  // if used as a cursor, this should be a string based timestamp for more accurate pagination
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,

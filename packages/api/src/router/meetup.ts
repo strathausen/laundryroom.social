@@ -1,6 +1,16 @@
 import { z } from "zod";
 
-import { and, asc, eq, gt, inArray, sql } from "@laundryroom/db";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  sql,
+} from "@laundryroom/db";
 import {
   Attendee,
   Group,
@@ -22,9 +32,18 @@ export const meetupRouter = createTRPCRouter({
     }),
 
   byGroupId: publicProcedure
-    .input(z.object({ groupId: z.string() }))
+    .input(
+      z.object({
+        groupId: z.string(),
+        cursor: z.string().nullish(),
+        limit: z.number().max(50).default(10),
+        direction: z.enum(["forward", "backward"]).default("backward"),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
+      // TODO over time, this query will become slow
+      // (O(n) with number of past attended meetups per group)
       const attendancesQuery = user
         ? ctx.db.query.Attendee.findMany({
             where: and(
@@ -36,23 +55,50 @@ export const meetupRouter = createTRPCRouter({
             ),
           })
         : [];
-      // only show future meetups
+      // only show past meetups, paginated
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
           eq(Meetup.groupId, input.groupId),
-          gt(Meetup.startTime, new Date()),
+          input.direction === "forward"
+            ? gt(
+                Meetup.startTime,
+                input.cursor ? new Date(input.cursor) : new Date(),
+              )
+            : lt(
+                Meetup.startTime,
+                input.cursor ? new Date(input.cursor) : new Date(),
+              ),
         ),
-        orderBy: asc(Meetup.startTime),
+        orderBy: input.direction === "forward" ? asc(Meetup.startTime) : desc(Meetup.startTime),
         limit: 3,
       });
-      const [attendances, meetups] = await Promise.all([
+      // TODO if there is no cursor, it means we have an initial query
+      // -> try to find hasNextPage or hasPreviousPage in the opposite direction
+
+      const attendeesCountQuery = ctx.db
+        .select({
+          count: count(Attendee.meetupId),
+          meetupId: Attendee.meetupId,
+        })
+        .from(Attendee)
+        .where(
+          inArray(
+            Attendee.meetupId,
+            sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
+          ),
+        )
+        .groupBy(Attendee.meetupId);
+
+      const [attendances, meetups, attendeesCount] = await Promise.all([
         attendancesQuery,
         meetupsQuery,
+        attendeesCountQuery,
       ]);
       // combine meetups with attendance status
       return meetups.map((meetup) => ({
         ...meetup,
         attendance: attendances.find((a) => a.meetupId === meetup.id),
+        attendeesCount: attendeesCount.find((a) => a.meetupId === meetup.id),
       }));
     }),
 

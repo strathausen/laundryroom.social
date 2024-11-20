@@ -24,7 +24,7 @@ export const metadata: Metadata = {
       ? "https://www.laundryroom.social"
       : "http://localhost:3000",
   ),
-  title: "laundryroom.social",
+  title: "laundryroom.social  🧺",
   description: "meet people, organise meetups, have fun",
   openGraph: {
     title: "laundryroom.social",
@@ -57,7 +57,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           GeistMono.variable,
         )}
       >
-        {/* for now, only allow the light theme */}
+        {/* for now, only allow the light theme until we have time to look at the dark theme as well */}
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

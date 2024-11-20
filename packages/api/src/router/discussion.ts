@@ -82,7 +82,8 @@ export const discussionRouter = {
       }
       return ctx.db
         .insert(Discussion)
-        .values({ ...input, userId, moderationStatus });
+        .values({ ...input, userId, moderationStatus })
+        .returning({ id: Discussion.id });
     }),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
