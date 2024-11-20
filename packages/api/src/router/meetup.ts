@@ -69,7 +69,10 @@ export const meetupRouter = createTRPCRouter({
                 input.cursor ? new Date(input.cursor) : new Date(),
               ),
         ),
-        orderBy: input.direction === "forward" ? asc(Meetup.startTime) : desc(Meetup.startTime),
+        orderBy:
+          input.direction === "forward"
+            ? asc(Meetup.startTime)
+            : desc(Meetup.startTime),
         limit: 3,
       });
       // TODO if there is no cursor, it means we have an initial query

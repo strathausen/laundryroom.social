@@ -54,7 +54,7 @@ export function useDiscussions({ groupId }: { groupId: string }) {
 
   return {
     upsert,
-		delete: deleteItem,
+    delete: deleteItem,
     refetch: listQuery.refetch,
     fetchNextPage: listQuery.fetchNextPage,
     items: postedItems
