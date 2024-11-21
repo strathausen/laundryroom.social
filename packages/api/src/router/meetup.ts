@@ -101,7 +101,8 @@ export const meetupRouter = createTRPCRouter({
       return meetups.map((meetup) => ({
         ...meetup,
         attendance: attendances.find((a) => a.meetupId === meetup.id),
-        attendeesCount: attendeesCount.find((a) => a.meetupId === meetup.id),
+        attendeesCount:
+          attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
       }));
     }),
 

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Pen } from "lucide-react";
 
 import type { RouterOutputs } from "@laundryroom/api";
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
@@ -41,7 +43,7 @@ import { api } from "~/trpc/react";
 import { DiscussionWidget } from "./discussions";
 import { GroupPromoter } from "./group/group-promoter";
 import { LoginCta } from "./login-cta";
-import { UpsertMeetupForm } from "./meetup";
+import { UpsertMeetupForm } from "./meetup/meetup-form";
 import { MembersWidget } from "./members";
 import { MembersCount } from "./members-count";
 import { RsvpSelect } from "./rsvp-select";
@@ -389,36 +391,43 @@ export function GroupDetail() {
         <h2 className="border-b-2 border-black text-2xl uppercase">
           upcoming meetups
         </h2>
-        <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 xl:grid-cols-3">
           {listMeetups.data?.map((meetup) => (
             <Box
               key={meetup.id}
               className="flex flex-col justify-between gap-2"
             >
               <div className="flex flex-col space-y-2">
-                <h3 className="text-xl uppercase">{meetup.title}</h3>
-                <p className="underline decoration-green-400 decoration-4 underline-offset-4">
-                  {meetup.description}
-                </p>
-              </div>
-              <div className="flex flex-col space-y-2">
-                <p>time: {new Date(meetup.startTime).toLocaleString()}</p>
-                {/* <p>end: {new Date(meetup.endTime).toLocaleString()}</p> */}
-                <div className="flex gap-4">
-                  <RsvpSelect
-                    meetupId={meetup.id}
-                    rsvp={meetup.attendance?.status}
-                  />
+                <div className="flex justify-between align-top">
+                  <h3 className="text-xl uppercase">{meetup.title}</h3>
                   {membership?.role === "owner" && (
                     <Button
                       onClick={() => {
                         setEditableEventId(meetup.id);
                         setShowCreateMeetup(true);
                       }}
+                      variant={"ghost"}
+                      className="relative -right-2 -top-2 p-2 opacity-50 transition-opacity hover:opacity-100"
                     >
-                      edit
+                      <Pen className="h-4 w-4" />
                     </Button>
                   )}
+                </div>
+                <p className="underline decoration-green-400 decoration-4 underline-offset-4">
+                  {meetup.description}
+                </p>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <p>
+                  time:{" "}
+                  {format(new Date(meetup.startTime), "dd MMM yyyy hh:mm a")}
+                </p>
+                <div className="flex justify-between gap-4">
+                  <RsvpSelect
+                    meetupId={meetup.id}
+                    rsvp={meetup.attendance?.status}
+                  />
+                  <MembersCount count={meetup.attendeesCount} />
                 </div>
               </div>
             </Box>
