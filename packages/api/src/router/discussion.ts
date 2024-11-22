@@ -149,11 +149,6 @@ export const discussionRouter = {
       }
       const nextDiscussion =
         discussions.length > input.limit ? discussions.pop() : undefined;
-      console.log(
-        "last discussion",
-        nextDiscussion,
-        discussions[discussions.length - 1],
-      );
       return {
         discussions: discussions.map((discussion) => {
           const count = counts.find((c) => c.discussionId === discussion.id);
