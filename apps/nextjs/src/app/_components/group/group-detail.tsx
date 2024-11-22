@@ -15,11 +15,11 @@ import { ShareMenu } from "@laundryroom/ui/share-menu";
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "../discussions";
 import { GroupPromoter } from "../group/group-promoter";
-import { GroupStatusSwitcher } from "../groups";
 import { LoginCta } from "../login-cta";
 import { MeetupCard } from "../meetup/meetup-card";
 import { UpsertMeetupForm } from "../meetup/meetup-form";
 import { MembersWidget } from "../members";
+import { GroupStatusSwitcher } from "./group-status-switcher";
 
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();

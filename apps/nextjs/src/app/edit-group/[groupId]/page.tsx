@@ -1,4 +1,4 @@
-import { UpsertGroupForm } from "~/app/_components/groups";
+import { UpsertGroupForm } from "~/app/_components/group/upsert-group-form";
 import { api, HydrateClient } from "~/trpc/server";
 
 interface PageProps {

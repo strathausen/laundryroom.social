@@ -1,7 +1,7 @@
 import { SessionProvider } from "next-auth/react";
 
 import { api } from "~/trpc/server";
-import { GroupList } from "../_components/groups";
+import { GroupList } from "../_components/group/group-list";
 
 export default async function GroupsPage() {
   await api.group.search({});
