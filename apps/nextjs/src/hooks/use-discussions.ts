@@ -1,9 +1,62 @@
+import type { User } from "next-auth";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { create } from "zustand";
 
 import type { RouterInputs, RouterOutputs } from "@laundryroom/api";
 
 import { api } from "~/trpc/react";
+
+interface DiscussionStore {
+  postedItems: Record<string, Discussion[]>;
+  deletedItems: string[];
+  upsert(groupId: string, item: DiscussionInput, user: User): void;
+}
+
+export const useDiscussionStore = create<DiscussionStore>()((set) => ({
+  postedItems: {},
+  deletedItems: [],
+  upsert(groupId: string, item: DiscussionInput, user: User) {
+    set((state) => {
+      // if the item has an id, it's an update
+      let tempId: string;
+      const groupDiscussions = state.postedItems[groupId] ?? [];
+      if (item.id) {
+        return {
+          ...state,
+          postedItems: {
+            ...state.postedItems,
+            [groupId]: groupDiscussions.map((i) =>
+              i.id === item.id ? { ...i, ...item } : i,
+            ),
+          },
+        };
+      } else {
+        tempId = `temp-${Math.random().toString(36).substring(7)}`;
+        return {
+          ...state,
+          postedItems: {
+            [groupId]: [
+              {
+                ...item,
+                id: tempId,
+                createdAt: new Date().toISOString(),
+                user: {
+                  ...user,
+                  id: user.id ?? "anonymous",
+                  name: user.name ?? "anonymous",
+                  image: user.image ?? null,
+                },
+                commentCount: 0,
+              },
+              ...groupDiscussions,
+            ],
+          },
+        };
+      }
+    });
+  },
+}));
 
 type Discussion =
   RouterOutputs["discussion"]["byGroupId"]["discussions"][number];
@@ -16,6 +69,7 @@ export function useDiscussions({ groupId }: { groupId: string }) {
     { groupId },
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
   );
+  const store = useDiscussionStore();
   const [postedItems, setPostedItems] = useState<Discussion[]>([]);
   const [deletedItems, setDeletedItems] = useState<string[]>([]);
   const upsertMutation = api.discussion.upsert.useMutation();
@@ -23,27 +77,15 @@ export function useDiscussions({ groupId }: { groupId: string }) {
 
   const upsert = async (item: DiscussionInput) => {
     // Temporarily add the new item to the list with a temporary ID
-    const temId = "temp-" + Math.random().toString(36).substring(7);
     if (!session.data?.user) return; // for typescript to be happy
-    setPostedItems((prev) => [
-      {
-        ...item,
-        id: temId,
-        createdAt: new Date().toISOString(),
-        user: {
-          ...session.data.user,
-          name: session.data.user.name ?? "anonymous",
-          image: session.data.user.image ?? null,
-        },
-        commentCount: 0,
-      },
-      ...prev,
-    ]);
+    // if the item has an id, it's an update
+    let tempId: string;
+    store.upsert(groupId, item, session.data.user);
     // Call the mutation to actually create the item
     const newItem = await upsertMutation.mutateAsync(item);
     // Replace the temporary item ID with the actual item ID
     setPostedItems((prev) =>
-      prev.map((item) => (item.id === temId ? { ...item, ...newItem } : item)),
+      prev.map((item) => (item.id === tempId ? { ...item, ...newItem } : item)),
     );
   };
 
@@ -55,8 +97,8 @@ export function useDiscussions({ groupId }: { groupId: string }) {
   return {
     upsert,
     delete: deleteItem,
-    refetch: listQuery.refetch,
     fetchNextPage: listQuery.fetchNextPage,
+    isDeleting: deleteMutation.isPending,
     items: postedItems
       .concat(listQuery.data?.pages.flatMap((page) => page.discussions) ?? [])
       .map((item) => ({

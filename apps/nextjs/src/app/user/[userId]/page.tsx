@@ -2,7 +2,7 @@ import { EditProfileForm } from "~/app/_components/profile-edit";
 import { DeleteProfile } from "~/app/_components/profile/delete-profile";
 import { HydrateClient } from "~/trpc/server";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export default function HomePage() {
   return (

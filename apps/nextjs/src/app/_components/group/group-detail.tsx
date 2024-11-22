@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -18,7 +20,7 @@ import { GroupPromoter } from "../group/group-promoter";
 import { LoginCta } from "../login-cta";
 import { MeetupCard } from "../meetup/meetup-card";
 import { UpsertMeetupForm } from "../meetup/meetup-form";
-import { MembersWidget } from "../members";
+import { MembersWidget } from "../members-widget";
 import { GroupStatusSwitcher } from "./group-status-switcher";
 
 export function GroupDetail() {

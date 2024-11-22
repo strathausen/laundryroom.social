@@ -13,7 +13,7 @@ import {
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
 
-import { api } from "~/trpc/react";
+import { useDiscussions } from "~/hooks/use-discussions";
 
 interface DiscussionFormProps {
   groupId: string;
@@ -37,26 +37,27 @@ export function DiscussionForm(props: DiscussionFormProps) {
       ...props.initialValues,
     },
   });
-  const upsertDiscussion = api.discussion.upsert.useMutation({
-    onSuccess() {
-      props.onSuccess();
-      discussionForm.reset();
-    },
-    onError() {
-      props.onError();
-    },
-  });
+  const discussion = useDiscussions({ groupId: props.groupId });
+  // const upsertDiscussion = api.discussion.upsert.useMutation({
+  //   onSuccess() {
+  //     props.onSuccess();
+  //     discussionForm.reset();
+  //   },
+  //   onError() {
+  //     props.onError();
+  //   },
+  // });
   const isNew = !props.initialValues;
   return (
     <Form {...discussionForm}>
       <form
-        onSubmit={discussionForm.handleSubmit((data) => {
-          upsertDiscussion.mutate(data);
+        onSubmit={discussionForm.handleSubmit(async (data) => {
+          await discussion.upsert(data);
         })}
       >
         <fieldset
           className="mx-auto mb-9 mt-5 flex max-w-3xl flex-col space-y-4 border-2 border-black px-3 pb-5 pt-3"
-          disabled={upsertDiscussion.isPending}
+          // disabled={upsertDiscussion.isPending}
         >
           <FormField
             control={discussionForm.control}

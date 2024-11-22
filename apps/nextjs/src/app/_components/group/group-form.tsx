@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +25,7 @@ interface Props {
   isNew: boolean;
 }
 
-export function UpsertGroupForm(props: Props) {
+export function GroupForm(props: Props) {
   const router = useRouter();
   const groupQuery = api.group.byId.useQuery(
     { id: props.groupId },

@@ -1,7 +1,7 @@
 import { HydrateClient } from "~/trpc/server";
 import { AuthWidget } from "./_components/auth-widget";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export default function HomePage() {
   return (

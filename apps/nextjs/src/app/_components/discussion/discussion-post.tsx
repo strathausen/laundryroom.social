@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Edit3, MenuIcon, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -12,31 +14,24 @@ import {
 } from "@laundryroom/ui/popover";
 import { toast } from "@laundryroom/ui/toast";
 
-import { api } from "~/trpc/react";
+import { useDiscussions } from "~/hooks/use-discussions";
 import { DiscussionComments } from "./discussion-comments";
 import { DiscussionForm } from "./discussion-form";
 
 interface Props {
   discussion: RouterOutputs["discussion"]["byGroupId"]["discussions"][number];
-  onDeleted: () => void;
-  onEdited: () => void;
   groupId: string;
 }
 
-export function DiscussionPost({
-  discussion,
-  onDeleted,
-  onEdited,
-  groupId,
-}: Props) {
+export function DiscussionPost({ discussion, groupId }: Props) {
   const session = useSession();
-  const deleteDiscussionMutation = api.discussion.delete.useMutation();
+  const discussions = useDiscussions({ groupId });
   const [editMode, setEditMode] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   return (
     <Box
       key={discussion.id}
-      className={`flex flex-col gap-2 px-4 py-3 ${deleteDiscussionMutation.isPending ? "opacity-50" : ""}`}
+      className={`flex flex-col gap-2 px-4 py-3 ${discussions.isDeleting ? "opacity-50" : ""}`}
     >
       <div className="flex justify-between">
         <p className="text-sm font-semibold">
@@ -58,12 +53,7 @@ export function DiscussionPost({
                   <div className="flex flex-col items-center gap-2">
                     really delete??
                     <Button
-                      onClick={async () => {
-                        await deleteDiscussionMutation.mutateAsync(
-                          discussion.id,
-                        );
-                        onDeleted();
-                      }}
+                      onClick={() => discussions.delete(discussion.id)}
                       variant={"destructive"}
                       className="flex p-2"
                     >
@@ -111,7 +101,6 @@ export function DiscussionPost({
             content: discussion.content,
           }}
           onSuccess={() => {
-            onEdited();
             setEditMode(false);
           }}
           onError={() => {

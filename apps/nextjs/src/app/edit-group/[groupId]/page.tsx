@@ -1,4 +1,4 @@
-import { UpsertGroupForm } from "~/app/_components/group/upsert-group-form";
+import { GroupForm } from "~/app/_components/group/group-form";
 import { api, HydrateClient } from "~/trpc/server";
 
 interface PageProps {
@@ -21,7 +21,7 @@ export default async function EditGroupPage({ params }: PageProps) {
             {isNew ? "Create Group" : "Edit Group"}
           </h2>
           {isNew && <p>create a new group to meet people</p>}
-          <UpsertGroupForm groupId={params.groupId} isNew={isNew} />
+          <GroupForm groupId={params.groupId} isNew={isNew} />
         </div>
       </main>
     </HydrateClient>
