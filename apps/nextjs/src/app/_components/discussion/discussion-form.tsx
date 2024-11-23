@@ -38,21 +38,19 @@ export function DiscussionForm(props: DiscussionFormProps) {
     },
   });
   const discussion = useDiscussions({ groupId: props.groupId });
-  // const upsertDiscussion = api.discussion.upsert.useMutation({
-  //   onSuccess() {
-  //     props.onSuccess();
-  //     discussionForm.reset();
-  //   },
-  //   onError() {
-  //     props.onError();
-  //   },
-  // });
   const isNew = !props.initialValues;
   return (
     <Form {...discussionForm}>
       <form
         onSubmit={discussionForm.handleSubmit(async (data) => {
-          await discussion.upsert(data);
+          props.onSuccess();
+          try {
+            await discussion.upsert(data);
+            discussionForm.reset();
+          } catch (err) {
+            console.log(err);
+            props.onError();
+          }
         })}
       >
         <fieldset

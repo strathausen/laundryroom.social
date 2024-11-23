@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics as _Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { Provider } from "jotai";
 
 import { cn } from "@laundryroom/ui";
 import { ThemeProvider, ThemeToggle } from "@laundryroom/ui/theme";
@@ -63,20 +64,22 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           defaultTheme="light"
           forcedTheme="light" /*enableSystem*/
         >
-          <NavBar session={session} />
-          <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
-            <TRPCReactProvider>{props.children}</TRPCReactProvider>
-            <div className="mt-4 flex flex-col items-center">
-              <div className="max-w-5xl">
-                <Footer />
+          <Provider>
+            <NavBar session={session} />
+            <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
+              <TRPCReactProvider>{props.children}</TRPCReactProvider>
+              <div className="mt-4 flex flex-col items-center">
+                <div className="max-w-5xl">
+                  <Footer />
+                </div>
               </div>
             </div>
-          </div>
-          <div className="absolute bottom-4 right-4 hidden">
-            <ThemeToggle />
-          </div>
-          <Toaster />
-          <CookieConsent />
+            <div className="absolute bottom-4 right-4 hidden">
+              <ThemeToggle />
+            </div>
+            <Toaster />
+            <CookieConsent />
+          </Provider>
         </ThemeProvider>
       </body>
     </html>

@@ -83,15 +83,19 @@ export const discussionRouter = {
       return ctx.db
         .insert(Discussion)
         .values({ ...input, userId, moderationStatus })
-        .returning({ id: Discussion.id });
+        .returning({ id: Discussion.id })
+        .then((result) => result[0]);
     }),
 
-  delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
-    const userId = ctx.session.user.id;
-    return ctx.db
-      .delete(Discussion)
-      .where(and(eq(Discussion.id, input), eq(Discussion.userId, userId)));
-  }),
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      return ctx.db
+        .delete(Discussion)
+        .where(and(eq(Discussion.id, input), eq(Discussion.userId, userId)));
+    }),
 
   /**
    * List discussions by group ID

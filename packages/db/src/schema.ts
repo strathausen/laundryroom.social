@@ -387,6 +387,7 @@ export const UpsertDiscussionSchema = createInsertSchema(Discussion, {
   userId: true,
   createdAt: true,
   updatedAt: true,
+  moderationStatus: true,
 });
 
 export const DiscussionRelations = relations(Discussion, ({ one, many }) => ({

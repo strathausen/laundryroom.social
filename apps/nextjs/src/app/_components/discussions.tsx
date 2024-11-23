@@ -28,6 +28,7 @@ export function DiscussionWidget({ groupId }: { groupId: string }) {
           }}
           onError={() => {
             toast.error("Oh darn it. Something went wrong. ¯\\_(ツ)_/¯");
+            setShowNewDiscussionForm(false);
           }}
           onCancel={() => setShowNewDiscussionForm(false)}
         />
