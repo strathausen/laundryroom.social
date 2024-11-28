@@ -9,7 +9,7 @@ import { MembersCount } from "../members-count";
 import { RsvpSelect } from "../rsvp-select";
 
 interface Props {
-  meetup: RouterOutputs["meetup"]["byGroupId"][number];
+  meetup: RouterOutputs["meetup"]["byGroupId"]["meetups"][number];
   canEdit: boolean;
   onEdit: () => void;
 }

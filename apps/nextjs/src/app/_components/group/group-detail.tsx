@@ -1,32 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@laundryroom/ui/dialog";
 import { ShareMenu } from "@laundryroom/ui/share-menu";
 
 import { api } from "~/trpc/react";
 import { DiscussionWidget } from "../discussions";
 import { GroupPromoter } from "../group/group-promoter";
 import { LoginCta } from "../login-cta";
-import { MeetupCard } from "../meetup/meetup-card";
-import { UpsertMeetupForm } from "../meetup/meetup-form";
+import { MeetupList } from "../meetup/meetup-list";
 import { MembersWidget } from "../members-widget";
 import { GroupStatusSwitcher } from "./group-status-switcher";
 
 export function GroupDetail() {
   const params = useParams<{ groupId: string }>();
-  const [showCreateMeetup, setShowCreateMeetup] = useState(false);
-  const [editableEventId, setEditableEventId] = useState<string | undefined>();
   const utils = api.useUtils();
   const groupQuery = api.group.byId.useQuery({
     id: params.groupId,
@@ -40,9 +30,6 @@ export function GroupDetail() {
     async onMutate(_variables) {
       await utils.group.myGroups.invalidate();
     },
-  });
-  const listMeetups = api.meetup.byGroupId.useQuery({
-    groupId: params.groupId,
   });
 
   if (groupQuery.error) {
@@ -81,31 +68,7 @@ export function GroupDetail() {
             <Link href={`/edit-group/${groupQuery.data.group.id}`}>
               <Button>edit</Button>
             </Link>
-            <Dialog
-              open={showCreateMeetup}
-              onOpenChange={(state) => {
-                setShowCreateMeetup(state);
-                setEditableEventId(undefined);
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button>create event</Button>
-              </DialogTrigger>
-              <DialogContent className="uppercase text-black">
-                <DialogTitle>
-                  {editableEventId ? "Edit" : "Create"} Event
-                </DialogTitle>
-                <UpsertMeetupForm
-                  groupId={params.groupId}
-                  eventId={editableEventId}
-                  onSaved={async () => {
-                    setShowCreateMeetup(false);
-                    setEditableEventId(undefined);
-                    await listMeetups.refetch();
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+
             <GroupStatusSwitcher
               groupId={params.groupId}
               status={group.status}
@@ -155,23 +118,10 @@ export function GroupDetail() {
       </div>
       {/* show events, discussions, etc */}
       <div className="my-8">
-        <h2 className="border-b-2 border-black text-2xl uppercase">
-          upcoming meetups
-        </h2>
-        <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 xl:grid-cols-3">
-          {listMeetups.data?.map((meetup) => (
-            <MeetupCard
-              key={meetup.id}
-              meetup={meetup}
-              canEdit={membership?.role === "owner"}
-              onEdit={() => {
-                setEditableEventId(meetup.id);
-                setShowCreateMeetup(true);
-              }}
-            />
-          ))}
-          {!listMeetups.data?.length && <p>no upcoming meetups</p>}
-        </div>
+        <MeetupList
+          groupId={params.groupId}
+          canEdit={membership?.role === "owner"}
+        />
       </div>
       <h2 className="border-b-2 border-black text-2xl uppercase">talk</h2>
       <LoginCta message="log in to join the discussion">

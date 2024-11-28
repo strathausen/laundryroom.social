@@ -5,11 +5,11 @@ import type { RouterInputs, RouterOutputs } from "@laundryroom/api";
 
 import { api } from "~/trpc/react";
 
-const postedItemsAtom = atom<Record<string, Discussion[]>>({});
-const deletedItemsAtom = atom<string[]>([]);
-
 type Discussion =
   RouterOutputs["discussion"]["byGroupId"]["discussions"][number];
+
+const postedItemsAtom = atom<Record<string, Discussion[]>>({});
+const deletedItemsAtom = atom<string[]>([]);
 
 type DiscussionInput = RouterInputs["discussion"]["upsert"];
 
@@ -74,14 +74,14 @@ export function useDiscussions({ groupId }: { groupId: string }) {
     }));
   };
 
-  const deleteItem = async (id: string) => {
+  const remove = async (id: string) => {
     await deleteMutation.mutateAsync(id);
     setDeletedItems((prev) => [...prev, id]);
   };
 
   return {
     upsert,
-    delete: deleteItem,
+    remove,
     fetchNextPage: listQuery.fetchNextPage,
     deletingId: deleteMutation.variables,
     items: (postedItems[groupId] ?? [])

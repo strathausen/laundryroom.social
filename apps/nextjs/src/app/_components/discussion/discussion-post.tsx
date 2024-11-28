@@ -57,7 +57,7 @@ export function DiscussionPost({ discussion, groupId }: Props) {
                     <div className="flex flex-col items-center gap-2">
                       really delete??
                       <Button
-                        onClick={() => discussions.delete(discussion.id)}
+                        onClick={() => discussions.remove(discussion.id)}
                         variant={"destructive"}
                         className="flex p-2"
                       >

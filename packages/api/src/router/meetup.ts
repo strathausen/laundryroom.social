@@ -42,6 +42,7 @@ export const meetupRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
+      const { limit, groupId, cursor, direction } = input;
       // TODO over time, this query will become slow
       // (O(n) with number of past attended meetups per group)
       const attendancesQuery = user
@@ -50,7 +51,7 @@ export const meetupRouter = createTRPCRouter({
               eq(Attendee.userId, user.id),
               inArray(
                 Attendee.meetupId,
-                sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
+                sql`(SELECT id FROM meetup WHERE group_id = ${groupId})`,
               ),
             ),
           })
@@ -60,20 +61,14 @@ export const meetupRouter = createTRPCRouter({
         where: and(
           eq(Meetup.groupId, input.groupId),
           input.direction === "forward"
-            ? gt(
-                Meetup.startTime,
-                input.cursor ? new Date(input.cursor) : new Date(),
-              )
-            : lt(
-                Meetup.startTime,
-                input.cursor ? new Date(input.cursor) : new Date(),
-              ),
+            ? gt(Meetup.startTime, cursor ? new Date(cursor) : new Date())
+            : lt(Meetup.startTime, cursor ? new Date(cursor) : new Date()),
         ),
         orderBy:
-          input.direction === "forward"
+          direction === "forward"
             ? asc(Meetup.startTime)
             : desc(Meetup.startTime),
-        limit: 3,
+        limit: limit + 1,
       });
       // TODO if there is no cursor, it means we have an initial query
       // -> try to find hasNextPage or hasPreviousPage in the opposite direction
@@ -87,7 +82,7 @@ export const meetupRouter = createTRPCRouter({
         .where(
           inArray(
             Attendee.meetupId,
-            sql`(SELECT id FROM meetup WHERE group_id = ${input.groupId})`,
+            sql`(SELECT id FROM meetup WHERE group_id = ${groupId})`,
           ),
         )
         .groupBy(Attendee.meetupId);
@@ -97,13 +92,45 @@ export const meetupRouter = createTRPCRouter({
         meetupsQuery,
         attendeesCountQuery,
       ]);
-      // combine meetups with attendance status
-      return meetups.map((meetup) => ({
-        ...meetup,
-        attendance: attendances.find((a) => a.meetupId === meetup.id),
-        attendeesCount:
-          attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
-      }));
+      const hasMore = meetups.length > limit;
+      if (hasMore) {
+        meetups.pop();
+      }
+      // if we have more than the limit, we have a next/prev page depending on the direction
+      const prevCursor =
+        (direction === "backward" && hasMore) || !cursor
+          ? meetups[0]?.startTime.toISOString()
+          : undefined;
+      const nextCursor =
+        (direction === "backward" && hasMore) || !cursor
+          ? meetups[meetups.length - 1]?.startTime.toISOString()
+          : undefined;
+      console.dir(meetups, { depth: null });
+      console.dir({ prevCursor, nextCursor, hasMore, input });
+      // reverse the order if backward
+      if (input.direction === "backward") {
+        meetups.reverse();
+      }
+      // combine meetups with the user's attendance status
+      return {
+        meetups: meetups.map((meetup) => ({
+          ...meetup,
+          isOngoing:
+            meetup.startTime < new Date() &&
+            new Date() <
+              new Date(
+                meetup.startTime.getTime() + meetup.duration * 60 * 1000,
+              ),
+          isOver:
+            new Date() >
+            new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
+          attendance: attendances.find((a) => a.meetupId === meetup.id),
+          attendeesCount:
+            attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
+        })),
+        prevCursor,
+        nextCursor,
+      };
     }),
 
   rsvp: protectedProcedure
@@ -193,7 +220,7 @@ export const meetupRouter = createTRPCRouter({
       // }
 
       // Some additional checks when updating a meetup
-      let meetupId: string | undefined;
+      let meetupId: string;
       if (input.id) {
         // check if group is the same, you cannot move meetups between groups
         const meetup = await ctx.db.query.Meetup.findFirst({
@@ -211,6 +238,9 @@ export const meetupRouter = createTRPCRouter({
         const res = await ctx.db.insert(Meetup).values(data).returning({
           id: Meetup.id,
         });
+        if (!res[0]) {
+          throw new Error("Failed to create meetup");
+        }
         meetupId = res[0]?.id;
       }
 
