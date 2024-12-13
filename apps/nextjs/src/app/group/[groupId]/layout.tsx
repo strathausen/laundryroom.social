@@ -6,7 +6,6 @@ import { useParams, usePathname } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 
 import { PageContainer } from "@laundryroom/ui/page-container";
-import { Text } from "@laundryroom/ui/text";
 
 import { GroupDetail } from "~/app/_components/group/group-detail";
 import { api } from "~/trpc/react";
@@ -27,7 +26,6 @@ export default function GroupLayout({ children }: GroupLayoutProps) {
     return <div className="m-auto mt-40">Loading...</div>;
   }
 
-  const groupName = groupQuery.data.group?.name ?? "Loading...";
   const tabs = [
     { label: "Meetups", path: `/group/${params.groupId}/meetups`, emoji: "📅" },
     {
