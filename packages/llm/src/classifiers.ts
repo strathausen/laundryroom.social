@@ -66,3 +66,8 @@ Fuck and shit is fine.
 
   return classification;
 }
+
+export async function classifyModerationModel(input: string) {
+  const { results } = await instructorClient.moderations.create({ input });
+  return results[0];
+}

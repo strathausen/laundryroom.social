@@ -8,7 +8,7 @@ import { MembersCount } from "../members-count";
 
 export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
   return (
-    <Link href={`/groups/${group.id}`}>
+    <Link href={`/group/${group.id}/meetups`}>
       <Box
         className={`flex h-48 flex-col justify-between gap-2 ${group.status === "hidden" || group.status === "archived" ? "opacity-50" : ""}`}
       >

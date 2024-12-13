@@ -24,9 +24,6 @@ export function MeetupList({ groupId, canEdit }: Props) {
 
   return (
     <div>
-      <h2 className="border-b-2 border-black text-2xl uppercase">
-        upcoming meetups
-      </h2>
       {meetups.hasNextPage && (
         <div className="mt-4 flex flex-col">
           <Button onClick={() => meetups.fetchNextPage()} variant={"ghost"}>
@@ -34,7 +31,7 @@ export function MeetupList({ groupId, canEdit }: Props) {
           </Button>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 flex flex-col gap-6">
         {meetups.items.map((meetup) => (
           <MeetupCard
             key={meetup.id}

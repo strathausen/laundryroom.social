@@ -33,7 +33,7 @@ export function useMeetups({ groupId }: { groupId: string }) {
       updatedAt: new Date(),
       createdAt: new Date().toDateString(),
       isOngoing: false,
-      isOver: false
+      isOver: false,
     };
     setPostedItems((prev) => {
       const groupMeetups = prev[groupId] ?? [];
@@ -73,5 +73,6 @@ export function useMeetups({ groupId }: { groupId: string }) {
     hasPreviousPage: listQuery.hasPreviousPage,
     fetchNextPage: () => listQuery.fetchNextPage(),
     fetchPreviousPage: () => listQuery.fetchPreviousPage(),
+    isLoading: listQuery.isLoading,
   };
 }

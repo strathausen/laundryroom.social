@@ -90,14 +90,12 @@ export function useComments(discussionId: string) {
     isCreating: createCommentMutation.isPending,
     isFetched: commentsQuery.isFetched,
     hasPreviousPage: commentsQuery.hasPreviousPage,
-    comments:
-      commentsQuery.data?.pages
-        .flatMap((page) => page.comments)
-        .concat(postedComments)
-        .map((comment) => ({
-          ...comment,
-          isDeleting: deleteCommentMutation.variables === comment.id,
-        }))
-        .filter((comment) => !deletedComments.includes(comment.id)) ?? [],
+    comments: (commentsQuery.data?.pages.flatMap((page) => page.comments) ?? [])
+      .concat(postedComments)
+      .map((comment) => ({
+        ...comment,
+        isDeleting: deleteCommentMutation.variables === comment.id,
+      }))
+      .filter((comment) => !deletedComments.includes(comment.id)),
   };
 }

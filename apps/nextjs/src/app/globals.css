@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: #fffbeb;
-    --foreground: rgb(17 94 89 / 1);
+    --foreground: rgb(0, 0, 0);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(240 10% 3.9%);
     --popover: hsl(0 0% 100%);

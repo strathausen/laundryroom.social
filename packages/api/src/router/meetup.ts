@@ -105,8 +105,6 @@ export const meetupRouter = createTRPCRouter({
         (direction === "backward" && hasMore) || !cursor
           ? meetups[meetups.length - 1]?.startTime.toISOString()
           : undefined;
-      console.dir(meetups, { depth: null });
-      console.dir({ prevCursor, nextCursor, hasMore, input });
       // reverse the order if backward
       if (input.direction === "backward") {
         meetups.reverse();
