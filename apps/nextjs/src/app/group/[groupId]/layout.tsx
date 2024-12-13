@@ -27,13 +27,12 @@ export default function GroupLayout({ children }: GroupLayoutProps) {
   }
 
   const tabs = [
-    { label: "Meetups", path: `/group/${params.groupId}/meetups`, emoji: "📅" },
+    { label: "Meetups", path: `/group/${params.groupId}/meetups` },
     {
       label: "Discussions",
       path: `/group/${params.groupId}/discussions`,
-      emoji: "💬",
     },
-    { label: "Members", path: `/group/${params.groupId}/members`, emoji: "👥" },
+    { label: "Members", path: `/group/${params.groupId}/members` },
   ];
 
   return (
@@ -46,11 +45,11 @@ export default function GroupLayout({ children }: GroupLayoutProps) {
               <li key={tab.path}>
                 <Link
                   href={tab.path}
-                  className={`p-3 ${
+                  className={`px-5 py-3 ${
                     pathname === tab.path ? "bg-black text-white" : "text-black"
                   }`}
                 >
-                  {tab.label} {tab.emoji}
+                  {tab.label}
                 </Link>
               </li>
             ))}

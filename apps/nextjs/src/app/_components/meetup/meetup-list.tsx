@@ -65,15 +65,19 @@ export function MeetupList({ groupId, canEdit }: Props) {
           </DialogTrigger>
           <DialogContent className="uppercase text-black">
             <DialogTitle>
-              {editableEventId ? "Edit" : "Create"} Event
+              {editableEventId ? "Edit" : "Create"} Meetup
             </DialogTitle>
             <UpsertMeetupForm
               groupId={groupId}
-              eventId={editableEventId}
+              meetupId={editableEventId}
               onSaved={() => {
                 setShowCreateMeetup(false);
                 setEditableEventId(undefined);
                 // await listMeetups.refetch();
+              }}
+              onCancel={() => {
+                setShowCreateMeetup(false);
+                setEditableEventId(undefined);
               }}
             />
           </DialogContent>

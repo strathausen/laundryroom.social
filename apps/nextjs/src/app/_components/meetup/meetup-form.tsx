@@ -30,9 +30,10 @@ import { toast } from "@laundryroom/ui/toast";
 import { api } from "~/trpc/react";
 
 interface Props {
-  eventId?: string;
+  meetupId?: string;
   groupId: string;
   onSaved?: () => void;
+  onCancel?: () => void;
 }
 
 export function UpsertMeetupForm(props: Props) {
@@ -41,19 +42,19 @@ export function UpsertMeetupForm(props: Props) {
     async onSuccess(_data) {
       form.reset();
       await utils.meetup.invalidate();
-      // if ("id" in data) router.push(`/events?highlight=${data.id}`);
-      toast.success("Event saved");
+      // if ("id" in data) router.push(`/meetups?highlight=${data.id}`);
+      toast.success("Meetup saved");
       props.onSaved?.();
     },
   });
   const meetupQuery = api.meetup.byId.useQuery(
-    { id: props.eventId ?? "" },
-    { enabled: !!props.eventId },
+    { id: props.meetupId ?? "" },
+    { enabled: !!props.meetupId },
   );
   const form = useForm({
     schema: UpsertMeetupSchema,
     defaultValues: {
-      id: props.eventId,
+      id: props.meetupId,
       groupId: props.groupId,
       title: meetupQuery.data?.title ?? "",
       description: meetupQuery.data?.description ?? "",
@@ -120,7 +121,8 @@ export function UpsertMeetupForm(props: Props) {
         <fieldset
           className="flex flex-col gap-4 rounded p-4 text-black"
           disabled={
-            upsertMeetup.isPending || (!!props.eventId && meetupQuery.isPending)
+            upsertMeetup.isPending ||
+            (!!props.meetupId && meetupQuery.isPending)
           }
         >
           {/* {form.formState.errors && (
@@ -309,13 +311,28 @@ export function UpsertMeetupForm(props: Props) {
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            disabled={upsertMeetup.isPending}
-            title={!form.formState.isValid ? "Please fill out all fields" : ""}
-          >
-            save
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                props.onCancel?.();
+              }}
+              disabled={upsertMeetup.isPending}
+            >
+              cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={upsertMeetup.isPending}
+              title={
+                !form.formState.isValid ? "Please fill out all fields" : ""
+              }
+              className="flex-grow"
+            >
+              save
+            </Button>
+          </div>
         </fieldset>
       </form>
     </Form>
