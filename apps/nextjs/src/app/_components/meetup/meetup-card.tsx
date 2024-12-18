@@ -15,8 +15,19 @@ interface Props {
 }
 
 export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
+  const isCancelled = meetup.status === "cancelled";
   return (
-    <Box key={meetup.id} className="flex flex-col justify-between gap-2">
+    <Box
+      key={meetup.id}
+      className={`relative flex flex-col justify-between gap-2`}
+    >
+      {isCancelled && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+          <div className="rotate-[-15deg] transform border-4 border-black bg-hotpink px-6 py-2 text-4xl font-bold uppercase text-white shadow-[4px_4px_0px_0px_#000000]">
+            Cancelled
+          </div>
+        </div>
+      )}
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between align-top">
           <h3 className="text-xl uppercase">{meetup.title}</h3>
@@ -35,9 +46,18 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
         </p>
       </div>
       <div className="flex flex-col space-y-2">
-        <p>time: {format(new Date(meetup.startTime), "dd MMM yyyy hh:mm a")}</p>
+        <p>
+          📅{" "}
+          <strong>
+            {format(new Date(meetup.startTime), "dd MMM yyyy hh:mm a")}
+          </strong>
+        </p>
         <div className="flex justify-between gap-4">
-          <RsvpSelect meetupId={meetup.id} rsvp={meetup.attendance?.status} />
+          <RsvpSelect
+            meetupId={meetup.id}
+            rsvp={meetup.attendance?.status}
+            disabled={isCancelled}
+          />
           <MembersCount count={meetup.attendeesCount} />
         </div>
       </div>

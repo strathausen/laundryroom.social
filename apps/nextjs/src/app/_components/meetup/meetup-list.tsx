@@ -52,37 +52,39 @@ export function MeetupList({ groupId, canEdit }: Props) {
           </Button>
         </div>
       )}
-      <div className="mt-4 flex justify-around">
-        <Dialog
-          open={showCreateMeetup}
-          onOpenChange={(state) => {
-            setShowCreateMeetup(state);
-            setEditableEventId(undefined);
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>create event</Button>
-          </DialogTrigger>
-          <DialogContent className="uppercase text-black">
-            <DialogTitle>
-              {editableEventId ? "Edit" : "Create"} Meetup
-            </DialogTitle>
-            <UpsertMeetupForm
-              groupId={groupId}
-              meetupId={editableEventId}
-              onSaved={() => {
-                setShowCreateMeetup(false);
-                setEditableEventId(undefined);
-                // await listMeetups.refetch();
-              }}
-              onCancel={() => {
-                setShowCreateMeetup(false);
-                setEditableEventId(undefined);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      {canEdit && (
+        <div className="mt-4 flex justify-around">
+          <Dialog
+            open={showCreateMeetup}
+            onOpenChange={(state) => {
+              setShowCreateMeetup(state);
+              setEditableEventId(undefined);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button>create meetup</Button>
+            </DialogTrigger>
+            <DialogContent className="uppercase text-black">
+              <DialogTitle>
+                {editableEventId ? "Edit" : "Create"} Meetup
+              </DialogTitle>
+              <UpsertMeetupForm
+                groupId={groupId}
+                meetupId={editableEventId}
+                onSaved={() => {
+                  setShowCreateMeetup(false);
+                  setEditableEventId(undefined);
+                  // await listMeetups.refetch();
+                }}
+                onCancel={() => {
+                  setShowCreateMeetup(false);
+                  setEditableEventId(undefined);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
     </div>
   );
 }

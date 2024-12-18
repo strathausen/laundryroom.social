@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
+import type { RouterInputs } from "@laundryroom/api";
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
 import { Calendar } from "@laundryroom/ui/calendar";
@@ -24,6 +25,14 @@ import {
   PopoverTrigger,
 } from "@laundryroom/ui/popover";
 import { ScrollArea, ScrollBar } from "@laundryroom/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@laundryroom/ui/select";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
@@ -64,6 +73,8 @@ export function UpsertMeetupForm(props: Props) {
         meetupQuery.data?.startTime ??
         new Date(new Date().setHours(18, 0, 0, 0) + 24 * 60 * 60 * 1000),
       duration: meetupQuery.data?.duration ?? 60,
+      // attendeeLimit: meetupQuery.data?.attendeeLimit ?? null,
+      status: meetupQuery.data?.status,
     },
   });
 
@@ -107,6 +118,8 @@ export function UpsertMeetupForm(props: Props) {
       form.setValue("location", meetupQuery.data.location);
       form.setValue("startTime", meetupQuery.data.startTime);
       form.setValue("duration", meetupQuery.data.duration);
+      // form.setValue("attendeeLimit", meetupQuery.data.attendeeLimit);
+      form.setValue("status", meetupQuery.data.status);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetupQuery.data]);
@@ -306,6 +319,45 @@ export function UpsertMeetupForm(props: Props) {
                 </FormControl>
                 <FormDescription>
                   {field.value ? `${field.value} minutes` : ""}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                {/* <FormLabel>status: {field.value}</FormLabel> */}
+                <FormControl>
+                  <Select
+                    {...field}
+                    onValueChange={(value) => {
+                      form.setValue(
+                        "status",
+                        value as RouterInputs["meetup"]["upsert"]["status"],
+                      );
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {["active", "hidden", "cancelled"].map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription>
+                  {field.value === "cancelled"
+                    ? "This meetup is cancelled"
+                    : ""}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

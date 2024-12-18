@@ -58,11 +58,9 @@ export const Account = pgTable(
     id_token: text("id_token"),
     session_state: varchar("session_state", { length: 255 }),
   },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  }),
+  (account) => [
+    primaryKey({ columns: [account.provider, account.providerAccountId] }),
+  ],
 );
 
 export const AccountRelations = relations(Account, ({ one }) => ({
@@ -98,12 +96,6 @@ export const VerificationToken = pgTable(
   }),
 );
 
-/**
- * additions to the main schema for the laundryroom app for organising meetups
- * those tables might include: Meetups, Comments Messages, Groups,
- * Notifications, Attendees (with status) and whatever else is needed
- */
-
 export const GroupMemberRole = pgEnum("group_member_role", [
   "owner",
   "admin",
@@ -134,6 +126,17 @@ export const ModerationStatus = pgEnum("group_moderation_tags", [
   "offensive",
   "inappropriate",
 ]);
+
+const meetupStatusElements = [
+  "active",
+  "archived",
+  "hidden",
+  "cancelled",
+  "postponed",
+  "full",
+] as const;
+
+export const MeetupStatus = pgEnum("meetup_status", meetupStatusElements);
 
 // as a groth hack, I offer to manually promote chosen groups free of charge
 // this is a way to get more users to use the platform and get feedback
@@ -232,9 +235,7 @@ export const GroupMember = pgTable(
       withTimezone: true,
     }).$onUpdateFn(() => sql`now()`),
   },
-  (t) => ({
-    pk: primaryKey({ columns: [t.groupId, t.userId] }),
-  }),
+  (t) => [primaryKey({ columns: [t.groupId, t.userId] })],
 );
 
 export const GroupMemberRelations = relations(GroupMember, ({ one }) => ({
@@ -262,6 +263,8 @@ export const Meetup = pgTable("meetup", {
     withTimezone: true,
   }).notNull(),
   duration: integer("duration").default(60).notNull(), // in minutes
+  status: MeetupStatus("status").default("active").notNull(),
+  attendeeLimit: integer("attendee_limit").default(100),
   // if used as a cursor, this should be a string based timestamp for more accurate pagination
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
@@ -278,6 +281,8 @@ export const UpsertMeetupSchema = createInsertSchema(Meetup, {
   location: z.string().max(255),
   startTime: z.coerce.date(),
   duration: z.number().int().positive(),
+  status: z.enum(meetupStatusElements).optional(),
+  attendeeLimit: z.number().int().positive().optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,
@@ -311,9 +316,7 @@ export const Attendee = pgTable(
       withTimezone: true,
     }).$onUpdateFn(() => new Date()),
   },
-  (t) => ({
-    pk: primaryKey({ columns: [t.meetupId, t.userId] }),
-  }),
+  (t) => [primaryKey({ columns: [t.meetupId, t.userId] })],
 );
 
 export const AttendeeRelations = relations(Attendee, ({ one }) => ({

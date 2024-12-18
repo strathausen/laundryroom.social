@@ -28,6 +28,19 @@ export const meetupRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.id),
+        columns: {
+          id: true,
+          groupId: true,
+          title: true,
+          description: true,
+          startTime: true,
+          duration: true,
+          location: true,
+          createdAt: true,
+          updatedAt: true,
+          status: true,
+          attendeeLimit: true,
+        },
       });
     }),
 
