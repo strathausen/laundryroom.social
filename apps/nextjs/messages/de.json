@@ -7,8 +7,8 @@
   },
   "LocaleSwitcher": {
     "label": "Language",
-    "locale": "{locale, select, de {Deutsch} en {English} other {Unknown}}"
+    "locale": "{locale, select, de {Deutsch} en {English} other {Unbekannt}}"
   },
-  "aqua_wise_gazelle_amaze": "Ältere Kommentare laden",
+  "aqua_wise_gazelle_amaze": "ältere Kommentare laden",
   "fuzzy_only_kestrel_learn": "Löschen"
 }
