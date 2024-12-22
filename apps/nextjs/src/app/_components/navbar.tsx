@@ -101,7 +101,7 @@ export function NavBar(props: Props) {
               href="https://www.zupafeed.com/campaign/clsa7g66k0007u2z77f2g0e4o"
               target="_blank"
             >
-              feedback 🔥
+              {t("feedback")} 🔥
             </Link>
           </div>
           {/* <LanguageSwitcher /> */}

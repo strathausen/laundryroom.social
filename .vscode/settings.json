@@ -6,5 +6,12 @@
   ],
   "workbench.colorTheme": "Pink Candy Dark Warm",
   "workbench.preferredDarkColorTheme": "Ayu Mirage",
-  "workbench.preferredLightColorTheme": "Ayu Light"
+  "workbench.preferredLightColorTheme": "Ayu Light",
+  "i18n-ally.dirStructure": "dir",
+  "i18n-ally.extract.keyMaxLength": 100,
+  "i18n-ally.defaultNamespace": "global",
+  "i18n-ally.enabledFrameworks": ["next-intl"],
+  "i18n-ally.localesPaths": ["apps/nextjs/messages", "apps/nextjs/src/i18n"],
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.extract.autoDetect": true
 }

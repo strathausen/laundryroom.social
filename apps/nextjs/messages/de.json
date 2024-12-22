@@ -2,10 +2,13 @@
   "navBar": {
     "groups": "Gruppen",
     "create": "Erstellen",
-    "feed": "Feed"
+    "feed": "Feed",
+    "feedback": "Feedback"
   },
   "LocaleSwitcher": {
     "label": "Language",
     "locale": "{locale, select, de {Deutsch} en {English} other {Unknown}}"
-  }
+  },
+  "aqua_wise_gazelle_amaze": "Ältere Kommentare laden",
+  "fuzzy_only_kestrel_learn": "Löschen"
 }

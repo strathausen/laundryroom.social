@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, MenuIcon, MessageCircle, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@laundryroom/ui/button";
 import { Input } from "@laundryroom/ui/input";
@@ -35,6 +36,8 @@ export function DiscussionComments({
     comments,
   } = useComments(discussionId);
 
+  const t = useTranslations();
+
   return (
     <>
       <div className="my-2">
@@ -58,7 +61,7 @@ export function DiscussionComments({
             className="mb-3"
           >
             <ChevronDown className="mr-2 h-4 w-4" />
-            load older comments
+            {t("aqua_wise_gazelle_amaze")}
           </Button>
         )}
         <div className="flex flex-col gap-2">
@@ -96,7 +99,8 @@ export function DiscussionComments({
                         variant="ghost"
                         className="flex justify-between gap-2"
                       >
-                        delete <Trash className="h-4 w-4" />
+                        {t("fuzzy_only_kestrel_learn")}{" "}
+                        <Trash className="h-4 w-4" />
                       </Button>
                     </PopoverContent>
                   </Popover>

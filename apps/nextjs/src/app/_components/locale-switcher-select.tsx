@@ -4,6 +4,7 @@ import type { ChangeEvent, ReactNode } from "react";
 import { useTransition } from "react";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
+import { FaGlobe } from "react-icons/fa6";
 
 import type { Locale } from "~/i18n/routing";
 import { usePathname, useRouter } from "~/i18n/routing";
@@ -40,13 +41,14 @@ export default function LocaleSwitcherSelect({
   return (
     <label
       className={clsx(
-        "relative flex",
+        "relative flex items-center gap-4 lowercase",
         isPending && "transition-opacity [&:disabled]:opacity-30",
       )}
     >
       <p className="sr-only">{label}</p>
+      <FaGlobe className="h-4 w-4" />
       <select
-        className="inline-flex appearance-none bg-transparent py-3 pl-0 pr-6"
+        className="inline-flex appearance-none bg-transparent py-3 pl-0 pr-6 lowercase"
         defaultValue={defaultValue}
         disabled={isPending}
         onChange={onSelectChange}
