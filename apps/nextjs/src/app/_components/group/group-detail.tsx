@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import { ShareMenu } from "@laundryroom/ui/share-menu";
 
+import { Link } from "~/i18n/routing";
 import { api } from "~/trpc/react";
 import { LoginCta } from "../login-cta";
 import { GroupPromoter } from "./group-promoter";

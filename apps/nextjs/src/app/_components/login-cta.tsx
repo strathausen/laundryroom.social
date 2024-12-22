@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { useSession } from "next-auth/react";
+
+import { Link } from "~/i18n/routing";
 
 interface Props {
   message: string;

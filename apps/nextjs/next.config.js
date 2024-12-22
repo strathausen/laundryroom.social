@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url";
 import createMDX from "@next/mdx";
 import createJiti from "jiti";
+import createNextIntlPlugin from "next-intl/plugin";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 createJiti(fileURLToPath(import.meta.url))("./src/env");
@@ -32,5 +33,6 @@ const config = {
 };
 
 const withMDX = createMDX();
+const withNextIntl = createNextIntlPlugin();
 
-export default withMDX(config);
+export default withNextIntl(withMDX(config));

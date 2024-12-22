@@ -1,5 +1,5 @@
 import { HydrateClient } from "~/trpc/server";
-import { AuthWidget } from "./_components/auth-widget";
+import { AuthWidget } from "../_components/auth-widget";
 
 // export const runtime = "edge";
 

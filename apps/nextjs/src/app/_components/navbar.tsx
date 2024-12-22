@@ -5,8 +5,7 @@
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
 import type { Session } from "next-auth";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   FaBowlRice,
   // FaCalendar,
@@ -15,6 +14,9 @@ import {
   FaPeopleGroup,
   FaPlus,
 } from "react-icons/fa6";
+
+import { Link, usePathname } from "~/i18n/routing";
+import LocaleSwitcher from "./locale-switcher";
 
 interface Props {
   session: Session | null;
@@ -30,7 +32,7 @@ const menuLinks = [
 
 export function NavBar(props: Props) {
   const pathName = usePathname();
-  // const t = useScopedI18n("navBar");
+  const t = useTranslations("navBar");
 
   return (
     <div className="fixed bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:border-none md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
@@ -63,7 +65,7 @@ export function NavBar(props: Props) {
                   : "decoration-fancyorange/0"
               }`}
             >
-              {icon} <span className="text-sm md:text-xl">{label}</span>
+              {icon} <span className="text-sm md:text-xl">{t(label)}</span>
             </Link>
           ))}
           <Link
@@ -91,6 +93,9 @@ export function NavBar(props: Props) {
           </Link>
         </div>
         <div className="text-primary-darker mb-24 hidden md:mb-0 md:block">
+          <div>
+            <LocaleSwitcher />
+          </div>
           <div className="pb-3">
             <Link
               href="https://www.zupafeed.com/campaign/clsa7g66k0007u2z77f2g0e4o"

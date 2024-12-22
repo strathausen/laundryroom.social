@@ -1,8 +1,7 @@
-import Link from "next/link";
-
 import { auth, signIn, signOut } from "@laundryroom/auth";
 import { Button } from "@laundryroom/ui/button";
 
+import { Link } from "~/i18n/routing";
 import { EditProfileForm } from "./profile-edit";
 
 export async function AuthWidget({

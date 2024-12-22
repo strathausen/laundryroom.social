@@ -1,0 +1,11 @@
+{
+  "navBar": {
+    "groups": "groups",
+    "create": "create",
+    "feed": "feed"
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "locale": "{locale, select, de {Deutsch} en {English} other {Unknown}}"
+  }
+}

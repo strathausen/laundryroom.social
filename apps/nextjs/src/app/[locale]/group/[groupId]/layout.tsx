@@ -1,13 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 
 import { PageContainer } from "@laundryroom/ui/page-container";
 
 import { GroupDetail } from "~/app/_components/group/group-detail";
+import { Link, usePathname } from "~/i18n/routing";
 import { api } from "~/trpc/react";
 
 interface GroupLayoutProps {

@@ -1,9 +1,8 @@
-import Link from "next/link";
-
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { InfoTag } from "@laundryroom/ui/info-tag";
 
+import { Link } from "~/i18n/routing";
 import { MembersCount } from "../members-count";
 
 export function GroupCard(group: RouterOutputs["group"]["search"][number]) {

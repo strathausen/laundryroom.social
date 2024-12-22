@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Analytics as _Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import { Provider } from "jotai";
+import { Provider as JotaiProvider } from "jotai";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 import { cn } from "@laundryroom/ui";
 import { ThemeProvider, ThemeToggle } from "@laundryroom/ui/theme";
@@ -12,12 +14,15 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/app/globals.css";
 
+import { notFound } from "next/navigation";
+
 import { auth } from "@laundryroom/auth";
 import { CookieConsent } from "@laundryroom/ui/cookie-consent";
 
 import { env } from "~/env";
-import { Footer } from "./_components/footer";
-import { NavBar } from "./_components/navbar";
+import { routing } from "~/i18n/routing";
+import { Footer } from "../_components/footer";
+import { NavBar } from "../_components/navbar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -47,8 +52,16 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
+export default async function RootLayout(props: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
+  // Ensure that the incoming `locale` is valid
+  if (!routing.locales.includes(props.params.locale as "en" | "de")) {
+    notFound();
+  }
   const session = await auth();
+  const messages = await getMessages();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -64,22 +77,24 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           defaultTheme="light"
           forcedTheme="light" /*enableSystem*/
         >
-          <Provider>
-            <NavBar session={session} />
-            <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
-              <TRPCReactProvider>{props.children}</TRPCReactProvider>
-              <div className="mt-4 flex flex-col items-center">
-                <div className="max-w-5xl">
-                  <Footer />
+          <NextIntlClientProvider messages={messages}>
+            <JotaiProvider>
+              <NavBar session={session} />
+              <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
+                <TRPCReactProvider>{props.children}</TRPCReactProvider>
+                <div className="mt-4 flex flex-col items-center">
+                  <div className="max-w-5xl">
+                    <Footer />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="absolute bottom-4 right-4 hidden">
-              <ThemeToggle />
-            </div>
-            <Toaster />
-            <CookieConsent />
-          </Provider>
+              <div className="absolute bottom-4 right-4 hidden">
+                <ThemeToggle />
+              </div>
+              <Toaster />
+              <CookieConsent />
+            </JotaiProvider>
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>
