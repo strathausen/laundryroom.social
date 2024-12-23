@@ -14,7 +14,7 @@ interface Meetup {
 function transformDate(date: Date) {
   return [
     date.getFullYear(),
-    date.getMonth(),
+    date.getMonth() + 1, // thanks Java
     date.getDate(),
     date.getHours(),
     date.getMinutes(),

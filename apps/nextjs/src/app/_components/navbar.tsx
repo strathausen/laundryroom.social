@@ -5,6 +5,7 @@
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
 import type { Session } from "next-auth";
+import NavLink from "next/link";
 import { useTranslations } from "next-intl";
 import {
   FaBowlRice,
@@ -105,12 +106,12 @@ export function NavBar(props: Props) {
             </Link>
           </div>
           {/* <LanguageSwitcher /> */}
-          <Link
+          <NavLink
             href={props.session ? "/api/auth/signout" : "/api/auth/signin"}
             className="flex items-center gap-4 rounded-sm transition"
           >
             <FaDoorOpen /> {props.session ? "logout" : "login"}
-          </Link>
+          </NavLink>
         </div>
       </div>
     </div>
