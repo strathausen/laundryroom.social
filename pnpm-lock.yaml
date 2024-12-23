@@ -357,6 +357,9 @@ importers:
       '@laundryroom/auth':
         specifier: workspace:*
         version: link:../auth
+      '@laundryroom/calendar':
+        specifier: workspace:*
+        version: link:../calendar
       '@laundryroom/db':
         specifier: workspace:*
         version: link:../db

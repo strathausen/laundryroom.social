@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@laundryroom/auth": "workspace:*",
+    "@laundryroom/calendar": "workspace:*",
     "@laundryroom/db": "workspace:*",
     "@laundryroom/email": "workspace:*",
     "@laundryroom/llm": "workspace:*",

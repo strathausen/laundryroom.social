@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { createEventUpdate } from "@laundryroom/calendar";
 import {
   and,
   asc,
@@ -254,16 +255,37 @@ export const meetupRouter = createTRPCRouter({
         }
         meetupId = res[0]?.id;
       }
+      const icsInvite = createEventUpdate({
+        uuid: meetupId,
+        title: data.title,
+        description: data.description ?? "",
+        start: data.startTime,
+        duration: data.duration ?? 60,
+        status: data.status === "active" ? "CONFIRMED" : "CANCELLED",
+        url: `https://laundryroom.social/meetup/${meetupId}`,
+        location: data.location ?? "",
+      });
 
       for (const member of group.members) {
         if (member.user.id === user.id || !meetupId) {
           continue;
         }
-        await sendEmail(member.user.email, "newEvent", {
-          isNew: !data.id,
-          meetup: { ...data, id: meetupId },
-          group,
-        });
+        await sendEmail(
+          member.user.email,
+          "eventUpdate",
+          {
+            isNew: !data.id,
+            meetup: { ...data, id: meetupId },
+            group,
+          },
+          [
+            {
+              filename: "invite.ics",
+              content: icsInvite.value,
+              contentType: "text/calendar",
+            },
+          ],
+        );
       }
       return { id: meetupId };
     }),

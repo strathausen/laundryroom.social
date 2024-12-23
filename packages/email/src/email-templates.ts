@@ -26,7 +26,7 @@ interface DiscussionInput {
 }
 
 export const emailTemplates = {
-  newEvent({
+  eventUpdate({
     isNew,
     group,
     meetup,
