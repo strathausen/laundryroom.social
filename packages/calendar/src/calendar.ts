@@ -1,4 +1,4 @@
-import ics from "ics";
+import { createEvent } from "ics";
 
 interface Meetup {
   uuid: string;
@@ -22,7 +22,7 @@ function transformDate(date: Date) {
 }
 
 export function createEventUpdate(meetup: Meetup) {
-  return ics.createEvent({
+  return createEvent({
     uid: meetup.uuid,
     productId: "laundryroom.social@adamgibbons/ics",
     title: meetup.title,

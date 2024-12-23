@@ -74,7 +74,7 @@ export function UpsertMeetupForm(props: Props) {
         new Date(new Date().setHours(18, 0, 0, 0) + 24 * 60 * 60 * 1000),
       duration: meetupQuery.data?.duration ?? 60,
       // attendeeLimit: meetupQuery.data?.attendeeLimit ?? null,
-      status: meetupQuery.data?.status,
+      status: meetupQuery.data?.status ?? "active",
     },
   });
 
