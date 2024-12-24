@@ -41,15 +41,19 @@ export const emailTemplates = {
     };
   } & GroupInput) {
     return {
-      subject: `${isNew ? "New Meetup:" : "Meetup changed:"} ${meetup.title} in ${group.name}`,
+      subject: `${isNew ? "📅 New Meetup:" : "📆 Meetup changed:"} ${meetup.title} in ${group.name}`,
       body: `Dear human,
 
 A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundryroom.social/groups/${group.id}?meetupId=${meetup.id}
 
-Title: ${meetup.title}
-${meetup.description ? `Description: ${meetup.description}` : ""}
 
-Have a great rest of your day!`,
+${meetup.title}
+
+${meetup.description ? `Description:\n    ${meetup.description}` : ""}
+
+Have a great rest of your day!
+
+`,
     };
   },
 
