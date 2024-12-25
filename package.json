@@ -20,7 +20,7 @@
     "lint:ws": "pnpm dlx sherif@latest",
     "postinstall": "pnpm lint:ws",
     "typecheck": "turbo run typecheck",
-    "check:all": "pnpm lint:fix; pnpm format:fix; pnpm typecheck",
+    "check": "pnpm lint:fix && pnpm format:fix && pnpm typecheck",
     "ui-add": "turbo run ui-add"
   },
   "devDependencies": {

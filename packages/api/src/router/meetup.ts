@@ -59,6 +59,8 @@ export const meetupRouter = createTRPCRouter({
       const { limit, groupId, cursor, direction } = input;
       // TODO over time, this query will become slow
       // (O(n) with number of past attended meetups per group)
+      console.dir(user);
+
       const attendancesQuery = user
         ? ctx.db.query.Attendee.findMany({
             where: and(
@@ -70,6 +72,8 @@ export const meetupRouter = createTRPCRouter({
             ),
           })
         : [];
+      // const isSuperUser = ["admin", "owner"].includes(usermage
+      // .
       // only show past meetups, paginated
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
