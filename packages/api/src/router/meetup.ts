@@ -10,6 +10,7 @@ import {
   gt,
   inArray,
   lt,
+  not,
   sql,
 } from "@laundryroom/db";
 import {
@@ -18,6 +19,7 @@ import {
   GroupMember,
   Meetup,
   UpsertMeetupSchema,
+  User,
 } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 
@@ -57,10 +59,15 @@ export const meetupRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
       const { limit, groupId, cursor, direction } = input;
-      // TODO over time, this query will become slow
-      // (O(n) with number of past attended meetups per group)
-      console.dir(user);
+      const dbUser = user
+        ? await ctx.db.query.User.findFirst({
+            where: eq(User.id, user.id),
+            columns: { id: true, email: true, name: true, role: true },
+          })
+        : null;
 
+      // TODO FIXME over time, this query will become slow
+      // (O(n) with number of past attended meetups per group)
       const attendancesQuery = user
         ? ctx.db.query.Attendee.findMany({
             where: and(
@@ -72,12 +79,12 @@ export const meetupRouter = createTRPCRouter({
             ),
           })
         : [];
-      // const isSuperUser = ["admin", "owner"].includes(usermage
-      // .
-      // only show past meetups, paginated
+      const isSuperUser = ["admin", "owner"].includes(dbUser?.role ?? "");
+      // only show past meetups, paginated, omit hidden meetups for non-admins
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
           eq(Meetup.groupId, input.groupId),
+          isSuperUser ? undefined : not(eq(Meetup.status, "hidden")),
           input.direction === "forward"
             ? gt(Meetup.startTime, cursor ? new Date(cursor) : new Date())
             : lt(Meetup.startTime, cursor ? new Date(cursor) : new Date()),

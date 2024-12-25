@@ -16,10 +16,11 @@ interface Props {
 
 export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
   const isCancelled = meetup.status === "cancelled";
+  const isPast = new Date(meetup.startTime) < new Date();
   return (
     <Box
       key={meetup.id}
-      className={`relative flex flex-col justify-between gap-2`}
+      className={`relative flex flex-col justify-between gap-2 ${meetup.status === "hidden" ? "opacity-50" : ""}`}
     >
       {isCancelled && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
@@ -56,7 +57,7 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
           <RsvpSelect
             meetupId={meetup.id}
             rsvp={meetup.attendance?.status}
-            disabled={isCancelled}
+            disabled={isCancelled || isPast}
           />
           <MembersCount count={meetup.attendeesCount} />
         </div>
