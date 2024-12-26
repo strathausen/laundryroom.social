@@ -10,7 +10,6 @@ import {
   gt,
   inArray,
   lt,
-  not,
   sql,
 } from "@laundryroom/db";
 import {
@@ -19,7 +18,6 @@ import {
   GroupMember,
   Meetup,
   UpsertMeetupSchema,
-  User,
 } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 
@@ -59,12 +57,16 @@ export const meetupRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
       const { limit, groupId, cursor, direction } = input;
-      const dbUser = user
-        ? await ctx.db.query.User.findFirst({
-            where: eq(User.id, user.id),
-            columns: { id: true, email: true, name: true, role: true },
+
+      // check if user is member of the group
+      const membershipQuery = user
+        ? ctx.db.query.GroupMember.findFirst({
+            where: and(
+              eq(GroupMember.groupId, groupId),
+              eq(GroupMember.userId, user.id),
+            ),
           })
-        : null;
+        : undefined;
 
       // TODO FIXME over time, this query will become slow
       // (O(n) with number of past attended meetups per group)
@@ -79,12 +81,10 @@ export const meetupRouter = createTRPCRouter({
             ),
           })
         : [];
-      const isSuperUser = ["admin", "owner"].includes(dbUser?.role ?? "");
       // only show past meetups, paginated, omit hidden meetups for non-admins
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
           eq(Meetup.groupId, input.groupId),
-          isSuperUser ? undefined : not(eq(Meetup.status, "hidden")),
           input.direction === "forward"
             ? gt(Meetup.startTime, cursor ? new Date(cursor) : new Date())
             : lt(Meetup.startTime, cursor ? new Date(cursor) : new Date()),
@@ -112,11 +112,13 @@ export const meetupRouter = createTRPCRouter({
         )
         .groupBy(Attendee.meetupId);
 
-      const [attendances, meetups, attendeesCount] = await Promise.all([
-        attendancesQuery,
-        meetupsQuery,
-        attendeesCountQuery,
-      ]);
+      const [attendances, meetups, attendeesCount, membership] =
+        await Promise.all([
+          attendancesQuery,
+          meetupsQuery,
+          attendeesCountQuery,
+          membershipQuery,
+        ]);
       const hasMore = meetups.length > limit;
       if (hasMore) {
         meetups.pop();
@@ -134,23 +136,32 @@ export const meetupRouter = createTRPCRouter({
       if (input.direction === "backward") {
         meetups.reverse();
       }
+      const attendance = attendances.find((a) => a.userId === user?.id);
+      const isSuperUser = ["admin", "owner", "moderator"].includes(
+        membership?.role ?? "",
+      );
       // combine meetups with the user's attendance status
       return {
-        meetups: meetups.map((meetup) => ({
-          ...meetup,
-          isOngoing:
-            meetup.startTime < new Date() &&
-            new Date() <
+        meetups: meetups
+          // omit hidden meetups for non-admins
+          .filter((meetup) => isSuperUser || meetup.status !== "hidden")
+          .map((meetup) => ({
+            ...meetup,
+            isOngoing:
+              meetup.startTime < new Date() &&
+              new Date() <
+                new Date(
+                  meetup.startTime.getTime() + meetup.duration * 60 * 1000,
+                ),
+            isOver:
+              new Date() >
               new Date(
                 meetup.startTime.getTime() + meetup.duration * 60 * 1000,
               ),
-          isOver:
-            new Date() >
-            new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
-          attendance: attendances.find((a) => a.meetupId === meetup.id),
-          attendeesCount:
-            attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
-        })),
+            attendance,
+            attendeesCount:
+              attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
+          })),
         prevCursor,
         nextCursor,
       };
