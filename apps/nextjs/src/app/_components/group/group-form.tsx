@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -23,10 +22,11 @@ import { api } from "~/trpc/react";
 interface Props {
   groupId: string;
   isNew: boolean;
+  onSubmit: (groupId: string) => void;
+  onCancel: () => void;
 }
 
 export function GroupForm(props: Props) {
-  const router = useRouter();
   const groupQuery = api.group.byId.useQuery(
     { id: props.groupId },
     { enabled: !props.isNew },
@@ -52,8 +52,12 @@ export function GroupForm(props: Props) {
     async onSuccess(data) {
       form.reset();
       await utils.group.invalidate();
-      if ("id" in data) router.push(`/groups?highlight=${data.id}`);
       toast.success("Group saved");
+      if ("id" in data) {
+        props.onSubmit(data.id);
+      } else {
+        props.onSubmit("");
+      }
     },
     onError: (err) => {
       toast.error(
@@ -107,12 +111,7 @@ export function GroupForm(props: Props) {
           />
           <div className="flex gap-4">
             <Button type="submit">save</Button>
-            <Button
-              type="button"
-              onClick={() => {
-                router.push("/groups");
-              }}
-            >
+            <Button type="button" onClick={props.onCancel}>
               cancel
             </Button>
           </div>
