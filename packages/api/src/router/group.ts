@@ -250,7 +250,7 @@ export const groupRouter = {
           eq(GroupMember.role, "owner"),
         ),
         with: {
-          user: { columns: { id: true, email: true } },
+          user: { columns: { id: true, email: true, name: true } },
           group: { columns: { id: true, name: true } },
         },
       });

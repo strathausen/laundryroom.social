@@ -7,8 +7,7 @@ interface GroupInput {
 interface UserInput {
   user: {
     id: string;
-    email: string;
-    name?: string | null;
+    name: string | null;
   };
 }
 interface MemberInput {
@@ -115,13 +114,12 @@ Say hi and welcome them to the group!`,
   }: {
     status: "not_interested" | "pending";
     message: string;
-  } & GroupInput &
-    UserInput) {
+  } & GroupInput & { user: UserInput["user"] & { email: string } }) {
     return {
       subject: `Promotion status changed: ${group.name}`,
       body: `Dear platform owner,
       
-The user ${user.email} has requested promotion for the group "${group.name}" on https://www.laundryroom.social/groups/${group.id}
+The user ${user.name} (${user.email}) has requested promotion for the group "${group.name}" on https://www.laundryroom.social/groups/${group.id}
 
 Status: ${status}
 Message: ${message}

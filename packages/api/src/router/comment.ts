@@ -115,7 +115,7 @@ export const commentRouter = {
           }
           const { email } = user;
           await sendEmail(email, "newComment", {
-            user: { ...user, email },
+            user,
             discussion,
             comment: input,
             groupId: discussion.groupId,
