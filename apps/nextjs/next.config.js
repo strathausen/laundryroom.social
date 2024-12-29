@@ -28,6 +28,9 @@ const config = {
       {
         hostname: "utfs.io",
       },
+      {
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
 };

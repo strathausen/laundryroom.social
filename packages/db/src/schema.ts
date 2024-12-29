@@ -159,6 +159,7 @@ export const Group = pgTable(
     description: text("description").notNull(),
     aiSearchText: text("ai_search_text").default("").notNull(),
     image: varchar("image", { length: 255 }),
+    imageDescription: text("image_description"),
     status: GroupStatus("status").default("active"),
     moderationStatus: ModerationStatus("moderation_status").default("ok"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -167,8 +168,8 @@ export const Group = pgTable(
       withTimezone: true,
     }).$onUpdateFn(() => sql`now()`),
   },
-  (t) => ({
-    seaarchIndex: index("search_index").using(
+  (t) => [
+    index("search_index").using(
       "gin",
       sql`(
         setweight(to_tsvector('english', ${t.name}), 'A') ||
@@ -176,20 +177,21 @@ export const Group = pgTable(
         setweight(to_tsvector('english', ${t.aiSearchText}), 'C')
       )`,
     ),
-  }),
+  ],
 );
 
 export const UpsertGroupSchema = createInsertSchema(Group, {
   id: z.string().optional(),
   name: z.string().max(255).min(3),
   description: z.string().max(255).min(20),
-  image: z.string().max(255).optional(),
+  image: z.string().max(255),
 }).omit({
   createdAt: true,
   updatedAt: true,
   status: true,
   moderationStatus: true,
   aiSearchText: true,
+  imageDescription: true,
 });
 
 export const GroupRelations = relations(Group, ({ many, one }) => ({

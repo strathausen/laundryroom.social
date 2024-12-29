@@ -33,6 +33,7 @@ export function createEventUpdate(meetup: Meetup) {
     status: meetup.status,
     url: meetup.url,
     location: meetup.location,
+    method: "REQUEST",
 
     // TODO: add more fields
     // geo

@@ -166,6 +166,7 @@ export const groupRouter = {
         id: z.string().optional(),
         name: z.string(),
         description: z.string(),
+        image: z.string().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

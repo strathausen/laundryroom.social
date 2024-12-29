@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import { ShareMenu } from "@laundryroom/ui/share-menu";
@@ -40,11 +42,21 @@ export function GroupDetail(props: GroupDetailProps) {
 
   return (
     <div className="flex flex-col gap-5 text-black">
-      <h2 className="border-b-2 border-black text-2xl uppercase">
+      {/* <h2 className="border-b-2 border-black text-2xl uppercase">
         {group.name}
-      </h2>
-      <Box className="mx-auto w-full max-w-2xl">
-        <h2 className="mb-2 text-xl uppercase">about this group</h2>
+      </h2> */}
+      <Box className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+        {group.image && (
+          <Image
+            src={group.image}
+            alt={group.name}
+            width={800}
+            height={600}
+            className="w-full object-cover"
+            style={{ imageRendering: "pixelated" }}
+          />
+        )}
+        <h2 className="mt-4 text-xl uppercase">{group.name}</h2>
         {/* the MDXRemote component can only run server side, need to figur this out */}
         {/* <MDXRemote source={groupQuery.data.description} /> */}
         {group.description.split("\n").map((line, i) => (

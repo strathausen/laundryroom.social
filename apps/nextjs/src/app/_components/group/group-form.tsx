@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -13,6 +13,7 @@ import {
   FormMessage,
   useForm,
 } from "@laundryroom/ui/form";
+import { ImageUploader } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function GroupForm(props: Props) {
+  const [imageUrl, setImageUrl] = useState<string>();
   const groupQuery = api.group.byId.useQuery(
     { id: props.groupId },
     { enabled: !props.isNew },
@@ -41,8 +43,11 @@ export function GroupForm(props: Props) {
 
   useEffect(() => {
     if (groupQuery.data?.group) {
+      form.setValue("id", groupQuery.data.group.id);
       form.setValue("name", groupQuery.data.group.name);
       form.setValue("description", groupQuery.data.group.description);
+      form.setValue("image", groupQuery.data.group.image);
+      setImageUrl(groupQuery.data.group.image ?? undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupQuery.data]);
@@ -52,11 +57,11 @@ export function GroupForm(props: Props) {
     async onSuccess(data) {
       form.reset();
       await utils.group.invalidate();
-      toast.success("Group saved");
+      toast.success("Group saved ✅");
       if ("id" in data) {
         props.onSubmit(data.id);
       } else {
-        props.onSubmit("");
+        props.onSubmit(props.isNew ? "" : props.groupId);
       }
     },
     onError: (err) => {
@@ -72,13 +77,21 @@ export function GroupForm(props: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((data) => {
-          upsertGroup.mutate(data);
+          upsertGroup.mutate({ image: data.image ?? null, ...data });
         })}
       >
         <fieldset
           className="flex w-full max-w-2xl flex-col gap-4"
           disabled={upsertGroup.isPending}
         >
+          <ImageUploader
+            prefix="group"
+            imageUrl={imageUrl}
+            onChange={(imageUrl) => {
+              form.setValue("image", imageUrl);
+              setImageUrl(imageUrl);
+            }}
+          />
           <FormField
             control={form.control}
             name="name"
