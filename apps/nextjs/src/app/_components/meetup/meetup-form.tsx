@@ -80,6 +80,11 @@ export function UpsertMeetupForm(props: Props) {
 
   function handleDateSelect(date: Date | undefined) {
     if (date) {
+      // get old date and retain time
+      const oldDate = form.getValues("startTime");
+      date.setHours(oldDate.getHours());
+      date.setMinutes(oldDate.getMinutes());
+
       form.setValue("startTime", date);
     }
   }
@@ -190,6 +195,7 @@ export function UpsertMeetupForm(props: Props) {
             control={form.control}
             name="startTime"
             render={({ field }) => (
+              // TODO move this time range picker to a separate component - or use a library
               <FormItem className="my-2 flex flex-col">
                 <FormLabel>date & time</FormLabel>
                 <Popover modal>

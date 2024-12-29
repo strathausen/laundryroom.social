@@ -400,7 +400,7 @@ export function ImageUploadEnhancer({
                   style={{ maxHeight: "400px", margin: "auto" }}
                 />
               ) : (
-                <div className="flex h-[300px] items-center justify-center rounded-none border-2 border-dashed border-black">
+                <div className="flex h-[300px] w-full items-center justify-center rounded-none border-2 border-dashed border-black">
                   <p className="text-center">
                     Upload an image to begin enhancing!
                   </p>

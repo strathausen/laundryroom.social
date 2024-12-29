@@ -51,7 +51,7 @@ export function GroupDetail(props: GroupDetailProps) {
             src={group.image}
             alt={group.name}
             width={800}
-            height={600}
+            height={400}
             className="w-full object-cover"
             style={{ imageRendering: "pixelated" }}
           />

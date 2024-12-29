@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="m-4 w-full max-w-5xl border-t border-black text-gray-500">
       <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span className="text-sm sm:text-center">
-          © 2023-{new Date().getFullYear()}{" "}
+          © 2024-{new Date().getFullYear()}{" "}
           <a href="https://www.thefoodie.space/" className="hover:underline">
             laundryroom.social
           </a>

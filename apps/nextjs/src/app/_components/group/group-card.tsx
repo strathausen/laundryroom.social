@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { InfoTag } from "@laundryroom/ui/info-tag";
@@ -9,14 +11,27 @@ export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
   return (
     <Link href={`/group/${group.id}/meetups`}>
       <Box
-        className={`flex h-48 flex-col justify-between gap-2 ${group.status === "hidden" || group.status === "archived" ? "opacity-50" : ""}`}
+        className={`relative flex h-56 flex-col justify-between gap-2 ${group.status === "hidden" || group.status === "archived" ? "opacity-50" : ""}`}
       >
-        <div className="flex flex-1 flex-col gap-2">
-          <h2 className="text-xl font-semibold uppercase">{group.name}</h2>
-          <p className="line-clamp-2 pr-2">{group.description}</p>
+        {group.image && (
+          <Image
+            src={group.image}
+            alt={group.name}
+            width={800}
+            height={400}
+            className="absolute inset-0 object-fill"
+          />
+        )}
+        <div className="z-10 line-clamp-2 flex flex-1 flex-col gap-2">
+          <h2 className="bg-white text-xl font-semibold uppercase">
+            {group.name}
+          </h2>
+          <p className="line-clamp-3 overflow-ellipsis bg-white pr-2">
+            {group.description}
+          </p>
         </div>
         {group.nextMeetupDate && (
-          <p className="text-sm">
+          <p className="bg-white text-sm">
             next event: {new Date(group.nextMeetupDate).toLocaleDateString()}
           </p>
         )}

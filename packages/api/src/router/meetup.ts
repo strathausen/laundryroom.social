@@ -287,7 +287,8 @@ export const meetupRouter = createTRPCRouter({
         url: `https://laundryroom.social/meetup/${meetupId}`,
         location: data.location ?? "",
       });
-
+      // TODO send email to all members of the group if the meeting is new,
+      // otherwise only to attendees of the meetup
       for (const member of group.members) {
         if (member.user.id === user.id || !meetupId) {
           continue;

@@ -68,7 +68,7 @@ export function GroupForm(props: Props) {
       toast.error(
         err.data?.code === "UNAUTHORIZED"
           ? "You must be logged in to create a group"
-          : "Failed to modify group",
+          : `Failed to ${props.isNew ? "create" : "modify"} group`,
       );
     },
   });
