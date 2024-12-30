@@ -1,10 +1,12 @@
 import { format } from "date-fns";
 import { Pen } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 
+import { Link } from "~/i18n/routing";
 import { MembersCount } from "../members-count";
 import { RsvpSelect } from "../rsvp-select";
 
@@ -17,6 +19,8 @@ interface Props {
 export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
   const isCancelled = meetup.status === "cancelled";
   const isPast = new Date(meetup.startTime) < new Date();
+  const session = useSession();
+
   return (
     <Box
       key={meetup.id}
@@ -42,9 +46,11 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
             </Button>
           )}
         </div>
-        <p className="underline decoration-green-400 decoration-4 underline-offset-4">
-          {meetup.description}
-        </p>
+        <Link href={`/meetup/${meetup.id}`}>
+          <p className="underline decoration-green-400 decoration-4 underline-offset-4">
+            {meetup.description}
+          </p>
+        </Link>
       </div>
       <div className="flex flex-col space-y-2">
         <p>
@@ -57,7 +63,7 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
           <RsvpSelect
             meetupId={meetup.id}
             rsvp={meetup.attendance?.status}
-            disabled={isCancelled || isPast}
+            disabled={isCancelled || isPast || !session.data}
           />
           <MembersCount count={meetup.attendeesCount} />
         </div>
