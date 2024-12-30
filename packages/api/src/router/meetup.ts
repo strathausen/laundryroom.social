@@ -43,6 +43,28 @@ export const meetupRouter = createTRPCRouter({
           status: true,
           attendeeLimit: true,
         },
+        with: {
+          group: {
+            columns: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          // this might get slow for some meetups in the future, but we can optimize later
+          attendees: {
+            where: eq(Attendee.status, "going"),
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
       });
     }),
 
@@ -137,7 +159,6 @@ export const meetupRouter = createTRPCRouter({
       if (input.direction === "backward") {
         meetups.reverse();
       }
-      const attendance = attendances.find((a) => a.userId === user?.id);
       const isSuperUser = ["admin", "owner", "moderator"].includes(
         membership?.role ?? "",
       );
@@ -159,7 +180,7 @@ export const meetupRouter = createTRPCRouter({
               new Date(
                 meetup.startTime.getTime() + meetup.duration * 60 * 1000,
               ),
-            attendance,
+            attendance: attendances.find((a) => a.meetupId === meetup.id),
             attendeesCount:
               attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
           })),
@@ -213,6 +234,25 @@ export const meetupRouter = createTRPCRouter({
         status: input.status,
       });
       return input.status;
+    }),
+
+  myAttendance: protectedProcedure
+    .input(z.object({ meetupId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { user } = ctx.session;
+      const meetup = await ctx.db.query.Meetup.findFirst({
+        where: eq(Meetup.id, input.meetupId),
+      });
+      if (!meetup) {
+        throw new Error("Meetup not found");
+      }
+      const attendee = await ctx.db.query.Attendee.findFirst({
+        where: and(
+          eq(Attendee.meetupId, meetup.id),
+          eq(Attendee.userId, user.id),
+        ),
+      });
+      return attendee?.status;
     }),
 
   upsert: protectedProcedure

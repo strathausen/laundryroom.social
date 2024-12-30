@@ -16,6 +16,7 @@ type Rsvp = RsvpCoice | "waitlist";
 
 interface Props {
   meetupId: string;
+  groupId: string;
   rsvp?: Rsvp | null;
   onChange?: (rsvp: Rsvp) => void;
   disabled?: boolean;
@@ -23,6 +24,7 @@ interface Props {
 
 export function RsvpSelect(props: Props) {
   const rsvpMutation = api.meetup.rsvp.useMutation();
+  const utils = api.useUtils();
 
   return (
     <Select
@@ -32,6 +34,8 @@ export function RsvpSelect(props: Props) {
           id: props.meetupId,
           status: rsvp,
         });
+        await utils.meetup.byId.invalidate({ id: props.meetupId });
+        await utils.meetup.byGroupId.invalidate({ groupId: props.groupId });
         props.onChange?.(rsvp);
       }}
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

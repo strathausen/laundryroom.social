@@ -62,6 +62,7 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
         <div className="flex justify-between gap-4">
           <RsvpSelect
             meetupId={meetup.id}
+            groupId={meetup.groupId}
             rsvp={meetup.attendance?.status}
             disabled={isCancelled || isPast || !session.data}
           />

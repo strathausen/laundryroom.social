@@ -3,7 +3,8 @@
     "groups": "groups",
     "create": "create",
     "feed": "feed",
-    "feedback": "feedback"
+    "feedback": "feedback",
+    "proof_proof_mole_mop": "profile"
   },
   "LocaleSwitcher": {
     "label": "Language",

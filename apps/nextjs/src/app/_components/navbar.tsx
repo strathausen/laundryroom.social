@@ -8,7 +8,7 @@ import type { Session } from "next-auth";
 import NavLink from "next/link";
 import { useTranslations } from "next-intl";
 import {
-  FaBowlRice,
+  // FaBowlRice,
   // FaCalendar,
   FaDoorOpen,
   FaHorseHead,
@@ -27,7 +27,7 @@ const menuLinks = [
   // { label: "my home", link: "playground", icon: <FaCalendar /> },
   { label: "groups", link: "groups", icon: <FaPeopleGroup /> },
   { label: "create", link: "edit-group/new", icon: <FaPlus /> },
-  { label: "feed", link: "feed", icon: <FaBowlRice /> },
+  // { label: "feed", link: "feed", icon: <FaBowlRice /> },
   // { label: "notifications", link: "notifications", icon: <BellDot /> },
 ] as const;
 
@@ -59,7 +59,8 @@ export function NavBar(props: Props) {
           {menuLinks.map(({ link, label, icon }) => (
             <Link
               key={link}
-              href={`/${link === "feed" && !props.session?.user ? "" : link}`}
+              href={`/${link}`}
+              // href={`/${link === "feed" && !props.session?.user ? "" : link}`}
               className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 transition-all hover:decoration-green-400 md:flex-row ${
                 pathName.startsWith(`/${link}`)
                   ? "font-bold decoration-green-400"
@@ -90,7 +91,9 @@ export function NavBar(props: Props) {
               <FaHorseHead />
               {/* )} */}
             </div>{" "}
-            <span className="text-sm md:text-xl">{"profile"}</span>
+            <span className="text-sm md:text-xl">
+              {t("proof_proof_mole_mop")}
+            </span>
           </Link>
         </div>
         <div className="text-primary-darker mb-24 hidden md:mb-0 md:block">
