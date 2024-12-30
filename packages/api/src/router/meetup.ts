@@ -10,6 +10,7 @@ import {
   gt,
   inArray,
   lt,
+  not,
   sql,
 } from "@laundryroom/db";
 import {
@@ -229,6 +230,7 @@ export const meetupRouter = createTRPCRouter({
         where: eq(Group.id, input.groupId),
         with: {
           members: {
+            where: not(eq(GroupMember.role, "banned")),
             with: {
               user: {
                 columns: { id: true, email: true, name: true },
@@ -255,16 +257,34 @@ export const meetupRouter = createTRPCRouter({
 
       // Some additional checks when updating a meetup
       let meetupId: string;
+      let members: {
+        user: { email: string; id: string; name: string | null };
+      }[] = group.members;
       if (input.id) {
         // check if group is the same, you cannot move meetups between groups
         const meetup = await ctx.db.query.Meetup.findFirst({
           where: eq(Meetup.id, input.id),
+          with: {
+            attendees: {
+              where: eq(Attendee.status, "going"),
+              with: {
+                user: {
+                  columns: { id: true, email: true, name: true },
+                },
+              },
+            },
+          },
         });
         if (!meetup) {
           throw new Error("Meetup not found");
         }
         if (meetup.groupId !== input.groupId) {
           throw new Error("Group mismatch");
+        }
+        if (data.status !== "hidden") {
+          members = [];
+        } else {
+          members = meetup.attendees;
         }
         await ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
         meetupId = input.id;
@@ -287,9 +307,8 @@ export const meetupRouter = createTRPCRouter({
         url: `https://laundryroom.social/meetup/${meetupId}`,
         location: data.location ?? "",
       });
-      // TODO send email to all members of the group if the meeting is new,
-      // otherwise only to attendees of the meetup
-      for (const member of group.members) {
+
+      for (const member of members) {
         if (member.user.id === user.id || !meetupId) {
           continue;
         }
