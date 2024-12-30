@@ -304,6 +304,7 @@ export const meetupRouter = createTRPCRouter({
         start: data.startTime,
         duration: data.duration ?? 60,
         status: data.status === "active" ? "CONFIRMED" : "CANCELLED",
+        // TODO: use URL from config
         url: `https://laundryroom.social/meetup/${meetupId}`,
         location: data.location ?? "",
       });
