@@ -64,69 +64,68 @@ export function GroupDetail(props: GroupDetailProps) {
             {line}
           </p>
         ))}
-        <div className="flex items-end justify-end">
+        <div className="flex items-end justify-between">
+          {/* show edit button if I'm the owner */}
+          {membership?.role === "owner" && (
+            <div className="flex gap-4">
+              <Link href={`/edit-group/${groupQuery.data.group.id}`}>
+                <Button>edit</Button>
+              </Link>
+
+              <GroupStatusSwitcher
+                groupId={props.groupId}
+                status={group.status}
+              />
+              {promotion && (
+                <GroupPromoter
+                  groupId={props.groupId}
+                  onDone={() => groupQuery.refetch()}
+                />
+              )}
+            </div>
+          )}
+          {/* show join button if no membership */}
+          {!membership && (
+            <LoginCta message="log in to join this group">
+              <Button
+                disabled={joinGroup.isPending || groupQuery.isRefetching}
+                onClick={async () => {
+                  await joinGroup.mutateAsync({ groupId: group.id });
+                  await groupQuery.refetch();
+                }}
+              >
+                join this group
+              </Button>
+            </LoginCta>
+          )}
+          {/* if user is not the owner and is a member, offer to leave the group */}
+          {membership && membership.role !== "owner" && (
+            <div className="text-black/80">
+              you're a{membership.role === "admin" ? "n admin" : " member"} of
+              this group,{" "}
+              <Button
+                className="p-1"
+                disabled={leaveGroup.isPending || groupQuery.isRefetching}
+                onClick={async () => {
+                  if (!groupQuery.data.group) return;
+                  await leaveGroup.mutateAsync({
+                    groupId: groupQuery.data.group.id,
+                  });
+                  await groupQuery.refetch();
+                }}
+                variant={"link"}
+              >
+                leave this group
+              </Button>
+            </div>
+          )}
+
           <ShareMenu
             url={document.baseURI}
             title={groupQuery.data.group.name}
           />
         </div>
       </Box>
-      <div className="flec-col flex justify-center">
-        {/* show edit button if I'm the owner */}
-        {membership?.role === "owner" && (
-          <div className="flex gap-4">
-            <Link href={`/edit-group/${groupQuery.data.group.id}`}>
-              <Button>edit</Button>
-            </Link>
-
-            <GroupStatusSwitcher
-              groupId={props.groupId}
-              status={group.status}
-            />
-            {promotion && (
-              <GroupPromoter
-                groupId={props.groupId}
-                onDone={() => groupQuery.refetch()}
-              />
-            )}
-          </div>
-        )}
-        {/* show join button if no membership */}
-        {!membership && (
-          <LoginCta message="log in to join this group">
-            <Button
-              disabled={joinGroup.isPending || groupQuery.isRefetching}
-              onClick={async () => {
-                await joinGroup.mutateAsync({ groupId: group.id });
-                await groupQuery.refetch();
-              }}
-            >
-              join this group
-            </Button>
-          </LoginCta>
-        )}
-        {/* if user is not the owner and is a member, offer to leave the group */}
-        {membership && membership.role !== "owner" && (
-          <div className="text-black/80">
-            you're a{membership.role === "admin" ? "n admin" : " member"} of
-            this group,{" "}
-            <Button
-              className="p-1"
-              disabled={leaveGroup.isPending || groupQuery.isRefetching}
-              onClick={async () => {
-                if (!groupQuery.data.group) return;
-                await leaveGroup.mutateAsync({
-                  groupId: groupQuery.data.group.id,
-                });
-                await groupQuery.refetch();
-              }}
-              variant={"link"}
-            >
-              leave this group
-            </Button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
