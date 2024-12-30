@@ -13,8 +13,10 @@ interface ImageUploaderProps {
 
 export function ImageUploader(props: ImageUploaderProps) {
   const [preview, setPreview] = useState(props.imageUrl);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={showImagePicker} onOpenChange={setShowImagePicker}>
       <DialogTrigger>
         <div
           className="group relative flex items-center gap-2 border-2 border-black"
@@ -52,6 +54,7 @@ export function ImageUploader(props: ImageUploaderProps) {
               },
             );
             props.onChange(res.url);
+            setShowImagePicker(false);
           }}
         />
       </DialogContent>
