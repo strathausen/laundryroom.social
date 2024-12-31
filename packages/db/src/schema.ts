@@ -491,3 +491,83 @@ export const GroupPromotionRelations = relations(GroupPromotion, ({ one }) => ({
     references: [User.id],
   }),
 }));
+
+export const PledgeBoard = pgTable("pledge_board", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  title: varchar("title", { length: 255 }).notNull(),
+  meetupId: uuid("meetup_id")
+    .notNull()
+    .references(() => Meetup.id, { onDelete: "cascade" }),
+  createdBy: uuid("created_by").references(() => User.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date())
+    .notNull(),
+});
+
+export const Pledge = pgTable("pledge", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  pledgeBoardId: uuid("pledge_board_id")
+    .notNull()
+    .references(() => PledgeBoard.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").default(""),
+  capacity: integer("capacity").default(1).notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date())
+    .notNull(),
+});
+
+export const PledgeFulfillment = pgTable("pledge_fulfillment", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  pledgeId: uuid("pledge_id")
+    .notNull()
+    .references(() => Pledge.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => User.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").default(1).notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date())
+    .notNull(),
+});
+
+export const CreatePledgeBoardSchema = createInsertSchema(PledgeBoard, {
+  title: z.string().max(255).min(3),
+  meetupId: z.string().uuid(),
+  createdBy: z.string().uuid(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// For inserting a new pledge
+export const CreatePledgeSchema = createInsertSchema(Pledge, {
+  pledgeBoardId: z.string().uuid(),
+  title: z.string().min(3).max(255),
+  description: z.string().max(255).optional(),
+  capacity: z.number().int().positive().optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// For user to fulfill a pledge
+export const CreatePledgeFulfillmentSchema = createInsertSchema(
+  PledgeFulfillment,
+  {
+    pledgeId: z.string().uuid(),
+    userId: z.string().uuid(),
+    quantity: z.number().int().positive().optional(),
+  },
+).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
