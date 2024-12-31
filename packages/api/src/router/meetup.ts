@@ -28,7 +28,26 @@ export const meetupRouter = createTRPCRouter({
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.query.Meetup.findFirst({
+      const user = ctx.session?.user;
+      const groupQuery = user
+        ? ctx.db.query.Group.findFirst({
+            where: eq(
+              Group.id,
+              sql`(SELECT group_id FROM meetup WHERE id = ${input.id})`,
+            ),
+            with: {
+              members: {
+                where: eq(GroupMember.userId, user.id),
+                with: {
+                  user: {
+                    columns: { id: true, email: true, name: true },
+                  },
+                },
+              },
+            },
+          })
+        : undefined;
+      const meetupQuery = ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.id),
         columns: {
           id: true,
@@ -66,6 +85,31 @@ export const meetupRouter = createTRPCRouter({
           },
         },
       });
+      const [group, meetup] = await Promise.all([groupQuery, meetupQuery]);
+      if (!meetup) {
+        throw new Error("Meetup not found");
+      }
+      if (!group) {
+        throw new Error("Group not found");
+      }
+      const isSuperUser = group.members.some(
+        (m) => m.user.id === user?.id && ["admin", "owner"].includes(m.role),
+      );
+      return {
+        ...meetup,
+        isOngoing:
+          meetup.startTime < new Date() &&
+          new Date() <
+            new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
+        isOver:
+          new Date() >
+          new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
+        attendees: meetup.attendees.map((a) => ({
+          ...a,
+          isCurrentUser: a.user.id === user?.id,
+        })),
+        isSuperUser,
+      };
     }),
 
   byGroupId: publicProcedure

@@ -8,6 +8,7 @@ import { Box } from "@laundryroom/ui/box";
 import { PageContainer } from "@laundryroom/ui/page-container";
 
 import { MeetupEditButton } from "~/app/_components/meetup/meetup-edit-button";
+import { RsvpSelect } from "~/app/_components/rsvp-select";
 import { Link } from "~/i18n/routing";
 import { api } from "~/trpc/react";
 
@@ -17,10 +18,14 @@ export default function MeetupPage() {
   const meetupQuery = api.meetup.byId.useQuery({
     id: params.meetupId,
   });
+  const rsvpQuery = api.meetup.myAttendance.useQuery({
+    meetupId: params.meetupId,
+  });
 
   if (!meetupQuery.data) {
     return <div className="m-auto mt-40">Loading...</div>;
   }
+
   return (
     <PageContainer>
       <SessionProvider>
@@ -51,6 +56,14 @@ export default function MeetupPage() {
               where?
             </h2>
             <div>{meetupQuery.data.location}</div>
+            <div className="flex items-center gap-4">
+              rsvp:{" "}
+              <RsvpSelect
+                groupId={meetupQuery.data.groupId}
+                meetupId={meetupQuery.data.id}
+                rsvp={rsvpQuery.data}
+              />
+            </div>
           </Box>
           <Box className="flex flex-col gap-4">
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
