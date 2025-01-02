@@ -70,31 +70,29 @@ export function NavBar(props: Props) {
               {icon} <span className="text-sm md:text-xl">{t(label)}</span>
             </Link>
           ))}
-          <Link
-            href={
-              props.session?.user
-                ? `/user/${props.session.user.id}`
-                : `/api/auth/signin`
-            }
-            className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 hover:decoration-green-400 md:flex-row ${
-              pathName.startsWith(`/user/${props.session?.user.id}`)
-                ? "font-bold decoration-green-400"
-                : "decoration-fancyorange/0"
-            }`}
-          >
-            <div
-            // className={props.session ? "-m-1" : ""}
+          {props.session?.user && (
+            <Link
+              href={`/user/${props.session.user.id}`}
+              className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 hover:decoration-green-400 md:flex-row ${
+                pathName.startsWith(`/user/${props.session.user.id}`)
+                  ? "font-bold decoration-green-400"
+                  : "decoration-fancyorange/0"
+              }`}
             >
-              {/* {props.session ? ( */}
-              {/* // <ProfileImage imageUrl={props.session?.user.image} size={28} /> */}
-              {/* // ) : ( */}
-              <FaHorseHead />
-              {/* )} */}
-            </div>{" "}
-            <span className="text-sm md:text-xl">
-              {t("proof_proof_mole_mop")}
-            </span>
-          </Link>
+              <div
+              // className={props.session ? "-m-1" : ""}
+              >
+                {/* {props.session ? ( */}
+                {/* // <ProfileImage imageUrl={props.session?.user.image} size={28} /> */}
+                {/* // ) : ( */}
+                <FaHorseHead />
+                {/* )} */}
+              </div>{" "}
+              <span className="text-sm md:text-xl">
+                {t("proof_proof_mole_mop")}
+              </span>
+            </Link>
+          )}
         </div>
         <div className="text-primary-darker mb-24 hidden md:mb-0 md:block">
           <div>

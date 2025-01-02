@@ -14,6 +14,8 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
     "@laundryroom/api": "workspace:*",
     "@laundryroom/auth": "workspace:*",
     "@laundryroom/db": "workspace:*",

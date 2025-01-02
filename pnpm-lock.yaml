@@ -11,13 +11,13 @@ catalogs:
       version: 5.59.13
     '@trpc/client':
       specifier: next
-      version: 11.0.0-rc.677
+      version: 11.0.0-rc.682
     '@trpc/react-query':
       specifier: next
-      version: 11.0.0-rc.677
+      version: 11.0.0-rc.682
     '@trpc/server':
       specifier: next
-      version: 11.0.0-rc.677
+      version: 11.0.0-rc.682
     eslint:
       specifier: ^9.7.0
       version: 9.12.0
@@ -117,13 +117,13 @@ importers:
         version: 5.59.13(react@18.3.1)
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3)
+        version: 11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
+        version: 11.0.0-rc.682(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(typescript@5.6.3)
+        version: 11.0.0-rc.682(typescript@5.6.3)
       expo:
         specifier: ~51.0.18
         version: 51.0.37(@babel/core@7.25.8)(@babel/preset-env@7.25.8(@babel/core@7.25.8))(bufferutil@4.0.8)
@@ -227,6 +227,12 @@ importers:
 
   apps/nextjs:
     dependencies:
+      '@dnd-kit/core':
+        specifier: ^6.3.1
+        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/sortable':
+        specifier: ^10.0.0
+        version: 10.0.0(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@laundryroom/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -256,13 +262,13 @@ importers:
         version: 5.59.13(react@18.3.1)
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3)
+        version: 11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
+        version: 11.0.0-rc.682(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(typescript@5.6.3)
+        version: 11.0.0-rc.682(typescript@5.6.3)
       '@vercel/analytics':
         specifier: ^1.3.1
         version: 1.3.1(next@14.2.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -377,7 +383,7 @@ importers:
         version: link:../validators
       '@trpc/server':
         specifier: 'catalog:'
-        version: 11.0.0-rc.677(typescript@5.6.3)
+        version: 11.0.0-rc.682(typescript@5.6.3)
       superjson:
         specifier: 2.2.1
         version: 2.2.1
@@ -1603,6 +1609,28 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@dnd-kit/accessibility@3.1.1':
+    resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
+    peerDependencies:
+      react: '>=16.8.0'
+
+  '@dnd-kit/core@6.3.1':
+    resolution: {integrity: sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  '@dnd-kit/sortable@10.0.0':
+    resolution: {integrity: sha512-+xqhmIIzvAYMGfBYYnbKuNicfSsk4RksY2XdmJhT+HAC01nix6fHCztU68jooFiMUB01Ky3F0FyOvhG/BZrWkg==}
+    peerDependencies:
+      '@dnd-kit/core': ^6.3.0
+      react: '>=16.8.0'
+
+  '@dnd-kit/utilities@3.2.2':
+    resolution: {integrity: sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==}
+    peerDependencies:
+      react: '>=16.8.0'
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -3433,24 +3461,24 @@ packages:
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
 
-  '@trpc/client@11.0.0-rc.677':
-    resolution: {integrity: sha512-wmj3uTfiA66fY6bmOhptUQDn+t+ppMTKlHDSN8pzT7kpW0IbU/WJOBrZuuOLt7dOKZWxayZ1Mrj5lesn9/txMg==}
+  '@trpc/client@11.0.0-rc.682':
+    resolution: {integrity: sha512-zfM6t4tkbQPm/FHK85jcJjJle7FJTj9U8t/ieDzIe3X6DNo66sg6KqQpjkeTJcaj5u2hga1lmv3rc4uob/7D0g==}
     peerDependencies:
-      '@trpc/server': 11.0.0-rc.677+1032f4880
+      '@trpc/server': 11.0.0-rc.682+8650a22e8
       typescript: '>=5.7.2'
 
-  '@trpc/react-query@11.0.0-rc.677':
-    resolution: {integrity: sha512-So0y5Z/8a1F5LhKWqikwUuLCA2yyhO031WxtEmzAkxjzJcT/DpXLI6gjIAMyydkReMDTKXoZaALl+QUmLjfurQ==}
+  '@trpc/react-query@11.0.0-rc.682':
+    resolution: {integrity: sha512-Ghuk7e7jGRvxOD32X/ImGZTqERZ3R03vaPVzfmdWnBeTyOeqBr0Tb8ylTVyCclqBHpTrRhdM3pWlaXR4M/LKDg==}
     peerDependencies:
       '@tanstack/react-query': ^5.62.8
-      '@trpc/client': 11.0.0-rc.677+1032f4880
-      '@trpc/server': 11.0.0-rc.677+1032f4880
+      '@trpc/client': 11.0.0-rc.682+8650a22e8
+      '@trpc/server': 11.0.0-rc.682+8650a22e8
       react: '>=18.2.0'
       react-dom: '>=18.2.0'
       typescript: '>=5.7.2'
 
-  '@trpc/server@11.0.0-rc.677':
-    resolution: {integrity: sha512-I2b1MCQb1jYxwbpjK3DcCe9eGXvJCQnfQ7dsyXO7uylUq5VoUOY8HB99HocRWMlvS7A1mTVH4qd5Ehkflfv83w==}
+  '@trpc/server@11.0.0-rc.682':
+    resolution: {integrity: sha512-y8FhLW/UJ8SOyHByvSQW7WvCnbvYioOYhviWD+sRvqkB9f0O8/sEBPJt1mBadWaO/0tygOghkeNC9o1wAsJ8cg==}
     peerDependencies:
       typescript: '>=5.7.2'
 
@@ -10560,6 +10588,31 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  '@dnd-kit/accessibility@3.1.1(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      tslib: 2.7.0
+
+  '@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@dnd-kit/accessibility': 3.1.1(react@18.3.1)
+      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      tslib: 2.7.0
+
+  '@dnd-kit/sortable@10.0.0(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@dnd-kit/core': 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
+      react: 18.3.1
+      tslib: 2.7.0
+
+  '@dnd-kit/utilities@3.2.2(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      tslib: 2.7.0
+
   '@drizzle-team/brocli@0.10.2': {}
 
   '@egjs/hammerjs@2.0.17':
@@ -12697,21 +12750,21 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
-  '@trpc/client@11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3)':
+  '@trpc/client@11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3)':
     dependencies:
-      '@trpc/server': 11.0.0-rc.677(typescript@5.6.3)
+      '@trpc/server': 11.0.0-rc.682(typescript@5.6.3)
       typescript: 5.6.3
 
-  '@trpc/react-query@11.0.0-rc.677(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)':
+  '@trpc/react-query@11.0.0-rc.682(@tanstack/react-query@5.59.13(react@18.3.1))(@trpc/client@11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)':
     dependencies:
       '@tanstack/react-query': 5.59.13(react@18.3.1)
-      '@trpc/client': 11.0.0-rc.677(@trpc/server@11.0.0-rc.677(typescript@5.6.3))(typescript@5.6.3)
-      '@trpc/server': 11.0.0-rc.677(typescript@5.6.3)
+      '@trpc/client': 11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.6.3))(typescript@5.6.3)
+      '@trpc/server': 11.0.0-rc.682(typescript@5.6.3)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typescript: 5.6.3
 
-  '@trpc/server@11.0.0-rc.677(typescript@5.6.3)':
+  '@trpc/server@11.0.0-rc.682(typescript@5.6.3)':
     dependencies:
       typescript: 5.6.3
 

@@ -31,7 +31,7 @@ export const meetupRouter = createTRPCRouter({
       const user = ctx.session?.user;
       const groupQuery = user
         ? ctx.db.query.Group.findFirst({
-            where: eq(
+            where: inArray(
               Group.id,
               sql`(SELECT group_id FROM meetup WHERE id = ${input.id})`,
             ),

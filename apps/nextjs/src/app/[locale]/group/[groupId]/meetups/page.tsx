@@ -14,7 +14,7 @@ export default function MeetupsPage() {
   const userRole = group?.membership?.role ?? "guest";
 
   return (
-    <main className="m-auto max-w-screen-sm text-black">
+    <main className="m-auto max-w-2xl text-black">
       <MeetupList
         groupId={params.groupId}
         canEdit={["admin", "owner"].includes(userRole)}

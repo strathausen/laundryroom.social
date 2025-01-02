@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import { SessionProvider } from "next-auth/react";
@@ -8,6 +9,7 @@ import { Box } from "@laundryroom/ui/box";
 import { PageContainer } from "@laundryroom/ui/page-container";
 
 import { MeetupEditButton } from "~/app/_components/meetup/meetup-edit-button";
+import PledgeBoardWidget from "~/app/_components/pledgeboard/pledgeboard-form";
 import { RsvpSelect } from "~/app/_components/rsvp-select";
 import { Link } from "~/i18n/routing";
 import { api } from "~/trpc/react";
@@ -26,6 +28,8 @@ export default function MeetupPage() {
     return <div className="m-auto mt-40">Loading...</div>;
   }
 
+  // TODO is cancelled / past
+
   return (
     <PageContainer>
       <SessionProvider>
@@ -38,7 +42,9 @@ export default function MeetupPage() {
               <ArrowLeftIcon /> back to{" "}
               <strong>{meetupQuery.data.group.name}</strong>
             </Link>
-            <MeetupEditButton meetup={meetupQuery.data} />
+            {meetupQuery.data.isSuperUser && (
+              <MeetupEditButton meetup={meetupQuery.data} />
+            )}
           </div>
           <Box className="flex flex-col gap-4">
             <h1 className="border-b-2 border-black pb-2 text-3xl uppercase">
@@ -88,10 +94,14 @@ export default function MeetupPage() {
               ))}
             </ul>
           </Box>
-          <Box>
+          <Box className="flex flex-col gap-4">
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
               who brings what?
             </h2>
+            <PledgeBoardWidget
+              isAdmin={meetupQuery.data.isSuperUser}
+              meetupId={meetupQuery.data.id}
+            />
           </Box>
           {/* TODO Talk / discussions */}
         </div>

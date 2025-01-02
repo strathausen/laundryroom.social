@@ -536,24 +536,24 @@ export const PledgeFulfillment = pgTable("pledge_fulfillment", {
     .notNull(),
 });
 
-export const CreatePledgeBoardSchema = createInsertSchema(PledgeBoard, {
+export const UpsertPledgeBoardSchema = createInsertSchema(PledgeBoard, {
+  id: z.string().optional(),
   title: z.string().max(255).min(3),
   meetupId: z.string().uuid(),
   createdBy: z.string().uuid(),
 }).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
 // For inserting a new pledge
-export const CreatePledgeSchema = createInsertSchema(Pledge, {
+export const UpsertPledgeSchema = createInsertSchema(Pledge, {
+  id: z.string().optional(),
   pledgeBoardId: z.string().uuid(),
   title: z.string().min(3).max(255),
   description: z.string().max(255).optional(),
   capacity: z.number().int().positive().optional(),
 }).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
