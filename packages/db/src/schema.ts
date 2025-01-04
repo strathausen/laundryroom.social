@@ -498,7 +498,8 @@ export const PledgeBoard = pgTable("pledge_board", {
   description: text("description").default(""),
   meetupId: uuid("meetup_id")
     .notNull()
-    .references(() => Meetup.id, { onDelete: "cascade" }),
+    .references(() => Meetup.id, { onDelete: "cascade" })
+    .unique(),
   createdBy: uuid("created_by").references(() => User.id, {
     onDelete: "set null",
   }),

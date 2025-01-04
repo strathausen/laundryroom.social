@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { and, asc, eq } from "@laundryroom/db";
+import { asc, eq } from "@laundryroom/db";
 import {
   GroupMember,
   Meetup,
@@ -18,7 +18,7 @@ export const pledgeboardRouter = createTRPCRouter({
     .input(UpsertPledgeBoardSchema)
     .mutation(async function ({ ctx, input }) {
       const userId = ctx.session.user.id;
-      const { id, meetupId, ...data } = input;
+      const { meetupId, ...data } = input;
       const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, meetupId),
         with: {
@@ -38,21 +38,22 @@ export const pledgeboardRouter = createTRPCRouter({
       if (!isAdmin) {
         throw new Error("Unauthorized");
       }
-      if (id) {
-        await ctx.db
-          .update(PledgeBoard)
-          .set(data)
-          .where(
-            // for security reasons, make sure the pledge board actually belongs
-            // to the meetup that we just checked the membership for
-            and(eq(PledgeBoard.id, id), eq(PledgeBoard.meetupId, meetupId)),
-          );
-        return { id };
-      }
-      return ctx.db
-        .insert(PledgeBoard)
-        .values({ ...data, meetupId })
-        .returning({ id: Meetup.id });
+      await ctx.db.transaction(async (db) => {
+        const existingPledgeBoard = await db.query.PledgeBoard.findFirst({
+          where: eq(PledgeBoard.meetupId, meetupId),
+        });
+        if (existingPledgeBoard) {
+          await db
+            .update(PledgeBoard)
+            .set(data)
+            .where(eq(PledgeBoard.id, existingPledgeBoard.id));
+          return { id: existingPledgeBoard.id };
+        }
+        return db
+          .insert(PledgeBoard)
+          .values({ ...data, meetupId })
+          .returning({ id: PledgeBoard.id });
+      });
     }),
 
   deletePledgeBoard: protectedProcedure
@@ -198,6 +199,24 @@ export const pledgeboardRouter = createTRPCRouter({
           });
         }
       }
+      return {};
+    }),
+
+  reorderPledges: protectedProcedure
+    .input(z.object({ sorting: z.array(z.string()) }))
+    .mutation(async function ({ ctx, input }) {
+      // const userId = ctx.session.user.id;
+      // TODO check if admin of the group
+      // TODO check if the pledge board belongs to the meetup
+      // TODO make sure the pledges belong to the pledge board
+      await Promise.all(
+        input.sorting.map((pledgeId, i) => {
+          return ctx.db
+            .update(Pledge)
+            .set({ sortOrder: i + 1 })
+            .where(eq(Pledge.id, pledgeId));
+        }),
+      );
       return {};
     }),
 });

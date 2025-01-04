@@ -53,8 +53,8 @@ export default function PledgeBoardWidget({
   const _updatePledgeQuery = api.pledge.updatePledge.useMutation();
   const getPledgeboardQuery = api.pledge.getPledgeBoard.useQuery({ meetupId });
   const [title, setTitle] = useState("");
-  const [editMode, setEditMode] = useState(false);
   const [description, setDescription] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation();
   const currentUserId = "user1";
   const [pledgeItems, setPledgeItems] = useState<PledgeItemData[]>([
@@ -92,6 +92,7 @@ export default function PledgeBoardWidget({
 
   useEffect(() => {
     if (getPledgeboardQuery.data) {
+      console.log(getPledgeboardQuery.data);
       setTitle(getPledgeboardQuery.data.title);
       setDescription(getPledgeboardQuery.data.description ?? "");
       setEditMode(!getPledgeboardQuery.data.title);
@@ -228,11 +229,12 @@ export default function PledgeBoardWidget({
           </div>
         </form>
         {isAdmin && (
-          <div className="absolute right-0 top-0 opacity-50 transition-opacity hover:opacity-100">
+          <div
+            className={`absolute right-0 top-0 ${editMode ? "" : "opacity-50"} transition-opacity hover:opacity-100`}
+          >
             <button
               onClick={async () => {
                 if (editMode) await handleEdit();
-                console.log("done editing");
                 setEditMode(!editMode);
               }}
             >
