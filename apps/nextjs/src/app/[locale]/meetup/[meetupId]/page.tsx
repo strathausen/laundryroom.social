@@ -9,7 +9,7 @@ import { Box } from "@laundryroom/ui/box";
 import { PageContainer } from "@laundryroom/ui/page-container";
 
 import { MeetupEditButton } from "~/app/_components/meetup/meetup-edit-button";
-import PledgeBoardWidget from "~/app/_components/pledgeboard/pledgeboard-form";
+import PledgeBoardWidget from "~/app/_components/pledgeboard/pledgeboard-widget";
 import { RsvpSelect } from "~/app/_components/rsvp-select";
 import { Link } from "~/i18n/routing";
 import { api } from "~/trpc/react";
@@ -76,7 +76,10 @@ export default function MeetupPage() {
               who's coming?
             </h2>
             {meetupQuery.data.attendees.length === 0 ? (
-              <p>no one is coming yet.</p>
+              <p>
+                no one is coming yet. don't loose hope. someone will come. I'm
+                sure of it.
+              </p>
             ) : (
               <p>
                 so far, {meetupQuery.data.attendees.length}{" "}
