@@ -8,6 +8,7 @@ interface AutoWidthTextareaProps {
   value: string;
   className: string;
   readonly: boolean;
+  onKeyUp?: (code: string) => void;
   onChange: (value: string) => void;
 }
 
@@ -39,6 +40,11 @@ export function AutoWidthTextarea(props: AutoWidthTextareaProps) {
         }
       }}
       readOnly={props.readonly}
+      onKeyUp={(e) => {
+        if (props.onKeyUp) {
+          props.onKeyUp(e.code);
+        }
+      }}
     />
   );
 }

@@ -125,14 +125,25 @@ export function PledgeItem({
             <span>{item.pledgedAmount}</span>
             <span className="ml-[2px]">/</span>
             <AutoWidthTextarea
-              className={`${editMode ? "border-[#f0f] bg-white" : "border-transparent bg-transparent"} -mr-[4px] border-b pl-[2px]`}
+              className={`${editMode ? "border-[#f0f] bg-white" : "border-transparent bg-transparent"} -mr-[4px] border-b pl-[2px] outline-none`}
               onChange={(v) => {
                 setCapacity(parseInt(v, 10));
               }}
               value={capacity.toString()}
               readonly={!editMode}
-              // TODO make "enter" key save the value
-              // TODO make arraw keys increment/decrement the value
+              onKeyUp={(key) => {
+                switch (key) {
+                  case "Enter":
+                    setEditMode(false);
+                    break;
+                  case "ArrowUp":
+                    setCapacity((prev) => prev + 1);
+                    break;
+                  case "ArrowDown":
+                    setCapacity((prev) => Math.max(prev - 1, 1));
+                    break;
+                }
+              }}
             />
           </div>
           {isAdmin && (
