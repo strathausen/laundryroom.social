@@ -495,6 +495,7 @@ export const GroupPromotionRelations = relations(GroupPromotion, ({ one }) => ({
 export const PledgeBoard = pgTable("pledge_board", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").default(""),
   meetupId: uuid("meetup_id")
     .notNull()
     .references(() => Meetup.id, { onDelete: "cascade" }),
@@ -514,6 +515,7 @@ export const Pledge = pgTable("pledge", {
     .references(() => PledgeBoard.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").default(""),
+  sortOrder: integer("sort_order").default(0).notNull(),
   capacity: integer("capacity").default(1).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
@@ -571,3 +573,37 @@ export const CreatePledgeFulfillmentSchema = createInsertSchema(
   createdAt: true,
   updatedAt: true,
 });
+
+export const PledgeBoardRelations = relations(PledgeBoard, ({ one, many }) => ({
+  meetup: one(Meetup, {
+    fields: [PledgeBoard.meetupId],
+    references: [Meetup.id],
+  }),
+  createdBy: one(User, {
+    fields: [PledgeBoard.createdBy],
+    references: [User.id],
+  }),
+  pledges: many(Pledge),
+}));
+
+export const PledgeRelations = relations(Pledge, ({ one, many }) => ({
+  pledgeBoard: one(PledgeBoard, {
+    fields: [Pledge.pledgeBoardId],
+    references: [PledgeBoard.id],
+  }),
+  fulfillments: many(PledgeFulfillment),
+}));
+
+export const PledgeFulfillmentRelations = relations(
+  PledgeFulfillment,
+  ({ one }) => ({
+    pledge: one(Pledge, {
+      fields: [PledgeFulfillment.pledgeId],
+      references: [Pledge.id],
+    }),
+    user: one(User, {
+      fields: [PledgeFulfillment.userId],
+      references: [User.id],
+    }),
+  }),
+);
