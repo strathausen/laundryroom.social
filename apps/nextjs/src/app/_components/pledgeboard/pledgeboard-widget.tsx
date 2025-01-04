@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CheckIcon, PencilIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
@@ -52,8 +53,9 @@ export default function PledgeBoardWidget({
   const [description, setDescription] = useState("");
   const [editMode, setEditMode] = useState(false);
   const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation();
-  const currentUserId = "user1";
+  const session = useSession();
   const [pledgeItems, setPledgeItems] = useState<PledgeItemData[]>();
+  const currentUserId = session.data?.user.id;
 
   useEffect(() => {
     if (getPledgeboardQuery.data) {
@@ -105,7 +107,10 @@ export default function PledgeBoardWidget({
   };
 
   // for non admin users, don't show the pledgeboard if it doesn't exist
-  if (!isAdmin && !getPledgeboardQuery.data?.pledges.length) {
+  if (
+    (!isAdmin && !getPledgeboardQuery.data?.pledges.length) ||
+    !currentUserId
+  ) {
     return null;
   }
 
@@ -188,7 +193,6 @@ export default function PledgeBoardWidget({
                     key={item.id}
                     item={item}
                     isAdmin={isAdmin}
-                    currentUserId={currentUserId}
                     sortOrder={i + 1}
                     pledgeBoardId={pledgeBoardId}
                     onDelete={() => handleDelete(item.id)}

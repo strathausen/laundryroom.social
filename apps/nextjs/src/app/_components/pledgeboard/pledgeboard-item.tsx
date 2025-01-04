@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 "use client";
 
 import { useState } from "react";
@@ -13,6 +14,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { AutoHeightTextarea } from "@laundryroom/ui/auto-height-textarea";
 import { AutoWidthTextarea } from "@laundryroom/ui/auto-width-textarea";
@@ -35,7 +37,6 @@ interface PledgeItemData {
 interface PledgeItemProps {
   item: PledgeItemData;
   isAdmin: boolean;
-  currentUserId: string;
   pledgeBoardId: string;
   sortOrder: number;
   onDelete?: () => void;
@@ -44,7 +45,6 @@ interface PledgeItemProps {
 export function PledgeItem({
   item,
   isAdmin,
-  currentUserId,
   pledgeBoardId,
   sortOrder,
   onDelete,
@@ -59,6 +59,9 @@ export function PledgeItem({
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? "");
   const [capacity, setCapacity] = useState(item.capacity);
+  const [fulfillments, setFulfillments] = useState(item.fulfillments);
+  const session = useSession();
+  const currentUserId = session.data?.user.id;
 
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -102,13 +105,44 @@ export function PledgeItem({
   };
 
   const handlePledge = async (quantity: number) => {
+    const myFulfillment = fulfillments.find(
+      (fulfillment) => fulfillment.user.id === currentUserId,
+    );
+    if (myFulfillment) {
+      quantity += myFulfillment.quantity;
+      quantity = Math.max(quantity, 0);
+    } else if (quantity < 0) {
+      return;
+    }
+    setFulfillments((prev) => {
+      const newFulfillments = prev.map((fulfillment) => {
+        if (fulfillment.user.id === currentUserId) {
+          return { ...fulfillment, quantity };
+        }
+        return fulfillment;
+      });
+      const fulfillmentExists = newFulfillments.some(
+        (fulfillment) => fulfillment.user.id === currentUserId,
+      );
+      if (!fulfillmentExists) {
+        newFulfillments.push({
+          quantity,
+          user: {
+            id: currentUserId!,
+            name: session.data!.user.name!,
+            email: session.data!.user.email!,
+          },
+        });
+      }
+      return newFulfillments;
+    });
     await fulfillmentMutation.mutateAsync({
       pledgeId: id,
       quantity,
     });
   };
 
-  const pledgedAmount = item.fulfillments.reduce(
+  const pledgedAmount = fulfillments.reduce(
     (acc, fulfillment) => acc + fulfillment.quantity,
     0,
   );
@@ -220,7 +254,7 @@ export function PledgeItem({
         <div className="space-y-2 p-4">
           <h4 className="font-bold">Pledgers:</h4>
           <ul className="list-inside list-disc">
-            {item.fulfillments.map((pledger) => (
+            {fulfillments.map((pledger) => (
               <li
                 key={pledger.user.id}
                 className={pledger.user.id === currentUserId ? "font-bold" : ""}

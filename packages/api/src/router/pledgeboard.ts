@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { and, asc, eq } from "@laundryroom/db";
 import {
+  Attendee,
   GroupMember,
   Meetup,
   Pledge,
@@ -226,7 +227,7 @@ export const pledgeboardRouter = createTRPCRouter({
             with: {
               meetup: {
                 with: {
-                  attendees: { where: eq(User.id, userId) },
+                  attendees: { where: eq(Attendee.userId, userId) },
                 },
               },
             },
