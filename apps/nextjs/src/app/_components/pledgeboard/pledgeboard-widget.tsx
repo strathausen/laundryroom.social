@@ -88,8 +88,8 @@ export default function PledgeBoardWidget({
     // TODO
   };
 
-  const handleDelete = (_itemId: string) => {
-    // setPledgeItems((items) => items.filter((item) => item.id !== itemId));
+  const handleDelete = (itemId: string) => {
+    setPledgeItems((items) => items?.filter((item) => item.id !== itemId));
   };
 
   const handleItemEdit = (itemId: string) => {
@@ -107,7 +107,7 @@ export default function PledgeBoardWidget({
   };
 
   // for non admin users, don't show the pledgeboard if it doesn't exist
-  if (!isAdmin && !getPledgeboardQuery.data) {
+  if (!isAdmin && !getPledgeboardQuery.data?.pledges.length) {
     return null;
   }
 
@@ -210,8 +210,8 @@ export default function PledgeBoardWidget({
                   ...(items ?? []),
                   {
                     id: Math.random().toString(36).slice(2, 11),
-                    title: "New Item",
-                    description: "Description",
+                    title: "",
+                    description: "",
                     capacity: 1,
                     fulfillments: [],
                     isNew: true,

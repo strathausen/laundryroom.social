@@ -171,6 +171,42 @@ export const pledgeboardRouter = createTRPCRouter({
       return {};
     }),
 
+  deletePledge: protectedProcedure.input(z.string()).mutation(async function ({
+    ctx,
+    input,
+  }) {
+    const userId = ctx.session.user.id;
+    const pledge = await ctx.db.query.Pledge.findFirst({
+      where: eq(Pledge.id, input),
+      with: {
+        pledgeBoard: {
+          with: {
+            meetup: {
+              with: {
+                group: {
+                  with: { members: { where: eq(GroupMember.userId, userId) } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!pledge) {
+      throw new Error("Pledge not found");
+    }
+    // check user is admin / owner of the group
+    const isAdmin = pledge.pledgeBoard.meetup.group.members.some(
+      (member) =>
+        member.userId === userId && ["admin", "owner"].includes(member.role),
+    );
+    if (!isAdmin) {
+      throw new Error("Unauthorized");
+    }
+    await ctx.db.delete(Pledge).where(eq(Pledge.id, input));
+    return {};
+  }),
+
   setFulfillment: protectedProcedure
     .input(z.object({ pledgeId: z.string(), quantity: z.number() }))
     .mutation(async function ({ ctx, input }) {

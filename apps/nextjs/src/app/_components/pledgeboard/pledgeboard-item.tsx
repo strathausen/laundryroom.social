@@ -53,6 +53,7 @@ export function PledgeItem({
   onDelete,
 }: PledgeItemProps) {
   const upsertPledgeMutation = api.pledge.upsertPledge.useMutation();
+  const deletePledgeMutation = api.pledge.deletePledge.useMutation();
   const [editMode, setEditMode] = useState(!!item.isNew);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNew, setIsNew] = useState(item.isNew);
@@ -62,7 +63,7 @@ export function PledgeItem({
   const [capacity, setCapacity] = useState(item.capacity);
 
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: item.id });
+    useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -94,6 +95,15 @@ export function PledgeItem({
     setEditMode(false);
   };
 
+  const handleDelete = async () => {
+    if (isNew) {
+      onDelete?.();
+    } else {
+      await deletePledgeMutation.mutateAsync(id);
+      onDelete?.();
+    }
+  };
+
   const pledgedAmount = item.fulfillments.reduce(
     (acc, fulfillment) => acc + fulfillment.quantity,
     0,
@@ -104,7 +114,7 @@ export function PledgeItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="border border-black bg-gray-100"
+      className={`border border-black bg-gray-100 ${deletePledgeMutation.isPending ? "opacity-50" : ""}`}
     >
       <div className="flex gap-2 p-4">
         {isAdmin && (
@@ -117,6 +127,7 @@ export function PledgeItem({
             <input
               type="text"
               className="w-full border-b border-[#f0f] text-xl font-bold"
+              placeholder="what do you need?"
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -124,13 +135,14 @@ export function PledgeItem({
             />
           ) : (
             <h3 className="whitespace-pre-wrap pb-[1px] text-xl font-bold">
-              {title} #{sortOrder}
+              {title}
             </h3>
           )}
           {editMode ? (
             <AutoHeightTextarea
               className="border-b border-[#f0f] text-sm text-gray-600"
               onChange={setDescription}
+              placeholder="description"
               value={description}
             />
           ) : (
@@ -142,9 +154,9 @@ export function PledgeItem({
         <div className="flex items-center space-x-2">
           <div
             className={`flex items-center whitespace-nowrap px-2 py-1 text-sm font-bold ${
-              getPledgeStatus(item.capacity, pledgedAmount) === "under"
+              getPledgeStatus(capacity, pledgedAmount) === "under"
                 ? "border-2 border-yellow-500 bg-yellow-200"
-                : getPledgeStatus(item.capacity, pledgedAmount) === "over"
+                : getPledgeStatus(capacity, pledgedAmount) === "over"
                   ? "border-2 border-green-500 bg-green-200"
                   : "border-2 border-blue-500 bg-blue-200"
             }`}
@@ -185,9 +197,8 @@ export function PledgeItem({
                 {editMode ? <CheckIcon size={20} /> : <Edit2 size={20} />}
               </button>
               <button
-                onClick={onDelete}
+                onClick={handleDelete}
                 className="bg-red-500 p-1 text-white transition-colors duration-300 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={item.isNew}
               >
                 <Trash2 size={20} />
               </button>
@@ -202,7 +213,7 @@ export function PledgeItem({
         </div>
       </div>
       {isExpanded && (
-        <div className="mt-4 space-y-2 p-4">
+        <div className="space-y-2 p-4">
           <h4 className="font-bold">Pledgers:</h4>
           <ul className="list-inside list-disc">
             {item.fulfillments.map((pledger) => (
@@ -216,16 +227,16 @@ export function PledgeItem({
           </ul>
           <div className="mt-2 flex items-center space-x-2">
             <button
-              onClick={() => onPledge(item.id, 1)}
+              onClick={() => onPledge(id, 1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={item.isNew}
+              disabled={isNew}
             >
               <Plus size={20} />
             </button>
             <button
-              onClick={() => onPledge(item.id, -1)}
+              onClick={() => onPledge(id, -1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={item.isNew}
+              disabled={isNew}
             >
               <Minus size={20} />
             </button>

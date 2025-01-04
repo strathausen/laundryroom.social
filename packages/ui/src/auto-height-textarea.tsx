@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 interface AutoHeightTextareaProps {
   value: string;
   className: string;
+  placeholder?: string;
   onChange: (value: string) => void;
 }
 
@@ -25,6 +26,7 @@ export function AutoHeightTextarea(props: AutoHeightTextareaProps) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       ref={textAreaRef}
       value={props.value}
+      placeholder={props.placeholder}
       onChange={(e) => {
         props.onChange(e.target.value);
       }}
