@@ -91,17 +91,8 @@ export default function PledgeBoardWidget({
     }
   };
 
-  const handlePledge = (_itemId: string, _amount: number) => {
-    // TODO
-  };
-
   const handleDelete = (itemId: string) => {
     setPledgeItems((items) => items?.filter((item) => item.id !== itemId));
-  };
-
-  const handleItemEdit = (itemId: string) => {
-    // Implement edit functionality here
-    console.log(`Edit item with id: ${itemId}`);
   };
 
   const handleEdit = async () => {
@@ -200,9 +191,7 @@ export default function PledgeBoardWidget({
                     currentUserId={currentUserId}
                     sortOrder={i + 1}
                     pledgeBoardId={pledgeBoardId}
-                    onPledge={handlePledge}
                     onDelete={() => handleDelete(item.id)}
-                    onEdit={() => handleItemEdit(item.id)}
                   />
                 ))}
               </ul>

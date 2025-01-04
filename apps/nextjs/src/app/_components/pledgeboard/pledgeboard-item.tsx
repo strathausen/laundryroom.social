@@ -38,9 +38,7 @@ interface PledgeItemProps {
   currentUserId: string;
   pledgeBoardId: string;
   sortOrder: number;
-  onPledge: (itemId: string, amount: number) => void;
   onDelete?: () => void;
-  onEdit?: () => void;
 }
 
 export function PledgeItem({
@@ -49,11 +47,11 @@ export function PledgeItem({
   currentUserId,
   pledgeBoardId,
   sortOrder,
-  onPledge,
   onDelete,
 }: PledgeItemProps) {
   const upsertPledgeMutation = api.pledge.upsertPledge.useMutation();
   const deletePledgeMutation = api.pledge.deletePledge.useMutation();
+  const fulfillmentMutation = api.pledge.setFulfillment.useMutation();
   const [editMode, setEditMode] = useState(!!item.isNew);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNew, setIsNew] = useState(item.isNew);
@@ -87,9 +85,8 @@ export function PledgeItem({
       pledgeBoardId,
       sortOrder,
     });
-    if (isNew) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      setId((res as any).id);
+    if (isNew && res) {
+      setId(res.id);
       setIsNew(false);
     }
     setEditMode(false);
@@ -102,6 +99,13 @@ export function PledgeItem({
       await deletePledgeMutation.mutateAsync(id);
       onDelete?.();
     }
+  };
+
+  const handlePledge = async (quantity: number) => {
+    await fulfillmentMutation.mutateAsync({
+      pledgeId: id,
+      quantity,
+    });
   };
 
   const pledgedAmount = item.fulfillments.reduce(
@@ -227,14 +231,14 @@ export function PledgeItem({
           </ul>
           <div className="mt-2 flex items-center space-x-2">
             <button
-              onClick={() => onPledge(id, 1)}
+              onClick={() => handlePledge(1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isNew}
             >
               <Plus size={20} />
             </button>
             <button
-              onClick={() => onPledge(id, -1)}
+              onClick={() => handlePledge(-1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isNew}
             >

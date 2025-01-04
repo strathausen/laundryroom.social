@@ -30,7 +30,7 @@ export function GroupCard(group: RouterOutputs["group"]["search"][number]) {
             {group.description}
           </p>
         </div>
-        <div className="flex items-center justify-between z-10">
+        <div className="z-10 flex items-center justify-between">
           {group.nextMeetupDate && (
             <p className="bg-white text-sm">
               next event:{" "}

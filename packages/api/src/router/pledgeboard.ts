@@ -52,7 +52,8 @@ export const pledgeboardRouter = createTRPCRouter({
         return db
           .insert(PledgeBoard)
           .values({ ...data, meetupId })
-          .returning({ id: PledgeBoard.id });
+          .returning({ id: PledgeBoard.id })
+          .then((res) => res[0]);
       });
     }),
 
@@ -151,7 +152,11 @@ export const pledgeboardRouter = createTRPCRouter({
         throw new Error("Pledge not found");
       }
       if (!id) {
-        return ctx.db.insert(Pledge).values(input).returning({ id: Pledge.id });
+        return ctx.db
+          .insert(Pledge)
+          .values(input)
+          .returning({ id: Pledge.id })
+          .then((res) => res[0]);
       }
       // check user is admin / owner of the group that this pledge board belongs to
       const isAdmin = pledgeBoard.meetup.group.members.some(
@@ -168,7 +173,7 @@ export const pledgeboardRouter = createTRPCRouter({
           // just to make sure the pledge actually belongs to the pledge board that we checked for
           and(eq(Pledge.id, id), eq(Pledge.pledgeBoardId, pledgeBoard.id)),
         );
-      return {};
+      return { id };
     }),
 
   deletePledge: protectedProcedure.input(z.string()).mutation(async function ({

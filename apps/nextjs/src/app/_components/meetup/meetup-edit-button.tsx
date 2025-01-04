@@ -20,9 +20,6 @@ interface Props {
 export function MeetupEditButton({ meetup }: Props) {
   const [showUpsertMeetup, setShowUpsertMeetup] = useState(false);
   const utils = api.useUtils();
-  if (!meetup) {
-    return null;
-  }
   return (
     <Dialog open={showUpsertMeetup} onOpenChange={setShowUpsertMeetup}>
       <DialogTrigger asChild>
