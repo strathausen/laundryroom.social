@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   closestCenter,
   DndContext,
@@ -17,9 +17,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { CheckIcon, PencilIcon } from "lucide-react";
 
+import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 
+import { api } from "~/trpc/react";
 import { PledgeItem } from "./pledgeboard-item";
 
 interface Pledger {
@@ -41,13 +44,19 @@ interface PledgeItemData {
 interface PledgeboardProps {
   meetupId: string;
   isAdmin: boolean;
-  currentUserId: string;
 }
 
 export default function PledgeBoardWidget({
-  isAdmin = true,
-  currentUserId = "user1",
+  isAdmin,
+  meetupId,
 }: PledgeboardProps) {
+  const _updatePledgeQuery = api.pledge.updatePledge.useMutation();
+  const getPledgeboardQuery = api.pledge.getPledgeBoard.useQuery({ meetupId });
+  const [title, setTitle] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [description, setDescription] = useState("");
+  const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation();
+  const currentUserId = "user1";
   const [pledgeItems, setPledgeItems] = useState<PledgeItemData[]>([
     {
       id: "1",
@@ -80,6 +89,14 @@ export default function PledgeBoardWidget({
       pledgers: [{ id: "user5", name: "Eve", amount: 1 }],
     },
   ]);
+
+  useEffect(() => {
+    if (getPledgeboardQuery.data) {
+      setTitle(getPledgeboardQuery.data.title);
+      setDescription(getPledgeboardQuery.data.description ?? "");
+      setEditMode(!getPledgeboardQuery.data.title);
+    }
+  }, [getPledgeboardQuery.data]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -150,61 +167,134 @@ export default function PledgeBoardWidget({
     setPledgeItems((items) => items.filter((item) => item.id !== itemId));
   };
 
-  const handleEdit = (itemId: string) => {
+  const handleItemEdit = (itemId: string) => {
     // Implement edit functionality here
     console.log(`Edit item with id: ${itemId}`);
   };
 
+  const handleEdit = async () => {
+    await upsertPedgeboardQuery.mutateAsync({
+      meetupId,
+      title,
+      description,
+    });
+    setEditMode(false);
+  };
+
+  // for non admin users, don't show the pledgeboard if it doesn't exist
+  if (!isAdmin && !getPledgeboardQuery.data) {
+    return null;
+  }
+
   return (
-    <div className="font-mono">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={pledgeItems.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
+    <Box className="flex flex-col gap-4">
+      <div className="relative">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleEdit();
+          }}
         >
-          <ul className="space-y-4">
-            {pledgeItems.map((item) => (
-              <PledgeItem
-                key={item.id}
-                item={item}
-                isAdmin={isAdmin}
-                currentUserId={currentUserId}
-                onPledge={handlePledge}
-                onDelete={() => handleDelete(item.id)}
-                onEdit={() => handleEdit(item.id)}
-              />
-            ))}
-          </ul>
-        </SortableContext>
-      </DndContext>
-      {/* add new */}
-      {isAdmin && (
-        <div className="mt-4 flex flex-col">
-          <Button
-            onClick={() =>
-              setPledgeItems((items) => [
-                ...items,
-                {
-                  id: Math.random().toString(36).slice(2, 11),
-                  title: "New Item",
-                  description: "Description",
-                  neededAmount: 1,
-                  pledgedAmount: 0,
-                  pledgers: [],
-                  isNew: true,
-                },
-              ])
-            }
-            variant={"ghost"}
+          <div className="flex flex-col gap-4">
+            <div className="-ml-[1px] -mt-[1px] pr-6">
+              {editMode && isAdmin ? (
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full border border-[#f0f] font-extrabold underline decoration-green-400 decoration-4 disabled:opacity-50"
+                  placeholder="pledgeboard: who brings what? tasks?"
+                  disabled={upsertPedgeboardQuery.isPending}
+                />
+              ) : (
+                <h2 className="border border-transparent font-extrabold underline decoration-green-400 decoration-4">
+                  {title}
+                </h2>
+              )}
+            </div>
+            <div className="-ml-[1px] -mt-[1px]">
+              {editMode && isAdmin ? (
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={`w-full border border-[#f0f] disabled:opacity-50`}
+                  placeholder="description"
+                  disabled={upsertPedgeboardQuery.isPending}
+                />
+              ) : (
+                <p className="border border-transparent">{description}</p>
+              )}
+            </div>
+          </div>
+        </form>
+        {isAdmin && (
+          <div className="absolute right-0 top-0 opacity-50 transition-opacity hover:opacity-100">
+            <button
+              onClick={async () => {
+                if (editMode) await handleEdit();
+                console.log("done editing");
+                setEditMode(!editMode);
+              }}
+            >
+              {editMode ? (
+                <CheckIcon className="h-4 w-4" />
+              ) : (
+                <PencilIcon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="font-mono">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={pledgeItems.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
           >
-            Add New Item
-          </Button>
-        </div>
-      )}
-    </div>
+            <ul className="space-y-4">
+              {pledgeItems.map((item) => (
+                <PledgeItem
+                  key={item.id}
+                  item={item}
+                  isAdmin={isAdmin}
+                  currentUserId={currentUserId}
+                  onPledge={handlePledge}
+                  onDelete={() => handleDelete(item.id)}
+                  onEdit={() => handleItemEdit(item.id)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+        {/* add new */}
+        {isAdmin && (
+          <div className="mt-4 flex flex-col">
+            <Button
+              onClick={() =>
+                setPledgeItems((items) => [
+                  ...items,
+                  {
+                    id: Math.random().toString(36).slice(2, 11),
+                    title: "New Item",
+                    description: "Description",
+                    neededAmount: 1,
+                    pledgedAmount: 0,
+                    pledgers: [],
+                    isNew: true,
+                  },
+                ])
+              }
+              variant={"ghost"}
+            >
+              Add New Item
+            </Button>
+          </div>
+        )}
+      </div>
+    </Box>
   );
 }

@@ -46,7 +46,7 @@ export default function MeetupPage() {
               <MeetupEditButton meetup={meetupQuery.data} />
             )}
           </div>
-          <Box className="flex flex-col gap-4">
+          <Box className="relative flex flex-col gap-4">
             <h1 className="border-b-2 border-black pb-2 text-3xl uppercase">
               {meetupQuery.data.title}
             </h1>
@@ -62,14 +62,20 @@ export default function MeetupPage() {
               where?
             </h2>
             <div>{meetupQuery.data.location}</div>
+            <h2 className="font-extrabold underline decoration-green-400 decoration-4">
+              are you coming?
+            </h2>
             <div className="flex items-center gap-4">
-              rsvp:{" "}
+              please rsvp here:{" "}
               <RsvpSelect
                 groupId={meetupQuery.data.groupId}
                 meetupId={meetupQuery.data.id}
                 rsvp={rsvpQuery.data}
               />
             </div>
+            {/* <div className="absolute top-0 right-0">
+              <MeetupEditButton meetup={meetupQuery.data} />
+            </div> */}
           </Box>
           <Box className="flex flex-col gap-4">
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
@@ -97,15 +103,10 @@ export default function MeetupPage() {
               ))}
             </ul>
           </Box>
-          <Box className="flex flex-col gap-4">
-            <h2 className="font-extrabold underline decoration-green-400 decoration-4">
-              who brings what?
-            </h2>
-            <PledgeBoardWidget
-              isAdmin={meetupQuery.data.isSuperUser}
-              meetupId={meetupQuery.data.id}
-            />
-          </Box>
+          <PledgeBoardWidget
+            isAdmin={meetupQuery.data.isSuperUser}
+            meetupId={meetupQuery.data.id}
+          />
           {/* TODO Talk / discussions */}
         </div>
       </SessionProvider>

@@ -542,8 +542,8 @@ export const UpsertPledgeBoardSchema = createInsertSchema(PledgeBoard, {
   id: z.string().optional(),
   title: z.string().max(255).min(3),
   meetupId: z.string().uuid(),
-  createdBy: z.string().uuid(),
 }).omit({
+  createdBy: true,
   createdAt: true,
   updatedAt: true,
 });

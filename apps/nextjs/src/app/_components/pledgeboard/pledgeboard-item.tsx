@@ -127,7 +127,7 @@ export function PledgeItem({
             <AutoWidthTextarea
               className={`${editMode ? "border-[#f0f] bg-white" : "border-transparent bg-transparent"} -mr-[4px] border-b pl-[2px] outline-none`}
               onChange={(v) => {
-                setCapacity(parseInt(v, 10));
+                setCapacity(v ? parseInt(v, 10) : 0);
               }}
               value={capacity.toString()}
               readonly={!editMode}

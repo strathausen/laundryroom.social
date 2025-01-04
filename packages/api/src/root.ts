@@ -3,6 +3,7 @@ import { commentRouter } from "./router/comment";
 import { discussionRouter } from "./router/discussion";
 import { groupRouter } from "./router/group";
 import { meetupRouter } from "./router/meetup";
+import { pledgeboardRouter } from "./router/pledgeboard";
 import { promotionRouter } from "./router/promotion";
 import { createTRPCRouter } from "./trpc";
 
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   discussion: discussionRouter,
   group: groupRouter,
   meetup: meetupRouter,
+  pledge: pledgeboardRouter,
   promotion: promotionRouter,
 });
 

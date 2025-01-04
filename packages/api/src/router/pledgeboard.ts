@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { and, asc, eq } from "@laundryroom/db";
 import {
+  GroupMember,
   Meetup,
   Pledge,
   PledgeBoard,
@@ -20,7 +21,11 @@ export const pledgeboardRouter = createTRPCRouter({
       const { id, meetupId, ...data } = input;
       const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, meetupId),
-        with: { group: { with: { members: { where: eq(User.id, userId) } } } },
+        with: {
+          group: {
+            with: { members: { where: eq(GroupMember.userId, userId) } },
+          },
+        },
       });
       if (!meetup) {
         throw new Error("Meetup not found");
@@ -79,37 +84,33 @@ export const pledgeboardRouter = createTRPCRouter({
       return {};
     }),
 
-  getPledgeBoard: protectedProcedure.input(z.string()).query(async function ({
-    ctx,
-    input,
-  }) {
-    // TODO check membership of the user in the group
-    const pledgeBoard = await ctx.db.query.PledgeBoard.findFirst({
-      where: eq(PledgeBoard.id, input),
-      columns: {
-        id: true,
-        title: true,
-        description: true,
-        meetupId: true,
-      },
-      with: {
-        pledges: {
-          orderBy: asc(Pledge.sortOrder),
-          with: {
-            fulfillments: {
-              with: {
-                user: { columns: { id: true, name: true, email: true } },
+  getPledgeBoard: protectedProcedure
+    .input(z.object({ meetupId: z.string() }))
+    .query(async function ({ ctx, input }) {
+      // TODO check membership of the user in the group
+      const pledgeBoard = await ctx.db.query.PledgeBoard.findFirst({
+        where: eq(PledgeBoard.meetupId, input.meetupId),
+        columns: {
+          id: true,
+          title: true,
+          description: true,
+          meetupId: true,
+        },
+        with: {
+          pledges: {
+            orderBy: asc(Pledge.sortOrder),
+            with: {
+              fulfillments: {
+                with: {
+                  user: { columns: { id: true, name: true, email: true } },
+                },
               },
             },
           },
         },
-      },
-    });
-    if (!pledgeBoard) {
-      throw new Error("PledgeBoard not found");
-    }
-    return pledgeBoard;
-  }),
+      });
+      return pledgeBoard;
+    }),
 
   updatePledge: protectedProcedure
     .input(
