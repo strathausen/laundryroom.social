@@ -262,7 +262,9 @@ export const pledgeboardRouter = createTRPCRouter({
     }),
 
   reorderPledges: protectedProcedure
-    .input(z.object({ sorting: z.array(z.string()) }))
+    .input(
+      z.object({ pledgeBoardId: z.string(), sorting: z.array(z.string()) }),
+    )
     .mutation(async function ({ ctx, input }) {
       // const userId = ctx.session.user.id;
       // TODO check if admin of the group

@@ -47,6 +47,7 @@ export default function PledgeBoardWidget({
   meetupId,
 }: PledgeboardProps) {
   const getPledgeboardQuery = api.pledge.getPledgeBoard.useQuery({ meetupId });
+  const reorderPledgesMutation = api.pledge.reorderPledges.useMutation();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -79,7 +80,13 @@ export default function PledgeBoardWidget({
         if (!items) return [];
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        if (getPledgeboardQuery.data?.id)
+          reorderPledgesMutation.mutate({
+            pledgeBoardId: getPledgeboardQuery.data.id,
+            sorting: newItems.map((item) => item.id),
+          });
+        return newItems;
       });
     }
   };
