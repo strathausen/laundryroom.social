@@ -17,19 +17,18 @@ import {
 import { AutoHeightTextarea } from "@laundryroom/ui/auto-height-textarea";
 import { AutoWidthTextarea } from "@laundryroom/ui/auto-width-textarea";
 
-interface Pledger {
-  id: string;
-  name: string;
-  amount: number;
-}
+import { api } from "~/trpc/react";
 
+// TODO use router outputs type instead
 interface PledgeItemData {
   id: string;
   title: string;
-  description: string;
-  neededAmount: number;
-  pledgedAmount: number;
-  pledgers: Pledger[];
+  description: string | null;
+  capacity: number;
+  fulfillments: {
+    quantity: number;
+    user: { id: string; name: string | null; email: string };
+  }[];
   isNew?: boolean;
 }
 
@@ -37,6 +36,8 @@ interface PledgeItemProps {
   item: PledgeItemData;
   isAdmin: boolean;
   currentUserId: string;
+  pledgeBoardId: string;
+  sortOrder: number;
   onPledge: (itemId: string, amount: number) => void;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -46,14 +47,19 @@ export function PledgeItem({
   item,
   isAdmin,
   currentUserId,
+  pledgeBoardId,
+  sortOrder,
   onPledge,
   onDelete,
 }: PledgeItemProps) {
+  const upsertPledgeMutation = api.pledge.upsertPledge.useMutation();
   const [editMode, setEditMode] = useState(!!item.isNew);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isNew, setIsNew] = useState(item.isNew);
+  const [id, setId] = useState(item.id);
   const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(item.description);
-  const [capacity, setCapacity] = useState(item.neededAmount);
+  const [description, setDescription] = useState(item.description ?? "");
+  const [capacity, setCapacity] = useState(item.capacity);
 
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: item.id });
@@ -70,6 +76,28 @@ export function PledgeItem({
     if (pledged > needed) return "over";
     return "just-right";
   };
+
+  const handleEdit = async () => {
+    const res = await upsertPledgeMutation.mutateAsync({
+      id: isNew ? undefined : id,
+      title,
+      description,
+      capacity,
+      pledgeBoardId,
+      sortOrder,
+    });
+    if (isNew) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      setId((res as any).id);
+      setIsNew(false);
+    }
+    setEditMode(false);
+  };
+
+  const pledgedAmount = item.fulfillments.reduce(
+    (acc, fulfillment) => acc + fulfillment.quantity,
+    0,
+  );
 
   return (
     <div
@@ -96,7 +124,7 @@ export function PledgeItem({
             />
           ) : (
             <h3 className="whitespace-pre-wrap pb-[1px] text-xl font-bold">
-              {item.title}
+              {title} #{sortOrder}
             </h3>
           )}
           {editMode ? (
@@ -114,15 +142,14 @@ export function PledgeItem({
         <div className="flex items-center space-x-2">
           <div
             className={`flex items-center whitespace-nowrap px-2 py-1 text-sm font-bold ${
-              getPledgeStatus(item.neededAmount, item.pledgedAmount) === "under"
+              getPledgeStatus(item.capacity, pledgedAmount) === "under"
                 ? "border-2 border-yellow-500 bg-yellow-200"
-                : getPledgeStatus(item.neededAmount, item.pledgedAmount) ===
-                    "over"
+                : getPledgeStatus(item.capacity, pledgedAmount) === "over"
                   ? "border-2 border-green-500 bg-green-200"
                   : "border-2 border-blue-500 bg-blue-200"
             }`}
           >
-            <span>{item.pledgedAmount}</span>
+            <span>{pledgedAmount}</span>
             <span className="ml-[2px]">/</span>
             <AutoWidthTextarea
               className={`${editMode ? "border-[#f0f] bg-white" : "border-transparent bg-transparent"} -mr-[4px] border-b pl-[2px] outline-none`}
@@ -131,10 +158,10 @@ export function PledgeItem({
               }}
               value={capacity.toString()}
               readonly={!editMode}
-              onKeyUp={(key) => {
+              onKeyUp={async (key) => {
                 switch (key) {
                   case "Enter":
-                    setEditMode(false);
+                    await handleEdit();
                     break;
                   case "ArrowUp":
                     setCapacity((prev) => prev + 1);
@@ -149,14 +176,18 @@ export function PledgeItem({
           {isAdmin && (
             <>
               <button
-                onClick={() => setEditMode(!editMode)}
+                onClick={async () => {
+                  if (editMode) await handleEdit();
+                  setEditMode(!editMode);
+                }}
                 className={`${editMode ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"} p-1 text-white transition-colors duration-300`}
               >
                 {editMode ? <CheckIcon size={20} /> : <Edit2 size={20} />}
               </button>
               <button
                 onClick={onDelete}
-                className="bg-red-500 p-1 text-white transition-colors duration-300 hover:bg-red-600"
+                className="bg-red-500 p-1 text-white transition-colors duration-300 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={item.isNew}
               >
                 <Trash2 size={20} />
               </button>
@@ -174,25 +205,27 @@ export function PledgeItem({
         <div className="mt-4 space-y-2 p-4">
           <h4 className="font-bold">Pledgers:</h4>
           <ul className="list-inside list-disc">
-            {item.pledgers.map((pledger) => (
+            {item.fulfillments.map((pledger) => (
               <li
-                key={pledger.id}
-                className={pledger.id === currentUserId ? "font-bold" : ""}
+                key={pledger.user.id}
+                className={pledger.user.id === currentUserId ? "font-bold" : ""}
               >
-                {pledger.name}: {pledger.amount}
+                {pledger.user.name}: {pledger.quantity}
               </li>
             ))}
           </ul>
           <div className="mt-2 flex items-center space-x-2">
             <button
               onClick={() => onPledge(item.id, 1)}
-              className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black"
+              className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={item.isNew}
             >
               <Plus size={20} />
             </button>
             <button
               onClick={() => onPledge(item.id, -1)}
-              className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black"
+              className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={item.isNew}
             >
               <Minus size={20} />
             </button>

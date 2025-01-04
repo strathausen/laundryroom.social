@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { asc, eq } from "@laundryroom/db";
+import { and, asc, eq } from "@laundryroom/db";
 import {
   GroupMember,
   Meetup,
@@ -99,9 +99,16 @@ export const pledgeboardRouter = createTRPCRouter({
         },
         with: {
           pledges: {
+            columns: {
+              id: true,
+              title: true,
+              description: true,
+              capacity: true,
+            },
             orderBy: asc(Pledge.sortOrder),
             with: {
               fulfillments: {
+                columns: { quantity: true },
                 with: {
                   user: { columns: { id: true, name: true, email: true } },
                 },
@@ -113,38 +120,54 @@ export const pledgeboardRouter = createTRPCRouter({
       return pledgeBoard;
     }),
 
-  updatePledge: protectedProcedure
+  upsertPledge: protectedProcedure
     .input(
-      z.object({ id: z.string(), title: z.string(), description: z.string() }),
+      z.object({
+        id: z.string().optional(),
+        pledgeBoardId: z.string(),
+        title: z.string(),
+        description: z.string(),
+        sortOrder: z.number(),
+        capacity: z.number(),
+      }),
     )
     .mutation(async function ({ ctx, input }) {
       const userId = ctx.session.user.id;
-      const pledge = await ctx.db.query.Pledge.findFirst({
-        where: eq(Pledge.id, input.id),
+      const { id, ...data } = input;
+
+      const pledgeBoard = await ctx.db.query.PledgeBoard.findFirst({
+        where: eq(PledgeBoard.id, input.pledgeBoardId),
         with: {
-          pledgeBoard: {
+          meetup: {
             with: {
-              meetup: {
-                with: {
-                  group: { with: { members: { where: eq(User.id, userId) } } },
-                },
+              group: {
+                with: { members: { where: eq(GroupMember.userId, userId) } },
               },
             },
           },
         },
       });
-      if (!pledge) {
+      if (!pledgeBoard) {
         throw new Error("Pledge not found");
       }
-      // check user is admin / owner of the group
-      const isAdmin = pledge.pledgeBoard.meetup.group.members.some(
+      if (!id) {
+        return ctx.db.insert(Pledge).values(input).returning({ id: Pledge.id });
+      }
+      // check user is admin / owner of the group that this pledge board belongs to
+      const isAdmin = pledgeBoard.meetup.group.members.some(
         (member) =>
           member.userId === userId && ["admin", "owner"].includes(member.role),
       );
       if (!isAdmin) {
         throw new Error("Unauthorized");
       }
-      await ctx.db.update(Pledge).set(input).where(eq(Pledge.id, input.id));
+      await ctx.db
+        .update(Pledge)
+        .set(data)
+        .where(
+          // just to make sure the pledge actually belongs to the pledge board that we checked for
+          and(eq(Pledge.id, id), eq(Pledge.pledgeBoardId, pledgeBoard.id)),
+        );
       return {};
     }),
 
