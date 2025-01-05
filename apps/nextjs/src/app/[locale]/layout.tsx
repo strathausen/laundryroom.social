@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics as _Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Provider as JotaiProvider } from "jotai";
@@ -71,6 +71,7 @@ export default async function RootLayout(props: {
           GeistMono.variable,
         )}
       >
+        <Analytics />
         {/* for now, only allow the light theme until we have time to look at the dark theme as well */}
         <ThemeProvider
           attribute="class"
