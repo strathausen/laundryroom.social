@@ -113,6 +113,9 @@ export const commentRouter = {
           if (!user?.email) {
             return;
           }
+          if (user.id === userId) {
+            return;
+          }
           const { email } = user;
           await sendEmail(email, "newComment", {
             user,
