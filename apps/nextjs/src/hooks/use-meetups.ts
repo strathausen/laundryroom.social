@@ -14,7 +14,6 @@ export function useMeetups({ groupId }: { groupId: string }) {
     { groupId, limit: 3 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      getPreviousPageParam: (lastPage) => lastPage.prevCursor,
     },
   );
   const upsertMutation = api.meetup.upsert.useMutation();
@@ -72,9 +71,7 @@ export function useMeetups({ groupId }: { groupId: string }) {
           new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
       ),
     hasNextPage: listQuery.hasNextPage,
-    hasPreviousPage: listQuery.hasPreviousPage,
     fetchNextPage: () => listQuery.fetchNextPage(),
-    fetchPreviousPage: () => listQuery.fetchPreviousPage(),
     isLoading: listQuery.isLoading,
   };
 }

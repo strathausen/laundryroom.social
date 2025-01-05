@@ -112,18 +112,21 @@ export const meetupRouter = createTRPCRouter({
       };
     }),
 
+  // with cursor: load meetups from the past
+  // without cursor: load all of the upcoming meetups
   byGroupId: publicProcedure
     .input(
       z.object({
         groupId: z.string(),
         cursor: z.string().nullish(),
         limit: z.number().max(50).default(10),
-        direction: z.enum(["forward", "backward"]).default("backward"),
       }),
     )
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
-      const { limit, groupId, cursor, direction } = input;
+      const { limit, groupId, cursor } = input;
+      const direction = cursor ? "backward" : "forward";
+      console.dir({ direction, cursor });
 
       // check if user is member of the group
       const membershipQuery = user
@@ -152,7 +155,7 @@ export const meetupRouter = createTRPCRouter({
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
           eq(Meetup.groupId, input.groupId),
-          input.direction === "forward"
+          direction === "forward"
             ? gt(Meetup.startTime, cursor ? new Date(cursor) : new Date())
             : lt(Meetup.startTime, cursor ? new Date(cursor) : new Date()),
         ),
@@ -162,8 +165,10 @@ export const meetupRouter = createTRPCRouter({
             : desc(Meetup.startTime),
         limit: limit + 1,
       });
-      // TODO if there is no cursor, it means we have an initial query
-      // -> try to find hasNextPage or hasPreviousPage in the opposite direction
+      console.dir({
+        orderBy: direction === "forward" ? "asc" : "desc",
+        startTimeFilter: direction === "forward" ? "gt" : "lt",
+      });
 
       const attendeesCountQuery = ctx.db
         .select({
@@ -191,16 +196,15 @@ export const meetupRouter = createTRPCRouter({
         meetups.pop();
       }
       // if we have more than the limit, we have a next/prev page depending on the direction
-      const prevCursor =
-        (direction === "backward" && hasMore) || !cursor
-          ? meetups[0]?.startTime.toISOString()
-          : undefined;
       const nextCursor =
-        (direction === "backward" && hasMore) || !cursor
+        hasMore && direction === "backward"
           ? meetups[meetups.length - 1]?.startTime.toISOString()
-          : undefined;
+          : direction === "forward"
+            ? meetups[0]?.startTime.toISOString()
+            : null;
+
       // reverse the order if backward
-      if (input.direction === "backward") {
+      if (direction === "backward") {
         meetups.reverse();
       }
       const isSuperUser = ["admin", "owner", "moderator"].includes(
@@ -228,7 +232,6 @@ export const meetupRouter = createTRPCRouter({
             attendeesCount:
               attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
           })),
-        prevCursor,
         nextCursor,
       };
     }),

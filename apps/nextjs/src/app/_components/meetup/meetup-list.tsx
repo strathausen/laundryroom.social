@@ -24,13 +24,6 @@ export function MeetupList({ groupId, canEdit }: Props) {
 
   return (
     <div>
-      {meetups.hasNextPage && (
-        <div className="mt-4 flex flex-col">
-          <Button onClick={() => meetups.fetchNextPage()} variant={"ghost"}>
-            load future
-          </Button>
-        </div>
-      )}
       <div className="mt-6 flex flex-col gap-6">
         {meetups.items.map((meetup) => (
           <MeetupCard
@@ -45,10 +38,10 @@ export function MeetupList({ groupId, canEdit }: Props) {
         ))}
         {!meetups.items.length && <p>no upcoming meetups</p>}
       </div>
-      {meetups.hasPreviousPage && (
+      {meetups.hasNextPage && (
         <div className="mt-4 flex flex-col">
-          <Button onClick={() => meetups.fetchPreviousPage()} variant={"ghost"}>
-            load past
+          <Button onClick={() => meetups.fetchNextPage()} variant={"ghost"}>
+            load past meetups
           </Button>
         </div>
       )}
