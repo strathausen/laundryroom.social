@@ -31,6 +31,8 @@ export const User = pgTable("user", {
   }),
   image: varchar("image", { length: 255 }),
   bio: text("bio"),
+  pronouns: varchar("pronouns", { length: 255 }),
+  links: text("links").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   role: UserRole("role").default("user").notNull(),
 });
