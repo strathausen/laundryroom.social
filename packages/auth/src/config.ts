@@ -5,7 +5,7 @@ import type {
 } from "next-auth";
 import { skipCSRFCheck } from "@auth/core";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import Discord from "next-auth/providers/discord";
+// import Discord from "next-auth/providers/discord";
 import Resend from "next-auth/providers/resend";
 
 import { db } from "@laundryroom/db/client";
@@ -46,8 +46,9 @@ export const authConfig = {
     : {}),
   secret: env.AUTH_SECRET,
   providers: [
-    Discord,
+    // Discord,
     Resend({
+      name: "email",
       apiKey: env.RESEND_KEY,
       from: "Laundryroom Registration <noreply@laundryroom.social>",
     }),
