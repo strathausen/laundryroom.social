@@ -64,7 +64,14 @@ export default function PledgeBoardWidget({
       setEditMode(!getPledgeboardQuery.data.title);
       setPledgeItems(getPledgeboardQuery.data.pledges);
     }
-  }, [getPledgeboardQuery.data]);
+    if (
+      !getPledgeboardQuery.data?.title &&
+      isAdmin &&
+      getPledgeboardQuery.isFetched
+    ) {
+      setEditMode(true);
+    }
+  }, [getPledgeboardQuery.data, getPledgeboardQuery.isFetched, isAdmin]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
