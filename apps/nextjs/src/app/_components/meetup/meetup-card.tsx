@@ -46,11 +46,15 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
             </Button>
           )}
         </div>
-        <Link href={`/meetup/${meetup.id}`}>
-          <p className="underline decoration-green-400 decoration-4 underline-offset-4">
-            {meetup.description}
-          </p>
-        </Link>
+        {session.data ? (
+          <Link href={`/meetup/${meetup.id}`}>
+            <p className="underline decoration-green-400 decoration-4 underline-offset-4">
+              {meetup.description}
+            </p>
+          </Link>
+        ) : (
+          <p>{meetup.description}</p>
+        )}
       </div>
       <div className="flex flex-col space-y-2">
         <p>
