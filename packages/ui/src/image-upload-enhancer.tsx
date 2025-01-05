@@ -4,7 +4,7 @@
 import type { Crop as CropType, PixelCrop } from "react-image-crop";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CheckIcon, Crop, Upload } from "lucide-react";
-import ReactCrop from "react-image-crop";
+import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 
 import { Button } from "./button";
 import { Card, CardContent } from "./card";
@@ -121,6 +121,26 @@ export function ImageUploadEnhancer({
     fileInputRef.current?.click();
   };
 
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
+
+    const crop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: "%",
+          width: 90,
+        },
+        aspectRatio,
+        width,
+        height,
+      ),
+      width,
+      height,
+    );
+
+    setCrop(crop);
+  }
+
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -128,7 +148,7 @@ export function ImageUploadEnhancer({
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = (e) => {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
@@ -156,6 +176,8 @@ export function ImageUploadEnhancer({
         setCroppedImage(null);
         setPreviewImage(null);
         setIsCropping(true);
+        onImageLoad(e as unknown as React.SyntheticEvent<HTMLImageElement>);
+        // setCompletedCrop(convertToPixelCrop(newCrop, img.width, img.height));
       };
       img.src = e.target?.result as string;
     };
