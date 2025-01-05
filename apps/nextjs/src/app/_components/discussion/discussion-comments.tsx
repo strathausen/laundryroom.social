@@ -131,8 +131,8 @@ export function DiscussionComments({
           variant="brutal"
           disabled={isCreating || commentContent.length < 4}
         >
-          <MessageCircle className="mr-2 h-4 w-4" />
-          comment
+          <MessageCircle className="mr-0 h-4 w-4 md:mr-2" />
+          <span className="hidden md:block">comment</span>
         </Button>
       </form>
     </>

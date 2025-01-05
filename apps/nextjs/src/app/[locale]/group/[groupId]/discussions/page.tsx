@@ -15,7 +15,7 @@ export default function MeetupsPage() {
   const membership = group?.membership;
 
   return (
-    <main className="container my-16 min-h-screen max-w-screen-lg text-black">
+    <main className="my-16 min-h-screen max-w-screen-sm m-auto text-black">
       <LoginCta message="log in to join the discussion">
         {membership ? (
           <DiscussionWidget groupId={params.groupId} />
