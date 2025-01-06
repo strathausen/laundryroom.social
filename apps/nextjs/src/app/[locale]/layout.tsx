@@ -37,6 +37,8 @@ export const metadata: Metadata = {
     description: "meet people, organise meetups, have fun",
     url: "https://www.laundryroom.social",
     siteName: "laundryroom.social",
+    images:
+      "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
   },
   twitter: {
     card: "summary_large_image",
