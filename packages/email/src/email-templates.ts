@@ -23,6 +23,15 @@ interface DiscussionInput {
     content: string;
   };
 }
+interface MeetupInput {
+  meetup: {
+    id: string;
+    title: string;
+    description?: string;
+    startTime: Date;
+    location?: string;
+  };
+}
 
 export const emailTemplates = {
   eventUpdate({
@@ -31,14 +40,8 @@ export const emailTemplates = {
     meetup,
   }: {
     isNew: boolean;
-    meetup: {
-      id: string;
-      title: string;
-      description?: string;
-      startTime: Date;
-      location?: string;
-    };
-  } & GroupInput) {
+  } & GroupInput &
+    MeetupInput) {
     return {
       subject: `${isNew ? "📅 New Meetup:" : "📆 Meetup changed:"} ${meetup.title} in ${group.name}`,
       body: `Dear human,
@@ -106,6 +109,7 @@ ${member.name} has joined your group "${group.name}" on https://www.laundryroom.
 Say hi and welcome them to the group!`,
     };
   },
+
   promotionStatusChange({
     group,
     user,
@@ -123,6 +127,18 @@ The user ${user.name} (${user.email}) has requested promotion for the group "${g
 
 Status: ${status}
 Message: ${message}
+
+Have a great rest of your day!`,
+    };
+  },
+
+  // TODO this is unused, decide if we should send calendar invites on meetup creation or rsvp
+  welcomeToMeetup({ group, meetup }: GroupInput & MeetupInput) {
+    return {
+      subject: `[${group.name}] meetup invitation ${meetup.title}`,
+      body: `Dear human of group ${group.name},
+
+Welcome to the the meetup "${meetup.title}" in your group on https://www.laundryroom.social/meetup/${meetup.id}
 
 Have a great rest of your day!`,
     };
