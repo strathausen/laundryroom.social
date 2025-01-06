@@ -5,6 +5,7 @@ import type {
 } from "next-auth";
 import { skipCSRFCheck } from "@auth/core";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import Google from "next-auth/providers/google";
 // import Discord from "next-auth/providers/discord";
 import Resend from "next-auth/providers/resend";
 
@@ -47,6 +48,7 @@ export const authConfig = {
   secret: env.AUTH_SECRET,
   providers: [
     // Discord,
+    Google,
     Resend({
       name: "email",
       apiKey: env.RESEND_KEY,
