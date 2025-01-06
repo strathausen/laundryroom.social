@@ -126,8 +126,11 @@ export const groupRouter = {
       return { group, membership, promotion };
     }),
 
-  myGroups: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+  myGroups: publicProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session?.user.id;
+    if (!userId) {
+      return [];
+    }
 
     return ctx.db
       .select({
