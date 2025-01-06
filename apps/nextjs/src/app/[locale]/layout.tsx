@@ -42,6 +42,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@strathausen",
     creator: "@strathausen",
+    images:
+      "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
   },
 };
 
