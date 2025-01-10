@@ -35,6 +35,7 @@ export function useMeetups({ groupId }: { groupId: string }) {
       isOver: false,
       status: "active",
       attendeeLimit: -1,
+      organizerId: "",
     };
     setPostedItems((prev) => {
       const groupMeetups = prev[groupId] ?? [];
