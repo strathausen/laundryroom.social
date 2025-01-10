@@ -37,7 +37,10 @@ export const meetupRouter = createTRPCRouter({
             ),
             with: {
               members: {
-                where: eq(GroupMember.userId, user.id),
+                where: and(
+                  eq(GroupMember.userId, user.id),
+                  not(eq(GroupMember.role, "banned")),
+                ),
                 with: {
                   user: {
                     columns: { id: true, email: true, name: true },
@@ -102,6 +105,7 @@ export const meetupRouter = createTRPCRouter({
       const isSuperUser = group.members.some(
         (m) => m.user.id === user?.id && ["admin", "owner"].includes(m.role),
       );
+      const isGroupMember = group.members.length > 0; // we are only interested in the length
       return {
         ...meetup,
         isOngoing:
@@ -116,6 +120,7 @@ export const meetupRouter = createTRPCRouter({
           isCurrentUser: a.user.id === user?.id,
         })),
         isSuperUser,
+        isGroupMember,
       };
     }),
 

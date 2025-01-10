@@ -28,15 +28,22 @@ export default function MeetupPage() {
     return <div className="m-auto mt-40">Loading...</div>;
   }
 
-  // TODO is cancelled / past
   const isCancelled = meetupQuery.data.status === "cancelled";
-  // add duration to meetup
-  const endTime = new Date(meetupQuery.data.startTime);
-  endTime.setHours(endTime.getHours() + 1);
-  const isPast = endTime < new Date();
-  const isOnGoing =
-    meetupQuery.data.startTime < new Date() && endTime > new Date();
-  const disabled = isCancelled || isPast;
+  const disabled = isCancelled || meetupQuery.data.isOver;
+
+  if (!meetupQuery.data.isGroupMember && meetupQuery.isFetched) {
+    return (
+      <PageContainer>
+        <Box>
+          <h1 className="text-3xl">You are not a member of this group</h1>
+          <p>
+            You need to be a member of this group to view this meetup. Please
+            join the group first.
+          </p>
+        </Box>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -61,10 +68,10 @@ export default function MeetupPage() {
             {isCancelled && (
               <div className="text-red-500">This meetup has been cancelled</div>
             )}
-            {isPast && (
+            {meetupQuery.data.isOver && (
               <div className="text-red-500">This meetup has ended</div>
             )}
-            {isOnGoing && (
+            {meetupQuery.data.isOngoing && (
               <div className="text-green-500">This meetup is on going</div>
             )}
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
