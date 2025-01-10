@@ -31,21 +31,21 @@ export function NavBar(props: Props) {
   const t = useTranslations("navBar");
 
   return (
-    <div className="fixed bottom-0 z-50 flex max-h-[80px] w-full flex-row items-center border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-12 md:items-center md:border-b-2 md:border-t-0 md:pt-0">
-      <div title="laundryroom.social" className="mt-2 hidden md:block">
-        <Link href="/" className="relative ml-2 flex items-center gap-2">
+    <div className="fixed bottom-0 z-50 flex max-h-[80px] w-full flex-row items-center border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:h-12 md:border-b-2 md:border-t-0 md:pt-3">
+      <div title="laundryroom.social" className="hidden md:block">
+        <Link href="/" className="relative -mt-3 ml-2 flex items-center gap-2">
           <Image
             alt="laundry room social"
             src={BannerImage}
             width={270}
             height={90}
           />
-          <div className="absolute bottom-1 right-6 text-xs text-primary-foreground">
+          <div className="absolute bottom-2 right-5 text-xs font-semibold text-primary-foreground">
             organise meetups. have fun.
           </div>
         </Link>
       </div>
-      <div className="mt-2 flex h-full flex-1 justify-center gap-5 bg-green-200 text-xl md:m-auto md:mt-auto md:text-base">
+      <div className="mt-2 flex flex-1 justify-center gap-5 text-xl md:m-auto md:mt-auto md:text-base">
         {menuLinks.map(({ link, label, icon }) => (
           <Link
             key={link}
