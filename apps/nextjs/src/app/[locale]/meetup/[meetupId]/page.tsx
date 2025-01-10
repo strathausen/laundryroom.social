@@ -91,9 +91,12 @@ export default function MeetupPage() {
                 disabled={disabled}
               />
             </div>
-            {/* <div className="absolute top-0 right-0">
-              <MeetupEditButton meetup={meetupQuery.data} />
-            </div> */}
+            {meetupQuery.data.organizer && (
+              <div className="text-sm text-gray-500">
+                this meetup is proudly organised by{" "}
+                {meetupQuery.data.organizer.name}
+              </div>
+            )}
           </Box>
           <Box className="flex flex-col gap-4">
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">

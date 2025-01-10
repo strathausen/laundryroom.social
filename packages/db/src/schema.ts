@@ -275,6 +275,9 @@ export const Meetup = pgTable("meetup", {
     mode: "date",
     withTimezone: true,
   }).$onUpdateFn(() => new Date()),
+  organizerId: uuid("organizer_id").references(() => User.id, {
+    onDelete: "set null",
+  }),
 });
 
 export const UpsertMeetupSchema = createInsertSchema(Meetup, {
@@ -290,6 +293,7 @@ export const UpsertMeetupSchema = createInsertSchema(Meetup, {
 }).omit({
   createdAt: true,
   updatedAt: true,
+  organizerId: true,
 });
 
 export const MeetupRelations = relations(Meetup, ({ one, many }) => ({
@@ -298,6 +302,10 @@ export const MeetupRelations = relations(Meetup, ({ one, many }) => ({
     references: [Group.id],
   }),
   attendees: many(Attendee),
+  organizer: one(User, {
+    fields: [Meetup.organizerId],
+    references: [User.id],
+  }),
 }));
 
 export const Attendee = pgTable(

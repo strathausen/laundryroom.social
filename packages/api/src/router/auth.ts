@@ -1,6 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
-import type { InferInsertModel } from "@laundryroom/db";
 import { invalidateSessionToken } from "@laundryroom/auth";
 import { eq } from "@laundryroom/db";
 import { UpdateProfileSchema, User } from "@laundryroom/db/schema";

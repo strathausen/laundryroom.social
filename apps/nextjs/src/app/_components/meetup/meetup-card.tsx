@@ -63,9 +63,11 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
             {format(new Date(meetup.startTime), "dd MMM yyyy hh:mm a")}
           </strong>
         </div>
-        <div>
-          📍 <strong>{meetup.location}</strong>
-        </div>
+        {meetup.location && (
+          <div>
+            📍 <strong>{meetup.location}</strong>
+          </div>
+        )}
         <div className="flex justify-between">
           <RsvpSelect
             meetupId={meetup.id}

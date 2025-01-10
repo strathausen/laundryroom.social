@@ -83,6 +83,13 @@ export const meetupRouter = createTRPCRouter({
               },
             },
           },
+          organizer: {
+            columns: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
         },
       });
       const [group, meetup] = await Promise.all([groupQuery, meetupQuery]);
@@ -126,7 +133,6 @@ export const meetupRouter = createTRPCRouter({
       const user = ctx.session?.user;
       const { limit, groupId, cursor } = input;
       const direction = cursor ? "backward" : "forward";
-      console.dir({ direction, cursor });
 
       // check if user is member of the group
       const membershipQuery = user
@@ -164,10 +170,6 @@ export const meetupRouter = createTRPCRouter({
             ? asc(Meetup.startTime)
             : desc(Meetup.startTime),
         limit: limit + 1,
-      });
-      console.dir({
-        orderBy: direction === "forward" ? "asc" : "desc",
-        startTimeFilter: direction === "forward" ? "gt" : "lt",
       });
 
       const attendeesCountQuery = ctx.db
@@ -376,9 +378,12 @@ export const meetupRouter = createTRPCRouter({
         await ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
         meetupId = input.id;
       } else {
-        const res = await ctx.db.insert(Meetup).values(data).returning({
-          id: Meetup.id,
-        });
+        const res = await ctx.db
+          .insert(Meetup)
+          .values({ ...data, organizerId: user.id })
+          .returning({
+            id: Meetup.id,
+          });
         if (!res[0]) {
           throw new Error("Failed to create meetup");
         }
