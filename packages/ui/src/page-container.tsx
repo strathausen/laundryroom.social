@@ -14,7 +14,7 @@ export const PageContainer = forwardRef<HTMLElement, PageProps>(
       <Tag
         ref={ref}
         className={cn(
-          "container min-h-screen max-w-screen-lg py-16",
+          "container min-h-screen py-16 md:max-w-screen-lg",
           className,
         )}
         {...props}

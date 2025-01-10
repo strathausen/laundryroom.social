@@ -5,8 +5,10 @@
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
 import type { Session } from "next-auth";
+import Image from "next/image";
 import NavLink from "next/link";
 import { useTranslations } from "next-intl";
+import BannerImage from "public/laundry-room-banner.png";
 import {
   // FaBowlRice,
   // FaCalendar,
@@ -36,84 +38,69 @@ export function NavBar(props: Props) {
   const t = useTranslations("navBar");
 
   return (
-    <div className="fixed bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-none md:w-fit md:flex-col md:border-none md:bg-transparent md:pl-6 md:backdrop-blur-none md:backdrop-brightness-100">
+    <div className="fixed bottom-0 z-50 flex h-screen max-h-[80px] w-full flex-row border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:max-h-11 md:border-b-2 md:border-t-0 md:pt-0">
       <div title="laundryroom.social" className="mt-2 hidden md:block">
-        <Link href="/" className="flex items-center gap-2">
-          <div></div>
-          <p className="font-vollkorn text-2xl" style={{ lineHeight: 0.6 }}>
-            <span
-              className="relative text-lg"
-              style={{ lineHeight: 0.65, left: 12 }}
-            >
-              laundry
-              <br />
-              room
-              <br />
-              .social 🧺
-            </span>
-          </p>
+        <Link href="/" className="relative ml-2 flex items-center gap-2">
+          <Image
+            alt="laundry room social"
+            src={BannerImage}
+            width={270}
+            height={90}
+          />
+          <div className="absolute bottom-1 right-6 text-xs text-primary-foreground">
+            organise meetups. have fun.
+          </div>
         </Link>
       </div>
-      <div className="font-vollkorn mt-2 flex flex-1 flex-col justify-between text-xl md:mt-6">
-        <div className="flex flex-row justify-center gap-5 md:mt-4 md:flex-col">
-          {menuLinks.map(({ link, label, icon }) => (
-            <Link
-              key={link}
-              href={`/${link}`}
-              // href={`/${link === "feed" && !props.session?.user ? "" : link}`}
-              className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 transition-all hover:decoration-green-400 md:flex-row ${
-                pathName.startsWith(`/${link}`)
-                  ? "font-bold decoration-green-400"
-                  : "decoration-fancyorange/0"
-              }`}
-            >
-              {icon} <span className="text-sm md:text-xl">{t(label)}</span>
-            </Link>
-          ))}
-          {props.session?.user && (
-            <Link
-              href={`/user/${props.session.user.id}`}
-              className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 hover:decoration-green-400 md:flex-row ${
-                pathName.startsWith(`/user/${props.session.user.id}`)
-                  ? "font-bold decoration-green-400"
-                  : "decoration-fancyorange/0"
-              }`}
-            >
-              <div
-              // className={props.session ? "-m-1" : ""}
-              >
-                {/* {props.session ? ( */}
-                {/* // <ProfileImage imageUrl={props.session?.user.image} size={28} /> */}
-                {/* // ) : ( */}
-                <FaHorseHead />
-                {/* )} */}
-              </div>{" "}
-              <span className="text-sm md:text-xl">
-                {t("proof_proof_mole_mop")}
-              </span>
-            </Link>
-          )}
-        </div>
-        <div className="text-primary-darker mb-24 hidden md:mb-0 md:block">
-          <div>
-            <LocaleSwitcher />
-          </div>
-          <div className="pb-3">
-            <Link
-              href="https://www.zupafeed.com/campaign/clsa7g66k0007u2z77f2g0e4o"
-              target="_blank"
-            >
-              {t("feedback")} 🔥
-            </Link>
-          </div>
-          {/* <LanguageSwitcher /> */}
-          <NavLink
-            href={props.session ? "/api/auth/signout" : "/api/auth/signin"}
-            className="flex items-center gap-4 rounded-sm transition"
+      <div className="font-vollkorn mt-2 flex flex-1 justify-center gap-5 text-xl md:mt-0 md:justify-center md:text-base">
+        {menuLinks.map(({ link, label, icon }) => (
+          <Link
+            key={link}
+            href={`/${link}`}
+            // href={`/${link === "feed" && !props.session?.user ? "" : link}`}
+            className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 transition-all hover:decoration-green-400 md:flex-row ${
+              pathName.startsWith(`/${link}`)
+                ? "font-bold decoration-green-400"
+                : "decoration-fancyorange/0"
+            }`}
           >
-            <FaDoorOpen /> {props.session ? "logout" : "login"}
-          </NavLink>
+            <span className="md:hidden">{icon}</span>{" "}
+            <span className="text-sm md:text-base">{t(label)}</span>
+          </Link>
+        ))}
+        {props.session?.user && (
+          <Link
+            href={`/user/${props.session.user.id}`}
+            className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 hover:decoration-green-400 md:flex-row ${
+              pathName.startsWith(`/user/${props.session.user.id}`)
+                ? "font-bold decoration-green-400"
+                : "decoration-fancyorange/0"
+            }`}
+          >
+            <div
+              // className={props.session ? "-m-1" : ""}
+              className="md:hidden"
+            >
+              {/* {props.session ? ( */}
+              {/* // <ProfileImage imageUrl={props.session?.user.image} size={28} /> */}
+              {/* // ) : ( */}
+              <FaHorseHead />
+              {/* )} */}
+            </div>{" "}
+            <span className="text-sm md:text-base">
+              {t("proof_proof_mole_mop")}
+            </span>
+          </Link>
+        )}
+        <div className="hidden md:block">
+          <LocaleSwitcher />
         </div>
+        <NavLink
+          href={props.session ? "/api/auth/signout" : "/api/auth/signin"}
+          className="hidden items-center gap-4 rounded-sm transition md:flex"
+        >
+          <FaDoorOpen /> {props.session ? "logout" : "login"}
+        </NavLink>
       </div>
     </div>
   );

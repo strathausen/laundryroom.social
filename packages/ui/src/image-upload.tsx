@@ -11,7 +11,7 @@ interface ImageUploaderProps {
   onChange: (imageUrl: string) => void;
 }
 
-export function ImageUploader(props: ImageUploaderProps) {
+export function ImageUpload(props: ImageUploaderProps) {
   const [preview, setPreview] = useState(props.imageUrl);
   const [showImagePicker, setShowImagePicker] = useState(false);
 

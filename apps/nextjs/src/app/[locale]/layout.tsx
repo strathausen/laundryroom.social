@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: "laundryroom.social",
     description: "meet people, organise meetups, have fun",
     url: "https://www.laundryroom.social",
-    siteName: "laundryroom.social",
+    siteName: "laundryroom.social 🧺 - organise meetups. have fun.",
     images:
       "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
   },
@@ -85,7 +85,7 @@ export default async function RootLayout(props: {
           <NextIntlClientProvider messages={messages}>
             <JotaiProvider>
               <NavBar session={session} />
-              <div className="flex min-h-svh flex-col justify-between pl-0 md:pl-32">
+              <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-16">
                 <TRPCReactProvider>{props.children}</TRPCReactProvider>
                 <div className="mt-4 flex flex-col items-center">
                   <div className="max-w-5xl">

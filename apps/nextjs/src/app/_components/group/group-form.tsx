@@ -13,7 +13,7 @@ import {
   FormMessage,
   useForm,
 } from "@laundryroom/ui/form";
-import { ImageUploader } from "@laundryroom/ui/image-upload";
+import { ImageUpload } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
@@ -84,7 +84,7 @@ export function GroupForm(props: Props) {
           className="flex w-full max-w-2xl flex-col gap-4"
           disabled={upsertGroup.isPending}
         >
-          <ImageUploader
+          <ImageUpload
             prefix="group"
             imageUrl={imageUrl}
             onChange={(imageUrl) => {
