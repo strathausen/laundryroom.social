@@ -4,11 +4,13 @@ import { discussionRouter } from "./router/discussion";
 import { groupRouter } from "./router/group";
 import { meetupRouter } from "./router/meetup";
 import { pledgeboardRouter } from "./router/pledgeboard";
+import { profileRouter } from "./router/profile";
 import { promotionRouter } from "./router/promotion";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
+  profile: profileRouter,
   comment: commentRouter,
   discussion: discussionRouter,
   group: groupRouter,

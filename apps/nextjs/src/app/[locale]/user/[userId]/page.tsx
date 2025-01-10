@@ -1,25 +1,44 @@
-import { EditProfileForm } from "~/app/_components/profile-edit";
-import { DeleteProfile } from "~/app/_components/profile/delete-profile";
-import { HydrateClient } from "~/trpc/server";
+import Image from "next/image";
+
+import { Link } from "~/i18n/routing";
+import { api, HydrateClient } from "~/trpc/server";
 
 // export const runtime = "edge";
 
-export default function HomePage() {
+export default async function UserPage({
+  params,
+}: {
+  params: { userId: string };
+}) {
+  const session = await api.auth.getSession();
+  const user = await api.profile.getPublicProfile({ userId: params.userId });
   return (
     <HydrateClient>
-      <main className="container flex h-screen flex-col gap-4 py-16">
+      <main className="container flex h-screen flex-col items-center gap-4 py-16">
         <h1 className="text-center text-3xl font-bold text-black">
-          your profile
+          {user?.name}
         </h1>
-        <p className="text-center text-black">
-          this is a place to tell the world about yourself
-        </p>
-        <div className="flex flex-col items-center justify-center gap-4">
-          <EditProfileForm />
-        </div>
-        <div>
-          <DeleteProfile />
-        </div>
+        {user?.image && (
+          <Image
+            src={user.image}
+            alt={user.name ?? "user profile image"}
+            width={200}
+            height={200}
+            className="border-2 border-black"
+          />
+        )}
+        <p className="text-center text-black">{user?.bio}</p>
+        {session?.user.id === params.userId && (
+          <div className="text-center text-gray-500">
+            <h2>you are viewing your own profile</h2>
+            <Link
+              className="underline decoration-green-400 decoration-4 underline-offset-4"
+              href="/edit-profile"
+            >
+              edit your profile
+            </Link>
+          </div>
+        )}
       </main>
     </HydrateClient>
   );
