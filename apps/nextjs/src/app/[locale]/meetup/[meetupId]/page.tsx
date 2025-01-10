@@ -31,6 +31,21 @@ export default function MeetupPage() {
   const isCancelled = meetupQuery.data.status === "cancelled";
   const disabled = isCancelled || meetupQuery.data.isOver;
 
+  if (meetupQuery.isFetched && !meetupQuery.data.isLoggedIn) {
+    return (
+      <PageContainer>
+        <Box>
+          <h1 className="text-3xl">
+            You need to be logged in to view this meetup
+          </h1>
+          <p>
+            You need to be logged in to view this meetup. Please log in first.
+          </p>
+        </Box>
+      </PageContainer>
+    );
+  }
+
   if (!meetupQuery.data.isGroupMember && meetupQuery.isFetched) {
     return (
       <PageContainer>

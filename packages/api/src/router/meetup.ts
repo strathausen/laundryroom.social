@@ -99,13 +99,13 @@ export const meetupRouter = createTRPCRouter({
       if (!meetup) {
         throw new Error("Meetup not found");
       }
-      if (!group) {
+      if (!group && user) {
         throw new Error("Group not found");
       }
-      const isSuperUser = group.members.some(
+      const isSuperUser = !!group?.members.some(
         (m) => m.user.id === user?.id && ["admin", "owner"].includes(m.role),
       );
-      const isGroupMember = group.members.length > 0; // we are only interested in the length
+      const isGroupMember = !!group && group.members.length > 0; // we are only interested in the length
       return {
         ...meetup,
         isOngoing:
@@ -121,6 +121,7 @@ export const meetupRouter = createTRPCRouter({
         })),
         isSuperUser,
         isGroupMember,
+        isLoggedIn: !!user,
       };
     }),
 
@@ -290,9 +291,12 @@ export const meetupRouter = createTRPCRouter({
       return input.status;
     }),
 
-  myAttendance: protectedProcedure
+  myAttendance: publicProcedure
     .input(z.object({ meetupId: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (!ctx.session) {
+        return null;
+      }
       const { user } = ctx.session;
       const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.meetupId),
