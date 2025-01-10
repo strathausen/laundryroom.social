@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { UpdateProfileSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -13,6 +13,7 @@ import {
   FormMessage,
   useForm,
 } from "@laundryroom/ui/form";
+import { ImageUpload } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
@@ -25,6 +26,7 @@ interface Props {
 
 export function EditProfileForm(props: Props) {
   const utils = api.useUtils();
+  const [image, setImage] = useState<string | null>(null);
 
   // Mutation to update the user's profile
   const updateProfile = api.auth.updateProfile.useMutation({
@@ -47,6 +49,8 @@ export function EditProfileForm(props: Props) {
     defaultValues: {
       name: profileQuery.data?.name ?? "",
       image: profileQuery.data?.image ?? "",
+      bio: profileQuery.data?.bio ?? "",
+      // links: profileQuery.data?.links ?? [],
     },
   });
 
@@ -54,6 +58,7 @@ export function EditProfileForm(props: Props) {
   useEffect(() => {
     if (profileQuery.data) {
       form.reset(profileQuery.data);
+      setImage(profileQuery.data.image);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileQuery.data]);
@@ -70,6 +75,26 @@ export function EditProfileForm(props: Props) {
           disabled={updateProfile.isPending || profileQuery.isPending}
         >
           {updateProfile.error && <div>{updateProfile.error.message}</div>}
+          <ImageUpload
+            ratio="1/1"
+            imageUrl={image ?? undefined}
+            onChange={(image) => {
+              form.setValue("image", image);
+              setImage(image);
+            }}
+          />
+          <Button
+            type="button"
+            variant={"ghost"}
+            disabled={!image}
+            onClick={(e) => {
+              e.preventDefault();
+              form.setValue("image", null);
+              setImage(null);
+            }}
+          >
+            remove image
+          </Button>
 
           <FormField
             control={form.control}

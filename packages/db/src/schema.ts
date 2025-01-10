@@ -452,7 +452,8 @@ export const NotificationRelations = relations(Notification, ({ one }) => ({
 
 export const UpdateProfileSchema = createInsertSchema(User, {
   name: z.string().max(255).optional(),
-  // email: z.string().email(),
+  pronouns: z.string().max(255).optional(),
+  links: z.array(z.string()).optional(),
   bio: z.string().optional(),
   image: z.string().max(255).optional(),
 }).omit({

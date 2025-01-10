@@ -36,17 +36,7 @@ export const authRouter = {
     .input(UpdateProfileSchema)
     .mutation(({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const updateData: Partial<InferInsertModel<typeof User>> = {};
-      if (input.name) {
-        updateData.name = input.name;
-      }
-      if (input.image) {
-        updateData.image = input.image;
-      }
-      if (input.bio) {
-        updateData.bio = input.bio;
-      }
-      return ctx.db.update(User).set(updateData).where(eq(User.id, userId));
+      return ctx.db.update(User).set(input).where(eq(User.id, userId));
     }),
   deleteMe: protectedProcedure.mutation(({ ctx }) => {
     return ctx.db.delete(User).where(eq(User.id, ctx.session.user.id));

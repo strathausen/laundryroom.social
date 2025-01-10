@@ -8,8 +8,15 @@ import { ImageUploadEnhancer } from "./image-upload-enhancer";
 interface ImageUploaderProps {
   prefix?: string;
   imageUrl?: string;
+  ratio?: "1/1" | "2/1" | "16/9";
   onChange: (imageUrl: string) => void;
 }
+
+const ratioMap = {
+  "1/1": 1,
+  "2/1": 2,
+  "16/9": 16 / 9,
+};
 
 export function ImageUpload(props: ImageUploaderProps) {
   const [preview, setPreview] = useState(props.imageUrl);
@@ -20,7 +27,7 @@ export function ImageUpload(props: ImageUploaderProps) {
       <DialogTrigger>
         <div
           className="group relative flex items-center gap-2 border-2 border-black"
-          style={{ aspectRatio: "2/1" }}
+          style={{ aspectRatio: props.ratio ?? "2/1" }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex items-center gap-3 border-2 border-black bg-white/30 px-4 py-2 backdrop-blur transition-all group-hover:bg-white/80">
@@ -40,7 +47,7 @@ export function ImageUpload(props: ImageUploaderProps) {
       </DialogTrigger>
       <DialogContent>
         <ImageUploadEnhancer
-          aspectRatio={2 / 1}
+          aspectRatio={ratioMap[props.ratio ?? "2/1"]}
           onImageEnhanced={(image) => {
             setPreview(image);
           }}
