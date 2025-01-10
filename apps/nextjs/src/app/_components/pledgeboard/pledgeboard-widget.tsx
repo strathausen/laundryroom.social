@@ -41,11 +41,13 @@ interface PledgeItemData {
 interface PledgeboardProps {
   meetupId: string;
   isAdmin: boolean;
+  disabled?: boolean;
 }
 
 export default function PledgeBoardWidget({
   isAdmin,
   meetupId,
+  disabled,
 }: PledgeboardProps) {
   const getPledgeboardQuery = api.pledge.getPledgeBoard.useQuery({ meetupId });
   const reorderPledgesMutation = api.pledge.reorderPledges.useMutation();
@@ -203,6 +205,7 @@ export default function PledgeBoardWidget({
                     sortOrder={i + 1}
                     pledgeBoardId={pledgeBoardId}
                     onDelete={() => handleDelete(item.id)}
+                    disabled={disabled}
                   />
                 ))}
               </ul>

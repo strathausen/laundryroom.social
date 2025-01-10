@@ -85,7 +85,7 @@ export default async function RootLayout(props: {
           <NextIntlClientProvider messages={messages}>
             <JotaiProvider>
               <NavBar session={session} />
-              <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-16">
+              <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-14">
                 <TRPCReactProvider>{props.children}</TRPCReactProvider>
                 <div className="mt-4 flex flex-col items-center">
                   <div className="max-w-5xl">

@@ -92,6 +92,17 @@ export function GroupForm(props: Props) {
               setImageUrl(imageUrl);
             }}
           />
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              form.setValue("image", null);
+              setImageUrl(undefined);
+            }}
+            variant={"ghost"}
+            disabled={!imageUrl}
+          >
+            remove image
+          </Button>
           <FormField
             control={form.control}
             name="name"

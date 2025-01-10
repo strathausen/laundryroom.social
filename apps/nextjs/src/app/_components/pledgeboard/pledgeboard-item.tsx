@@ -39,6 +39,7 @@ interface PledgeItemProps {
   isAdmin: boolean;
   pledgeBoardId: string;
   sortOrder: number;
+  disabled?: boolean;
   onDelete?: () => void;
 }
 
@@ -48,6 +49,7 @@ export function PledgeItem({
   pledgeBoardId,
   sortOrder,
   onDelete,
+  disabled,
 }: PledgeItemProps) {
   const upsertPledgeMutation = api.pledge.upsertPledge.useMutation();
   const deletePledgeMutation = api.pledge.deletePledge.useMutation();
@@ -267,14 +269,14 @@ export function PledgeItem({
             <button
               onClick={() => handlePledge(1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isNew}
+              disabled={isNew ?? disabled}
             >
               <Plus size={20} />
             </button>
             <button
               onClick={() => handlePledge(-1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isNew}
+              disabled={isNew ?? disabled}
             >
               <Minus size={20} />
             </button>

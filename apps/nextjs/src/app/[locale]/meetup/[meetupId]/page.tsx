@@ -29,6 +29,14 @@ export default function MeetupPage() {
   }
 
   // TODO is cancelled / past
+  const isCancelled = meetupQuery.data.status === "cancelled";
+  // add duration to meetup
+  const endTime = new Date(meetupQuery.data.startTime);
+  endTime.setHours(endTime.getHours() + 1);
+  const isPast = endTime < new Date();
+  const isOnGoing =
+    meetupQuery.data.startTime < new Date() && endTime > new Date();
+  const disabled = isCancelled || isPast;
 
   return (
     <PageContainer>
@@ -39,7 +47,7 @@ export default function MeetupPage() {
               href={`/group/${meetupQuery.data.groupId}/meetups`}
               className="flex items-center gap-2"
             >
-              <ArrowLeftIcon /> back to{" "}
+              <ArrowLeftIcon /> back to group{" "}
               <strong>{meetupQuery.data.group.name}</strong>
             </Link>
             {meetupQuery.data.isSuperUser && (
@@ -50,6 +58,15 @@ export default function MeetupPage() {
             <h1 className="border-b-2 border-black pb-2 text-3xl uppercase">
               {meetupQuery.data.title}
             </h1>
+            {isCancelled && (
+              <div className="text-red-500">This meetup has been cancelled</div>
+            )}
+            {isPast && (
+              <div className="text-red-500">This meetup has ended</div>
+            )}
+            {isOnGoing && (
+              <div className="text-green-500">This meetup is on going</div>
+            )}
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
               what?
             </h2>
@@ -71,6 +88,7 @@ export default function MeetupPage() {
                 groupId={meetupQuery.data.groupId}
                 meetupId={meetupQuery.data.id}
                 rsvp={rsvpQuery.data}
+                disabled={disabled}
               />
             </div>
             {/* <div className="absolute top-0 right-0">
@@ -106,6 +124,7 @@ export default function MeetupPage() {
           <PledgeBoardWidget
             isAdmin={meetupQuery.data.isSuperUser}
             meetupId={meetupQuery.data.id}
+            disabled={disabled}
           />
           {/* TODO Talk / discussions */}
         </div>
