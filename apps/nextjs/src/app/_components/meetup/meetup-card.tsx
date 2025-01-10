@@ -24,7 +24,7 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
   return (
     <Box
       key={meetup.id}
-      className={`relative flex flex-col justify-between gap-2 ${meetup.status === "hidden" ? "opacity-50" : ""}`}
+      className={`relative flex flex-col justify-between gap-5 ${meetup.status === "hidden" ? "opacity-50" : ""}`}
     >
       {isCancelled && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
@@ -56,14 +56,17 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
           <p>{meetup.description}</p>
         )}
       </div>
-      <div className="flex flex-col space-y-2">
-        <p>
+      <div className="flex flex-col gap-2 space-y-2">
+        <div>
           📅{" "}
           <strong>
             {format(new Date(meetup.startTime), "dd MMM yyyy hh:mm a")}
           </strong>
-        </p>
-        <div className="flex justify-between gap-4">
+        </div>
+        <div>
+          📍 <strong>{meetup.location}</strong>
+        </div>
+        <div className="flex justify-between">
           <RsvpSelect
             meetupId={meetup.id}
             groupId={meetup.groupId}
