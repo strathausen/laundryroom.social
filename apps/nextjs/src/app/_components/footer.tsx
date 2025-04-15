@@ -31,7 +31,12 @@ export function Footer() {
             </li>
           ))}
           <li>
-            <a href="https://github.com/strathausen/laundryroom.social" target="_blank">code</a>
+            <a
+              href="https://github.com/strathausen/laundryroom.social"
+              target="_blank"
+            >
+              code
+            </a>
           </li>
         </ul>
       </div>
