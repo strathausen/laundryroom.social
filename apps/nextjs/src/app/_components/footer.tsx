@@ -30,6 +30,9 @@ export function Footer() {
               </a>
             </li>
           ))}
+          <li>
+            <a href="https://github.com/strathausen/laundryroom.social" target="_blank">code</a>
+          </li>
         </ul>
       </div>
       <div className="flex items-center justify-center gap-1 text-center text-sm">
