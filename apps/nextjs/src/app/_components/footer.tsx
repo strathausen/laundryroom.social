@@ -14,12 +14,9 @@ export function Footer() {
           {t("copyright", { year })}
         </span>
         <ul className="mt-3 flex flex-wrap items-center text-sm sm:mt-0">
-          {([
-            "terms",
-            "imprint",
-            "privacy_policy",
-            "roadmap",
-          ] as FooterLink[]).map((link) => (
+          {(
+            ["terms", "imprint", "privacy_policy", "roadmap"] as FooterLink[]
+          ).map((link) => (
             <li key={link}>
               <a
                 href={`/pages/${link.replaceAll("_", " ")}`}
