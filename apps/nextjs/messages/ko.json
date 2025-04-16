@@ -1,0 +1,38 @@
+{
+  "navBar": {
+    "groups": "그룹",
+    "create": "생성",
+    "feed": "피드",
+    "feedback": "피드백",
+    "proof_proof_mole_mop": "프로필",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "tagline": "모임을 조직하세요. 즐기세요."
+  },
+  "LocaleSwitcher": {
+    "label": "언어",
+    "locale": "{locale, select, ro {루마니아어} en {영어} de {독일어} fr {프랑스어} id {인도네시아어} vi {베트남어} ko {한국어} other {알 수 없음}}"
+  },
+  "aqua_wise_gazelle_amaze": "이전 댓글 불러오기",
+  "fuzzy_only_kestrel_learn": "삭제",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. 모든 권리 보유.",
+    "made_with_love": "베를린에서 {heart}와 함께 만들었습니다",
+    "links": {
+      "terms": "이용약관",
+      "imprint": "인쇄",
+      "privacy_policy": "개인정보처리방침",
+      "roadmap": "로드맵",
+      "code": "코드"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "사람들을 만나고, 모임을 조직하고, 즐기세요",
+    "site_name": "laundryroom.social 🧺 - 모임을 조직하세요. 즐기세요."
+  },
+  "home": {
+    "title": "그룹",
+    "subtitle": "당신의 모임 그룹을 찾아보세요!"
+  }
+} 

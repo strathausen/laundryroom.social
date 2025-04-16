@@ -1,0 +1,38 @@
+{
+  "navBar": {
+    "groups": "groupes",
+    "create": "créer",
+    "feed": "fil",
+    "feedback": "retour",
+    "proof_proof_mole_mop": "profil",
+    "login": "connexion",
+    "logout": "déconnexion",
+    "tagline": "organisez des rencontres. amusez-vous."
+  },
+  "LocaleSwitcher": {
+    "label": "Langue",
+    "locale": "{locale, select, ro {Roumain} en {Anglais} de {Allemand} fr {Français} id {Indonésien} vi {Vietnamien} ko {Coréen} other {Inconnu}}"
+  },
+  "aqua_wise_gazelle_amaze": "charger les commentaires plus anciens",
+  "fuzzy_only_kestrel_learn": "supprimer",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. Tous droits réservés.",
+    "made_with_love": "fait avec {heart} à Berlin",
+    "links": {
+      "terms": "conditions",
+      "imprint": "mentions légales",
+      "privacy_policy": "politique de confidentialité",
+      "roadmap": "feuille de route",
+      "code": "code"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "rencontrez des gens, organisez des rencontres, amusez-vous",
+    "site_name": "laundryroom.social 🧺 - organisez des rencontres. amusez-vous."
+  },
+  "home": {
+    "title": "Groupes",
+    "subtitle": "trouvez votre groupe de rencontre !"
+  }
+} 

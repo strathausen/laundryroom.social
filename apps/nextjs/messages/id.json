@@ -1,0 +1,38 @@
+{
+  "navBar": {
+    "groups": "grup",
+    "create": "buat",
+    "feed": "feed",
+    "feedback": "umpan balik",
+    "proof_proof_mole_mop": "profil",
+    "login": "masuk",
+    "logout": "keluar",
+    "tagline": "atur pertemuan. bersenang-senang."
+  },
+  "LocaleSwitcher": {
+    "label": "Bahasa",
+    "locale": "{locale, select, ro {Rumania} en {Inggris} de {Jerman} fr {Prancis} id {Indonesia} vi {Vietnam} ko {Korea} other {Tidak Diketahui}}"
+  },
+  "aqua_wise_gazelle_amaze": "muat komentar lama",
+  "fuzzy_only_kestrel_learn": "hapus",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. Hak Cipta Dilindungi.",
+    "made_with_love": "dibuat dengan {heart} di Berlin",
+    "links": {
+      "terms": "syarat",
+      "imprint": "cetak",
+      "privacy_policy": "kebijakan privasi",
+      "roadmap": "peta jalan",
+      "code": "kode"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "temui orang, atur pertemuan, bersenang-senang",
+    "site_name": "laundryroom.social 🧺 - atur pertemuan. bersenang-senang."
+  },
+  "home": {
+    "title": "Grup",
+    "subtitle": "temukan grup pertemuan Anda!"
+  }
+} 

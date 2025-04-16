@@ -1,0 +1,38 @@
+{
+  "navBar": {
+    "groups": "nhóm",
+    "create": "tạo",
+    "feed": "bảng tin",
+    "feedback": "phản hồi",
+    "proof_proof_mole_mop": "hồ sơ",
+    "login": "đăng nhập",
+    "logout": "đăng xuất",
+    "tagline": "tổ chức gặp gỡ. vui vẻ."
+  },
+  "LocaleSwitcher": {
+    "label": "Ngôn ngữ",
+    "locale": "{locale, select, ro {Rumani} en {Anh} de {Đức} fr {Pháp} id {Indonesia} vi {Việt Nam} ko {Hàn Quốc} other {Không xác định}}"
+  },
+  "aqua_wise_gazelle_amaze": "tải bình luận cũ hơn",
+  "fuzzy_only_kestrel_learn": "xóa",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. Đã đăng ký bản quyền.",
+    "made_with_love": "được tạo với {heart} tại Berlin",
+    "links": {
+      "terms": "điều khoản",
+      "imprint": "in",
+      "privacy_policy": "chính sách bảo mật",
+      "roadmap": "lộ trình",
+      "code": "mã nguồn"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "gặp gỡ mọi người, tổ chức gặp gỡ, vui vẻ",
+    "site_name": "laundryroom.social 🧺 - tổ chức gặp gỡ. vui vẻ."
+  },
+  "home": {
+    "title": "Nhóm",
+    "subtitle": "tìm nhóm gặp gỡ của bạn!"
+  }
+} 

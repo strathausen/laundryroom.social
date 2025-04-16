@@ -41,7 +41,7 @@ export function NavBar(props: Props) {
           <div className="font-semibold">
             laundryroom<span className="">.social</span>
           </div>
-          <div className="text-xs">organise meetups. have fun.</div>
+          <div className="text-xs">{t("tagline")}</div>
         </Link>
       </div>
       <div className="mt-2 flex flex-1 justify-center gap-5 text-xl md:m-auto md:mt-auto md:text-base">
@@ -91,7 +91,7 @@ export function NavBar(props: Props) {
           href={props.session ? "/api/auth/signout" : "/api/auth/signin"}
           className="hidden md:flex"
         >
-          {props.session ? "logout" : "login"}
+          {props.session ? t("logout") : t("login")}
         </NavLink>
       </div>
     </div>

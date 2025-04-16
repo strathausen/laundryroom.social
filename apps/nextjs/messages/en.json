@@ -4,12 +4,35 @@
     "create": "create",
     "feed": "feed",
     "feedback": "feedback",
-    "proof_proof_mole_mop": "profile"
+    "proof_proof_mole_mop": "profile",
+    "login": "login",
+    "logout": "logout",
+    "tagline": "organise meetups. have fun."
   },
   "LocaleSwitcher": {
     "label": "Language",
     "locale": "{locale, select, de {Deutsch} en {English} other {Unknown}}"
   },
   "aqua_wise_gazelle_amaze": "load older comments",
-  "fuzzy_only_kestrel_learn": "delete"
+  "fuzzy_only_kestrel_learn": "delete",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. all rights reserved.",
+    "made_with_love": "made with {heart} in berlin",
+    "links": {
+      "terms": "terms",
+      "imprint": "imprint",
+      "privacy_policy": "privacy policy",
+      "roadmap": "roadmap",
+      "code": "code"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "meet people, organise meetups, have fun",
+    "site_name": "laundryroom.social 🧺 - organise meetups. have fun."
+  },
+  "home": {
+    "title": "Groups",
+    "subtitle": "find your meetup group!"
+  }
 }

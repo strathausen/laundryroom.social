@@ -1,0 +1,38 @@
+{
+  "navBar": {
+    "groups": "grupuri",
+    "create": "creează",
+    "feed": "feed",
+    "feedback": "feedback",
+    "proof_proof_mole_mop": "profil",
+    "login": "autentificare",
+    "logout": "deconectare",
+    "tagline": "organizează întâlniri. distrează-te."
+  },
+  "LocaleSwitcher": {
+    "label": "Limba",
+    "locale": "{locale, select, ro {Română} en {Engleză} de {Germană} fr {Franceză} id {Indoneziană} vi {Vietnameză} ko {Coreeană} other {Necunoscută}}"
+  },
+  "aqua_wise_gazelle_amaze": "încarcă comentarii mai vechi",
+  "fuzzy_only_kestrel_learn": "șterge",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. Toate drepturile rezervate.",
+    "made_with_love": "făcut cu {heart} în Berlin",
+    "links": {
+      "terms": "termeni",
+      "imprint": "imprint",
+      "privacy_policy": "politica de confidențialitate",
+      "roadmap": "roadmap",
+      "code": "cod"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "cunoaște oameni, organizează întâlniri, distrează-te",
+    "site_name": "laundryroom.social 🧺 - organizează întâlniri. distrează-te."
+  },
+  "home": {
+    "title": "Grupuri",
+    "subtitle": "găsește grupul tău de întâlniri!"
+  }
+} 

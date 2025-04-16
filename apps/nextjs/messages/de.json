@@ -1,15 +1,38 @@
 {
   "navBar": {
     "groups": "Gruppen",
-    "create": "Erstellen",
+    "create": "erstellen",
     "feed": "Feed",
     "feedback": "Feedback",
-    "proof_proof_mole_mop": "Profil"
+    "proof_proof_mole_mop": "Profil",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "tagline": "Treffen organisieren. Spaß haben."
   },
   "LocaleSwitcher": {
-    "label": "Language",
+    "label": "Sprache",
     "locale": "{locale, select, de {Deutsch} en {English} other {Unbekannt}}"
   },
   "aqua_wise_gazelle_amaze": "ältere Kommentare laden",
-  "fuzzy_only_kestrel_learn": "Löschen"
+  "fuzzy_only_kestrel_learn": "löschen",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. Alle Rechte vorbehalten.",
+    "made_with_love": "gemacht mit {heart} in Berlin",
+    "links": {
+      "terms": "AGB",
+      "imprint": "Impressum",
+      "privacy_policy": "Datenschutz",
+      "roadmap": "Roadmap",
+      "code": "Code"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "Menschen treffen, Treffen organisieren, Spaß haben",
+    "site_name": "laundryroom.social 🧺 - Treffen organisieren. Spaß haben."
+  },
+  "home": {
+    "title": "Gruppen",
+    "subtitle": "finde deine Meetup-Gruppe!"
+  }
 }
