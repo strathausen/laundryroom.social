@@ -17,7 +17,8 @@
   "fuzzy_only_kestrel_learn": "xóa",
   "footer": {
     "copyright": "© {year} laundryroom.social. Đã đăng ký bản quyền.",
-    "made_with_love": "được tạo với {heart} tại Berlin",
+    "made_with": "được tạo với",
+    "in_berlin": "tại Berlin",
     "links": {
       "terms": "điều khoản",
       "imprint": "in",

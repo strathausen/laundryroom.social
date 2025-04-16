@@ -17,7 +17,8 @@
   "fuzzy_only_kestrel_learn": "șterge",
   "footer": {
     "copyright": "© {year} laundryroom.social. Toate drepturile rezervate.",
-    "made_with_love": "făcut cu {heart} în Berlin",
+    "made_with": "făcut cu",
+    "in_berlin": "în Berlin",
     "links": {
       "terms": "termeni",
       "imprint": "imprint",

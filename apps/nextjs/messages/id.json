@@ -17,7 +17,8 @@
   "fuzzy_only_kestrel_learn": "hapus",
   "footer": {
     "copyright": "© {year} laundryroom.social. Hak Cipta Dilindungi.",
-    "made_with_love": "dibuat dengan {heart} di Berlin",
+    "made_with": "dibuat dengan",
+    "in_berlin": "di Berlin",
     "links": {
       "terms": "syarat",
       "imprint": "cetak",

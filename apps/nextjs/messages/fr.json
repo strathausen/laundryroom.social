@@ -17,7 +17,8 @@
   "fuzzy_only_kestrel_learn": "supprimer",
   "footer": {
     "copyright": "© {year} laundryroom.social. Tous droits réservés.",
-    "made_with_love": "fait avec {heart} à Berlin",
+    "made_with": "fait avec",
+    "in_berlin": "à Berlin",
     "links": {
       "terms": "conditions",
       "imprint": "mentions légales",

@@ -11,13 +11,14 @@
   },
   "LocaleSwitcher": {
     "label": "Language",
-    "locale": "{locale, select, de {Deutsch} en {English} other {Unknown}}"
+    "locale": "{locale, select, ro {Romanian} en {English} de {German} fr {French} id {Indonesian} vi {Vietnamese} ko {Korean} other {Unknown}}"
   },
   "aqua_wise_gazelle_amaze": "load older comments",
   "fuzzy_only_kestrel_learn": "delete",
   "footer": {
     "copyright": "© {year} laundryroom.social. all rights reserved.",
-    "made_with_love": "made with {heart} in berlin",
+    "made_with": "made with",
+    "in_berlin": "in berlin",
     "links": {
       "terms": "terms",
       "imprint": "imprint",

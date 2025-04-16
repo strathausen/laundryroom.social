@@ -17,7 +17,8 @@
   "fuzzy_only_kestrel_learn": "삭제",
   "footer": {
     "copyright": "© {year} laundryroom.social. 모든 권리 보유.",
-    "made_with_love": "베를린에서 {heart}와 함께 만들었습니다",
+    "made_with": "만든",
+    "in_berlin": "베를린에서",
     "links": {
       "terms": "이용약관",
       "imprint": "인쇄",

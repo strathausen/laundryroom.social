@@ -39,9 +39,7 @@ export function Footer() {
         </ul>
       </div>
       <div className="flex items-center justify-center gap-1 text-center text-sm">
-        {t.rich("made_with_love", {
-          heart: () => <FaHeart />,
-        })}
+        {t("made_with")} <FaHeart /> {t("in_berlin")}
       </div>
     </footer>
   );
