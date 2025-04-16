@@ -1,5 +1,5 @@
 import { SessionProvider } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 import { AskForName } from "~/app/_components/ask-for-name";
 import { GroupList } from "~/app/_components/group/group-list";
@@ -8,7 +8,7 @@ import { api } from "~/trpc/server";
 export default async function GroupsPage() {
   await api.group.search({});
   const session = await api.auth.getSession();
-  const t = useTranslations("home");
+  const t = await getTranslations("home");
 
   return (
     <main className="container min-h-screen max-w-screen-lg py-16 text-black">
