@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Provider as JotaiProvider } from "jotai";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import { cn } from "@laundryroom/ui";
 import { ThemeProvider, ThemeToggle } from "@laundryroom/ui/theme";
@@ -24,30 +24,38 @@ import { routing } from "~/i18n/routing";
 import { Footer } from "../_components/footer";
 import { NavBar } from "../_components/navbar";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    env.VERCEL_ENV === "production"
-      ? "https://www.laundryroom.social"
-      : "http://localhost:3000",
-  ),
-  title: "laundryroom.social  🧺",
-  description: "meet people, organise meetups, have fun",
-  openGraph: {
-    title: "laundryroom.social",
-    description: "meet people, organise meetups, have fun",
-    url: "https://www.laundryroom.social",
-    siteName: "laundryroom.social 🧺 - organise meetups. have fun.",
-    images:
-      "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@strathausen",
-    creator: "@strathausen",
-    images:
-      "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+
+  return {
+    metadataBase: new URL(
+      env.VERCEL_ENV === "production"
+        ? "https://www.laundryroom.social"
+        : "http://localhost:3000",
+    ),
+    title: t("title"),
+    description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      url: "https://www.laundryroom.social",
+      siteName: t("site_name"),
+      images:
+        "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@strathausen",
+      creator: "@strathausen",
+      images:
+        "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

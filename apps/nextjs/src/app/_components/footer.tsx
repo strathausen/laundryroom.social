@@ -1,5 +1,7 @@
-import { FaHeart } from "react-icons/fa";
+"use client";
+
 import { useTranslations } from "next-intl";
+import { FaHeart } from "react-icons/fa";
 
 type FooterLink = "terms" | "imprint" | "privacy_policy" | "roadmap";
 

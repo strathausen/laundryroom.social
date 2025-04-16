@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { ChevronDown, MenuIcon, MessageCircle, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
