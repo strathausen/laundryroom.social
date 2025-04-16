@@ -24,9 +24,7 @@ import { routing } from "~/i18n/routing";
 import { Footer } from "../_components/footer";
 import { NavBar } from "../_components/navbar";
 
-export async function generateMetadata({
-  params,
-}: {
+export async function generateMetadata({}: {
   params: { locale: string };
 }): Promise<Metadata> {
   const t = await getTranslations("metadata");
