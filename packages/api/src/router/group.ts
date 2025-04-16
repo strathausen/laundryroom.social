@@ -1,8 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, gt, ilike, not, sql } from "@laundryroom/db";
+import { and, desc, eq, gt, ilike, inArray, not, sql } from "@laundryroom/db";
 import {
+  Attendee,
   Group,
   GroupMember,
   GroupPromotion,
@@ -273,8 +274,9 @@ export const groupRouter = {
 
   leave: protectedProcedure
     .input(z.object({ groupId: z.string() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.db
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const removeMembership = ctx.db
         .delete(GroupMember)
         .where(
           and(
@@ -282,6 +284,22 @@ export const groupRouter = {
             eq(GroupMember.userId, ctx.session.user.id),
           ),
         );
+      const futureMeetupsOfGroup = await ctx.db.query.Meetup.findMany({
+        where: and(
+          eq(Meetup.groupId, input.groupId),
+          gt(Meetup.startTime, new Date()),
+        ),
+      });
+      const removeFutureMeetupAttendances = ctx.db.delete(Attendee).where(
+        and(
+          eq(Attendee.userId, userId),
+          inArray(
+            Attendee.meetupId,
+            futureMeetupsOfGroup.map((m) => m.id),
+          ),
+        ),
+      );
+      await Promise.all([removeMembership, removeFutureMeetupAttendances]);
     }),
 
   removeMember: protectedProcedure

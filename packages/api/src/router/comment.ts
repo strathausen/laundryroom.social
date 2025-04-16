@@ -104,6 +104,7 @@ export const commentRouter = {
         where: eq(Comment.discussionId, input.discussionId),
         with: { user: true },
       });
+      // TODO check if user is still a member of the group
       const users: Record<string, (typeof comments)[number]["user"]> = {};
       comments.forEach((comment) => (users[comment.userId] = comment.user));
       // notify participating users

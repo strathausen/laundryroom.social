@@ -274,6 +274,7 @@ export const meetupRouter = createTRPCRouter({
           eq(Attendee.userId, user.id),
         ),
       });
+      // maybe
       if (attendee) {
         await ctx.db
           .update(Attendee)
