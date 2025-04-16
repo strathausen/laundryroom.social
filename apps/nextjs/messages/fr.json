@@ -10,8 +10,7 @@
     "tagline": "organisez des rencontres. amusez-vous."
   },
   "LocaleSwitcher": {
-    "label": "Langue",
-    "locale": "{locale, select, ro {Roumain} en {Anglais} de {Allemand} fr {Français} id {Indonésien} vi {Vietnamien} ko {Coréen} other {Inconnu}}"
+    "label": "Langue"
   },
   "aqua_wise_gazelle_amaze": "charger les commentaires plus anciens",
   "fuzzy_only_kestrel_learn": "supprimer",

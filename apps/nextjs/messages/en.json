@@ -1,6 +1,7 @@
 {
   "navBar": {
     "groups": "groups",
+    "my_groups": "my groups",
     "create": "create",
     "feed": "feed",
     "feedback": "feedback",
@@ -10,8 +11,7 @@
     "tagline": "organise meetups. have fun."
   },
   "LocaleSwitcher": {
-    "label": "Language",
-    "locale": "{locale, select, ro {Romanian} en {English} de {German} fr {French} id {Indonesian} vi {Vietnamese} ko {Korean} other {Unknown}}"
+    "label": "Language"
   },
   "aqua_wise_gazelle_amaze": "load older comments",
   "fuzzy_only_kestrel_learn": "delete",

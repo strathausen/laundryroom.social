@@ -10,8 +10,7 @@
     "tagline": "tổ chức gặp gỡ. vui vẻ."
   },
   "LocaleSwitcher": {
-    "label": "Ngôn ngữ",
-    "locale": "{locale, select, ro {Rumani} en {Anh} de {Đức} fr {Pháp} id {Indonesia} vi {Việt Nam} ko {Hàn Quốc} other {Không xác định}}"
+    "label": "Ngôn ngữ"
   },
   "aqua_wise_gazelle_amaze": "tải bình luận cũ hơn",
   "fuzzy_only_kestrel_learn": "xóa",

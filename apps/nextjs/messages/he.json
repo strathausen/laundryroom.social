@@ -1,0 +1,39 @@
+{
+  "navBar": {
+    "groups": "קבוצות",
+    "my_groups": "הקבוצות שלי",
+    "create": "צור",
+    "feed": "פיד",
+    "feedback": "משוב",
+    "proof_proof_mole_mop": "פרופיל",
+    "login": "התחבר",
+    "logout": "התנתק",
+    "tagline": "ארגן מפגשים. תהנה."
+  },
+  "LocaleSwitcher": {
+    "label": "שפה"
+  },
+  "aqua_wise_gazelle_amaze": "טען תגובות ישנות יותר",
+  "fuzzy_only_kestrel_learn": "מחק",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. כל הזכויות שמורות.",
+    "made_with": "נעשה עם",
+    "in_berlin": "בברלין",
+    "links": {
+      "terms": "תנאים",
+      "imprint": "הדפס",
+      "privacy_policy": "מדיניות פרטיות",
+      "roadmap": "מפת דרכים",
+      "code": "קוד"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "פגוש אנשים, ארגן מפגשים, תהנה",
+    "site_name": "laundryroom.social 🧺 - ארגן מפגשים. תהנה."
+  },
+  "home": {
+    "title": "קבוצות",
+    "subtitle": "מצא את קבוצת המפגשים שלך!"
+  }
+}

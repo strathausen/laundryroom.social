@@ -10,8 +10,7 @@
     "tagline": "atur pertemuan. bersenang-senang."
   },
   "LocaleSwitcher": {
-    "label": "Bahasa",
-    "locale": "{locale, select, ro {Rumania} en {Inggris} de {Jerman} fr {Prancis} id {Indonesia} vi {Vietnam} ko {Korea} other {Tidak Diketahui}}"
+    "label": "Bahasa"
   },
   "aqua_wise_gazelle_amaze": "muat komentar lama",
   "fuzzy_only_kestrel_learn": "hapus",

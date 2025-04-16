@@ -10,8 +10,7 @@
     "tagline": "모임을 조직하세요. 즐기세요."
   },
   "LocaleSwitcher": {
-    "label": "언어",
-    "locale": "{locale, select, ro {루마니아어} en {영어} de {독일어} fr {프랑스어} id {인도네시아어} vi {베트남어} ko {한국어} other {알 수 없음}}"
+    "label": "언어"
   },
   "aqua_wise_gazelle_amaze": "이전 댓글 불러오기",
   "fuzzy_only_kestrel_learn": "삭제",

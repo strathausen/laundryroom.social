@@ -10,8 +10,7 @@
     "tagline": "organizează întâlniri. distrează-te."
   },
   "LocaleSwitcher": {
-    "label": "Limba",
-    "locale": "{locale, select, ro {Română} en {Engleză} de {Germană} fr {Franceză} id {Indoneziană} vi {Vietnameză} ko {Coreeană} other {Necunoscută}}"
+    "label": "Limba"
   },
   "aqua_wise_gazelle_amaze": "încarcă comentarii mai vechi",
   "fuzzy_only_kestrel_learn": "șterge",

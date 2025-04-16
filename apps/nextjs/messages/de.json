@@ -1,6 +1,7 @@
 {
   "navBar": {
     "groups": "Gruppen",
+    "my_groups": "meine Gruppen",
     "create": "erstellen",
     "feed": "Feed",
     "feedback": "Feedback",
@@ -10,8 +11,7 @@
     "tagline": "Treffen organisieren. Spaß haben."
   },
   "LocaleSwitcher": {
-    "label": "Sprache",
-    "locale": "{locale, select, ro {Rumänisch} en {Englisch} de {Deutsch} fr {Französisch} id {Indonesisch} vi {Vietnamesisch} ko {Koreanisch} other {Unbekannt}}"
+    "label": "Sprache"
   },
   "aqua_wise_gazelle_amaze": "ältere Kommentare laden",
   "fuzzy_only_kestrel_learn": "löschen",
