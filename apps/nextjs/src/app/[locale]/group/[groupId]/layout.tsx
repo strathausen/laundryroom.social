@@ -1,62 +1,64 @@
-"use client";
-
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { useParams } from "next/navigation";
-import { SessionProvider } from "next-auth/react";
+import { eq } from "drizzle-orm";
 
-import { PageContainer } from "@laundryroom/ui/page-container";
+import { db } from "@laundryroom/db/client";
+import { Group } from "@laundryroom/db/schema";
 
-import { GroupDetail } from "~/app/_components/group/group-detail";
-import { Link, usePathname } from "~/i18n/routing";
-import { api } from "~/trpc/react";
+import { GroupLayoutContent } from "~/app/_components/group/group-layout-content";
+import { env } from "~/env";
 
 interface GroupLayoutProps {
   children: ReactNode;
+  params: {
+    groupId: string;
+    locale: string;
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: GroupLayoutProps): Promise<Metadata> {
+  const group = await db.query.Group.findFirst({
+    where: eq(Group.id, params.groupId),
+    columns: {
+      name: true,
+      description: true,
+      image: true,
+    },
+  });
+
+  if (!group) {
+    return {
+      title: "Group not found",
+      description: "The requested group could not be found",
+    };
+  }
+
+  const baseUrl =
+    env.VERCEL_ENV === "production"
+      ? "https://www.laundryroom.social"
+      : "http://localhost:3000";
+
+  return {
+    title: `${group.name} | laundryroom.social`,
+    description: group.description,
+    openGraph: {
+      title: group.name,
+      description: group.description,
+      url: `${baseUrl}/${params.locale}/group/${params.groupId}`,
+      siteName: "laundryroom.social 🧺",
+      images: group.image ? [group.image] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@strathausen",
+      creator: "@strathausen",
+      images: group.image ? [group.image] : undefined,
+    },
+  };
 }
 
 export default function GroupLayout({ children }: GroupLayoutProps) {
-  const params = useParams<{ groupId: string }>();
-  const pathname = usePathname();
-
-  const groupQuery = api.group.byId.useQuery({
-    id: params.groupId,
-  });
-
-  if (!groupQuery.data) {
-    return <div className="m-auto mt-40">Loading...</div>;
-  }
-
-  const tabs = [
-    { label: "Meetups", path: `/group/${params.groupId}/meetups` },
-    {
-      label: "Discussions",
-      path: `/group/${params.groupId}/discussions`,
-    },
-    { label: "Members", path: `/group/${params.groupId}/members` },
-  ];
-
-  return (
-    <PageContainer>
-      <SessionProvider>
-        <GroupDetail groupId={params.groupId} />
-        <nav className="my-12 flex justify-center border-b-2 border-black lowercase">
-          <ul className="flex py-2">
-            {tabs.map((tab) => (
-              <li key={tab.path}>
-                <Link
-                  href={tab.path}
-                  className={`px-5 py-3 ${
-                    pathname === tab.path ? "bg-black text-white" : "text-black"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <main>{children}</main>
-      </SessionProvider>
-    </PageContainer>
-  );
+  return <GroupLayoutContent>{children}</GroupLayoutContent>;
 }
