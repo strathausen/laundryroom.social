@@ -15,7 +15,7 @@ export const config = {
     "/",
     // Set a cookie to remember the previous locale for
     // all requests that have a locale prefix
-    "/(de|en)/:path*",
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/(de|en|fr|id|ko|ro|vi|he)/:path*",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml).*)",
   ],
 };
