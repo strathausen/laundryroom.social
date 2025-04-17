@@ -36,6 +36,7 @@ export const groupRouter = {
           SELECT ${Meetup.startTime} FROM ${Meetup}
           WHERE ${Meetup.groupId} = "group".id
           AND ${Meetup.startTime} > NOW()
+          AND ${Meetup.status} = 'active'
           ORDER BY ${Meetup.startTime} ASC LIMIT 1
         )`.mapWith(String),
       };
