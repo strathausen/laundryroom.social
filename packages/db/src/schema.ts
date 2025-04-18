@@ -208,6 +208,7 @@ export const GroupRelations = relations(Group, ({ many, one }) => ({
     fields: [Group.id],
     references: [GroupPromotion.groupId],
   }),
+  shortCodes: many(GroupShortCode),
 }));
 
 export const CreateGroupSchema = createInsertSchema(Group, {

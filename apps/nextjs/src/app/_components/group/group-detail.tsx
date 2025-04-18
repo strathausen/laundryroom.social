@@ -123,13 +123,15 @@ function GroupActions({
 interface GroupPrintSectionProps {
   groupName: string;
   url: string;
+  shortCode?: string;
 }
 
-function GroupPrintSection({ groupName, url }: GroupPrintSectionProps) {
+function GroupPrintSection({ groupName, url, shortCode }: GroupPrintSectionProps) {
+  const shortUrl = shortCode ? `${window.location.origin}/g/${shortCode}` : url;
   return (
     <div className="mt-8 hidden print:block">
       <div className="flex items-end gap-4">
-        <QRCodeSVG value={url} size={200} level="H" />
+        <QRCodeSVG value={shortUrl} size={200} level="H" />
         <div className="-mr-9 flex">
           {[...Array<undefined>(8)].map((_, i) => (
             <div
@@ -137,7 +139,7 @@ function GroupPrintSection({ groupName, url }: GroupPrintSectionProps) {
               className="flex flex-col border-l-2 border-dashed border-black px-1.5 py-2 [writing-mode:tb]"
             >
               <div className="text-center text-sm">{groupName}</div>
-              <div className="text-center text-xs">{url.slice(0, 30)}</div>
+              <div className="text-center text-xs">{shortUrl}</div>
             </div>
           ))}
         </div>
@@ -201,7 +203,11 @@ export function GroupDetail(props: GroupDetailProps) {
             await groupQuery.refetch();
           }}
         />
-        <GroupPrintSection groupName={group.name} url={document.baseURI} />
+        <GroupPrintSection 
+          groupName={group.name} 
+          url={document.baseURI} 
+          shortCode={groupQuery.data.group.shortCodes?.[0]?.code}
+        />
       </Box>
     </div>
   );

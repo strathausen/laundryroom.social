@@ -15,6 +15,13 @@ const SimpleClassificationSchema = z.object({
     .describe(
       "add some related keywords that are not in the text, to help better find this text in searches",
     ),
+  shortCode: z
+    .string()
+    .min(2)
+    .max(3)
+    .describe(
+      "generate a short 2-3 letter code that represents this group, using only letters and numbers and minus, no special characters or spaces",
+    ),
 });
 type SimpleClassification = z.infer<typeof SimpleClassificationSchema>;
 

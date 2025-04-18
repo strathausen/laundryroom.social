@@ -7,6 +7,7 @@ import {
   Group,
   GroupMember,
   GroupPromotion,
+  GroupShortCode,
   Meetup,
   User,
 } from "@laundryroom/db/schema";
@@ -83,6 +84,27 @@ export const groupRouter = {
         .limit(10);
     }),
 
+  byShortCode: publicProcedure
+    .input(z.object({ code: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const shortCode = await ctx.db.query.GroupShortCode.findFirst({
+        where: eq(GroupShortCode.code, input.code),
+        with: {
+          group: {
+            columns: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      if (!shortCode) {
+        throw new Error("Group not found");
+      }
+
+      return { groupId: shortCode.group.id };
+    }),
+
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -101,6 +123,11 @@ export const groupRouter = {
             limit: 10,
             orderBy: desc(GroupMember.joinedAt),
             with: { user: { columns: { name: true, id: true } } },
+          },
+          shortCodes: {
+            limit: 1,
+            columns: { code: true },
+            orderBy: desc(GroupShortCode.createdAt),
           },
         },
       });
@@ -189,6 +216,16 @@ export const groupRouter = {
             eq(GroupMember.groupId, input.id),
             eq(GroupMember.userId, userId),
           ),
+          with: {
+            group: {
+              with: {
+                shortCodes: {
+                  limit: 1,
+                  orderBy: desc(GroupShortCode.createdAt),
+                },
+              },
+            },
+          },
         });
 
         if (!membership || !["owner", "admin"].includes(membership.role)) {
@@ -196,6 +233,13 @@ export const groupRouter = {
         }
 
         const data = await classifyAndUpdate(input);
+        // if the group has no short code, create one, only for old groups, could be removed in the future
+        if (!membership.group.shortCodes.length) {
+          await ctx.db.insert(GroupShortCode).values({
+            groupId: membership.group.id,
+            code: data.shortCode,
+          });
+        }
         return ctx.db.update(Group).set(data).where(eq(Group.id, input.id));
       }
 
@@ -214,6 +258,30 @@ export const groupRouter = {
           userId,
           role: "owner",
         });
+
+        // Try to insert the short code, if it exists, append -1, -2, etc.
+        let shortCode = data.shortCode;
+        let counter = 1;
+        while (true) {
+          try {
+            await tx.insert(GroupShortCode).values({
+              groupId: group.id,
+              code: shortCode,
+            });
+            break;
+          } catch (err) {
+            // If the error is not a unique constraint violation, rethrow
+            if (
+              !(err instanceof Error) ||
+              !err.message.includes("unique constraint")
+            ) {
+              throw err;
+            }
+            // Try again with an incremented number
+            shortCode = `${data.shortCode}-${counter}`;
+            counter++;
+          }
+        }
 
         return group;
       });
