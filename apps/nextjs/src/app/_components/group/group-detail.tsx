@@ -136,7 +136,7 @@ export function GroupDetail(props: GroupDetailProps) {
           <div className="flex items-end gap-4">
             <QRCodeSVG value={document.baseURI} size={200} level="H" />
             <div className="-mb-32 -mr-9 flex gap-1">
-              {[...Array(8)].map((_, i) => (
+              {[...Array<undefined>(8)].map((_, i) => (
                 <div
                   key={`cutout-${i}`}
                   className="flex flex-col border-r-2 border-dashed border-black py-1 pr-2 [writing-mode:tb]"
