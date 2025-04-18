@@ -62,6 +62,7 @@ interface GroupActionsProps {
   isLeaving: boolean;
   isRefetching: boolean;
   onRefetch: () => Promise<unknown>;
+  shortUrl: string;
 }
 
 function GroupActions({
@@ -75,6 +76,7 @@ function GroupActions({
   isLeaving,
   isRefetching,
   onRefetch,
+  shortUrl,
 }: GroupActionsProps) {
   return (
     <div className="flex items-center justify-between print:hidden">
@@ -114,7 +116,7 @@ function GroupActions({
         <Button variant="ghost" size="icon" onClick={() => window.print()}>
           <Printer className="h-4 w-4" />
         </Button>
-        <ShareMenu url={document.baseURI} title={group.name} />
+        <ShareMenu url={shortUrl} title={group.name} />
       </div>
     </div>
   );
@@ -122,12 +124,10 @@ function GroupActions({
 
 interface GroupPrintSectionProps {
   groupName: string;
-  url: string;
-  shortCode?: string;
+  shortUrl: string;
 }
 
-function GroupPrintSection({ groupName, url, shortCode }: GroupPrintSectionProps) {
-  const shortUrl = shortCode ? `${window.location.origin}/g/${shortCode}` : url;
+function GroupPrintSection({ groupName, shortUrl }: GroupPrintSectionProps) {
   return (
     <div className="mt-8 hidden print:block">
       <div className="flex items-end gap-4">
@@ -176,6 +176,11 @@ export function GroupDetail(props: GroupDetailProps) {
   }
   const { membership, group, promotion } = groupQuery.data;
 
+  const shortCode = groupQuery.data.group.shortCodes[0]?.code;
+  const shortUrl = shortCode
+    ? `${window.location.origin}/g/${shortCode}`
+    : document.baseURI;
+
   return (
     <div className="flex flex-col gap-5 text-black">
       <Box className="mx-auto flex w-full max-w-2xl flex-col gap-4 print:min-h-[95vh] print:justify-between">
@@ -202,12 +207,9 @@ export function GroupDetail(props: GroupDetailProps) {
           onRefetch={async () => {
             await groupQuery.refetch();
           }}
+          shortUrl={shortUrl}
         />
-        <GroupPrintSection 
-          groupName={group.name} 
-          url={document.baseURI} 
-          shortCode={groupQuery.data.group.shortCodes?.[0]?.code}
-        />
+        <GroupPrintSection groupName={group.name} shortUrl={shortUrl} />
       </Box>
     </div>
   );
