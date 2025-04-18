@@ -130,11 +130,11 @@ function GroupPrintSection({ groupName, url }: GroupPrintSectionProps) {
     <div className="mt-8 hidden print:block">
       <div className="flex items-end gap-4">
         <QRCodeSVG value={url} size={200} level="H" />
-        <div className="-mr-9 flex gap-1">
+        <div className="-mr-9 flex">
           {[...Array<undefined>(8)].map((_, i) => (
             <div
               key={`cutout-${i}`}
-              className="flex flex-col border-r-2 border-dashed border-black py-1 pr-2 [writing-mode:tb]"
+              className="flex flex-col border-l-2 border-dashed border-black px-1.5 py-2 [writing-mode:tb]"
             >
               <div className="text-center text-sm">{groupName}</div>
               <div className="text-center text-xs">{url.slice(0, 30)}</div>
