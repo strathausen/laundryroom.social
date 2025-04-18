@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
+import { UserProfile } from "@laundryroom/ui/user-profile";
 import {
   Popover,
   PopoverContent,
@@ -37,9 +38,12 @@ export function DiscussionPost({ discussion, groupId }: Props) {
       className={`flex flex-col gap-2 px-4 py-3 ${discussions.deletingId === discussion.id ? "opacity-50" : ""} ${discussion.isTemporary ? "animate-pulse" : ""}`}
     >
       <div className="flex justify-between">
-        <p className="h-9 text-sm font-semibold">
-          {discussion.user.name ?? "anonymous"}
-        </p>
+        <UserProfile
+          userId={discussion.user.id}
+          name={discussion.user.name}
+          image={discussion.user.image}
+          className="h-9"
+        />
         {session.data?.user.id === discussion.user.id &&
           discussions.deletingId !== discussion.id && (
             <div className="relative -right-2 -top-2 opacity-50 transition-opacity hover:opacity-100">

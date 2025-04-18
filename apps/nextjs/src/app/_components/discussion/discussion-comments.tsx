@@ -13,6 +13,7 @@ import {
   PopoverTrigger,
 } from "@laundryroom/ui/popover";
 import { toast } from "@laundryroom/ui/toast";
+import { UserProfile } from "@laundryroom/ui/user-profile";
 
 import { useComments } from "~/hooks/use-comments";
 
@@ -75,9 +76,12 @@ export function DiscussionComments({
               } ${comment.id.startsWith("temp-") ? "animate-pulse" : ""}`}
               title={new Date(comment.createdAt).toDateString()}
             >
-              <p className="font-semibold">
-                {comment.user.name ?? "anonymous"}:
-              </p>
+              <UserProfile
+                userId={comment.user.id}
+                name={comment.user.name}
+                image={comment.user.image}
+                showImage={false}
+              />
               <p className="flex-1">{comment.content}</p>
               {comment.user.id === session.data?.user.id &&
                 !comment.isDeleting && (
