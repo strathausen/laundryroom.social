@@ -41,7 +41,7 @@
     "@laundryroom/prettier-config": "workspace:*",
     "@laundryroom/tsconfig": "workspace:*",
     "dotenv-cli": "^7.4.2",
-    "drizzle-kit": "^0.28.1",
+    "drizzle-kit": "^0.31.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

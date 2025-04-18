@@ -118,6 +118,8 @@ export const GroupStatus = pgEnum("group_status", [
   "hidden",
 ]);
 
+export const Visibility = pgEnum("visibility", ["public", "private", "nsfw"]);
+
 export const ModerationStatus = pgEnum("group_moderation_tags", [
   "ok",
   "pending",
@@ -500,6 +502,28 @@ export const GroupPromotionRelations = relations(GroupPromotion, ({ one }) => ({
   user: one(User, {
     fields: [GroupPromotion.userId],
     references: [User.id],
+  }),
+}));
+
+export const GroupShortCode = pgTable("group_short_code", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => Group.id, {
+      onDelete: "cascade",
+    }),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdateFn(() => new Date()),
+});
+
+export const GroupShortCodeRelations = relations(GroupShortCode, ({ one }) => ({
+  group: one(Group, {
+    fields: [GroupShortCode.groupId],
+    references: [Group.id],
   }),
 }));
 
