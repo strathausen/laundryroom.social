@@ -10,7 +10,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="m-4 w-full max-w-5xl border-t border-black text-gray-500">
+    <footer className="m-4 w-full max-w-5xl border-t border-black text-gray-500 print:hidden">
       <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span className="text-sm sm:text-center">
           {t("copyright", { year })}

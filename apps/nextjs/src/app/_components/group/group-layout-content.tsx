@@ -39,7 +39,7 @@ export function GroupLayoutContent({ children }: GroupLayoutContentProps) {
     <PageContainer>
       <SessionProvider>
         <GroupDetail groupId={params.groupId} />
-        <nav className="my-12 flex justify-center border-b-2 border-black lowercase">
+        <nav className="my-12 flex justify-center border-b-2 border-black lowercase print:hidden">
           <ul className="flex py-2">
             {tabs.map((tab) => (
               <li key={tab.path}>
@@ -55,7 +55,7 @@ export function GroupLayoutContent({ children }: GroupLayoutContentProps) {
             ))}
           </ul>
         </nav>
-        <main>{children}</main>
+        <main className="print:hidden">{children}</main>
       </SessionProvider>
     </PageContainer>
   );

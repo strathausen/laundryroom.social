@@ -5,8 +5,8 @@
 // import { LanguageSwitcher } from "components/buttons/language-switcher";
 // import { ProfileImage } from "./profile-image";
 import type { Session } from "next-auth";
-import { useTranslations } from "next-intl";
 import NavLink from "next/link";
+import { useTranslations } from "next-intl";
 import { FaHorseHead, FaPeopleGroup, FaPlus } from "react-icons/fa6";
 
 import { Link, usePathname } from "~/i18n/routing";
@@ -29,7 +29,7 @@ export function NavBar(props: Props) {
   const t = useTranslations("navBar");
 
   return (
-    <div className="fixed bottom-0 z-50 flex max-h-[80px] w-full flex-row items-center border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:h-12 md:border-b-2 md:border-t-0 md:pt-3">
+    <div className="fixed bottom-0 z-50 flex max-h-[80px] w-full flex-row items-center border-t-2 border-black bg-white/50 pb-4 pt-2 text-sm text-black backdrop-blur backdrop-brightness-110 md:top-0 md:h-12 md:border-b-2 md:border-t-0 md:pt-3 print:hidden">
       <div title="laundryroom.social" className="hidden md:block">
         <Link href="/" className="ml-3 flex flex-col">
           {/* <Image

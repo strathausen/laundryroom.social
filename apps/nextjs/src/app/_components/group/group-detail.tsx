@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { Printer } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
@@ -64,7 +66,7 @@ export function GroupDetail(props: GroupDetailProps) {
             {line}
           </p>
         ))}
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between print:hidden">
           {/* show edit button if I'm the owner */}
           {membership?.role === "owner" && (
             <div className="flex gap-4">
@@ -120,10 +122,33 @@ export function GroupDetail(props: GroupDetailProps) {
             </div>
           )}
 
-          <ShareMenu
-            url={document.baseURI}
-            title={groupQuery.data.group.name}
-          />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => window.print()}>
+              <Printer className="h-4 w-4" />
+            </Button>
+            <ShareMenu
+              url={document.baseURI}
+              title={groupQuery.data.group.name}
+            />
+          </div>
+        </div>
+        <div className="mt-8 hidden print:block">
+          <div className="flex items-end gap-4">
+            <QRCodeSVG value={document.baseURI} size={200} level="H" />
+            <div className="-mb-32 -mr-9 flex gap-1">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={`cutout-${i}`}
+                  className="flex flex-col border-r-2 border-dashed border-black py-1 pr-2 [writing-mode:tb]"
+                >
+                  <div className="text-center text-sm">{group.name}</div>
+                  <div className="text-center text-xs">
+                    {document.baseURI.slice(0, 30)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </Box>
     </div>

@@ -11,7 +11,7 @@ export default async function GroupsPage() {
   const t = await getTranslations("home");
 
   return (
-    <main className="container min-h-screen max-w-screen-lg py-16 text-black">
+    <main className="container min-h-screen max-w-screen-lg py-16 text-black print:min-h-0">
       <SessionProvider>
         <div className="flex flex-col gap-4">
           {!session?.user.name && <AskForName />}

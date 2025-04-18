@@ -78,7 +78,7 @@ export default async function RootLayout(props: {
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans text-foreground antialiased",
+          "min-h-screen bg-background font-sans text-foreground antialiased print:min-h-0",
           GeistSans.variable,
           GeistMono.variable,
         )}
@@ -93,9 +93,9 @@ export default async function RootLayout(props: {
           <NextIntlClientProvider messages={messages}>
             <JotaiProvider>
               <NavBar session={session} />
-              <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-4">
+              <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-4 print:min-h-0">
                 <TRPCReactProvider>{props.children}</TRPCReactProvider>
-                <div className="mt-4 flex flex-col items-center">
+                <div className="mt-4 flex flex-col items-center print:mt-0">
                   <div className="max-w-5xl">
                     <Footer />
                   </div>
