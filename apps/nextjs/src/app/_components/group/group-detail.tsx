@@ -14,7 +14,7 @@ import { LoginCta } from "../login-cta";
 import { GroupPromoter } from "./group-promoter";
 import { GroupStatusSwitcher } from "./group-status-switcher";
 
-interface GroupHeaderProps {
+interface GroupInfoProps {
   group: {
     name: string;
     image: string | null;
@@ -22,7 +22,7 @@ interface GroupHeaderProps {
   };
 }
 
-function GroupInfo({ group }: GroupHeaderProps) {
+function GroupInfo({ group }: GroupInfoProps) {
   return (
     <div className="flex flex-col gap-2">
       {group.image && (
@@ -77,7 +77,7 @@ function GroupActions({
   onRefetch,
 }: GroupActionsProps) {
   return (
-    <div className="flex items-end justify-between print:hidden">
+    <div className="flex items-center justify-between print:hidden">
       {membership?.role === "owner" && (
         <div className="flex gap-4">
           <Link href={`/edit-group/${group.id}`}>
