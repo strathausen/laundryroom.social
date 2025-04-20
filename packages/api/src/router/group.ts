@@ -116,6 +116,7 @@ export const groupRouter = {
           description: true,
           image: true,
           status: true,
+          timeZone: true,
         },
         where: eq(Group.id, input.id),
         with: {
@@ -199,6 +200,7 @@ export const groupRouter = {
         name: z.string(),
         description: z.string(),
         image: z.string().nullable(),
+        timeZone: z.string().default("UTC"),
       }),
     )
     .mutation(async ({ ctx, input }) => {

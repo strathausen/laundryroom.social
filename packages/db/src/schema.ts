@@ -164,6 +164,7 @@ export const Group = pgTable(
     aiSearchText: text("ai_search_text").default("").notNull(),
     image: varchar("image", { length: 255 }),
     imageDescription: text("image_description"),
+    timeZone: varchar("time_zone", { length: 255 }).default("UTC").notNull(),
     status: GroupStatus("status").default("active"),
     moderationStatus: ModerationStatus("moderation_status").default("ok"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -189,6 +190,7 @@ export const UpsertGroupSchema = createInsertSchema(Group, {
   name: z.string().max(255).min(3),
   description: z.string().max(255).min(20),
   image: z.string().max(255),
+  timeZone: z.string().max(255).default("UTC"),
 }).omit({
   createdAt: true,
   updatedAt: true,

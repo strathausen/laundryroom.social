@@ -17,6 +17,7 @@ import { ImageUpload } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
+import TimezoneSelect, { ITimezone } from "react-timezone-select";
 
 import { api } from "~/trpc/react";
 
@@ -35,19 +36,25 @@ export function GroupForm(props: Props) {
   );
   const form = useForm({
     schema: UpsertGroupSchema,
-    defaultValues: groupQuery.data?.group ?? {
+    defaultValues: {
       name: "",
       description: "",
+      timeZone: "UTC",
+      image: null,
     },
   });
 
   useEffect(() => {
     if (groupQuery.data?.group) {
-      form.setValue("id", groupQuery.data.group.id);
-      form.setValue("name", groupQuery.data.group.name);
-      form.setValue("description", groupQuery.data.group.description);
-      form.setValue("image", groupQuery.data.group.image);
-      setImageUrl(groupQuery.data.group.image ?? undefined);
+      const group = groupQuery.data.group;
+      form.reset({
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        image: group.image,
+        timeZone: group.timeZone ?? "UTC",
+      });
+      setImageUrl(group.image ?? undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupQuery.data]);
@@ -73,13 +80,16 @@ export function GroupForm(props: Props) {
     },
   });
 
+  const onSubmit = (data: any) => {
+    upsertGroup.mutate({
+      ...data,
+      image: data.image ?? null,
+    });
+  };
+
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((data) => {
-          upsertGroup.mutate({ image: data.image ?? null, ...data });
-        })}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <fieldset
           className="flex w-full max-w-2xl flex-col gap-4"
           disabled={upsertGroup.isPending}
@@ -133,7 +143,25 @@ export function GroupForm(props: Props) {
               </FormItem>
             )}
           />
-          <div className="flex gap-4">
+          <FormField
+            control={form.control}
+            name="timeZone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>time zone 🌏⏰</FormLabel>
+                <FormControl>
+                  <TimezoneSelect
+                    value={field.value as ITimezone}
+                    onChange={(tz) => field.onChange(tz.value)}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="mt-2 flex gap-4 border-t-2 border-black pt-4">
             <Button type="submit">save</Button>
             <Button type="button" onClick={props.onCancel}>
               cancel
