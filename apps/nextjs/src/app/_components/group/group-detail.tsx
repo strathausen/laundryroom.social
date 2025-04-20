@@ -19,6 +19,7 @@ interface GroupInfoProps {
     name: string;
     image: string | null;
     description: string;
+    location: string | null;
   };
 }
 
@@ -41,6 +42,12 @@ function GroupInfo({ group }: GroupInfoProps) {
           {line}
         </p>
       ))}
+      {group.location && (
+        <div className="mt-2 flex items-center gap-2 text-gray-600">
+          <span>📍</span>
+          <p className="text-base">{group.location}</p>
+        </div>
+      )}
     </div>
   );
 }
