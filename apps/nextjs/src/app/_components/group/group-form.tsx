@@ -41,6 +41,7 @@ export function GroupForm(props: Props) {
       description: "",
       timeZone: "UTC",
       image: null,
+      location: "",
     },
   });
 
@@ -53,6 +54,7 @@ export function GroupForm(props: Props) {
         description: group.description,
         image: group.image,
         timeZone: group.timeZone,
+        location: group.location,
       });
       setImageUrl(group.image ?? undefined);
     }
@@ -87,6 +89,7 @@ export function GroupForm(props: Props) {
           upsertGroup.mutate({
             ...data,
             image: data.image ?? null,
+            location: data.location ?? "",
           });
         })}
       >
@@ -137,6 +140,29 @@ export function GroupForm(props: Props) {
                     {...field}
                     placeholder="what is your group about?"
                     rows={5}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  location 📍{" "}
+                  <span className="text-gray-500">
+                    (online, an address, or a general area)
+                  </span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="where is your group based? (e.g. address, city, or general area)"
+                    rows={3}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />

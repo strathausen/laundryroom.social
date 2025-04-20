@@ -16,7 +16,7 @@ export default function EditGroupPage({ params }: PageProps) {
   const isNew = params.groupId === "new";
   const router = useRouter();
   return (
-    <main className="container h-screen max-w-screen-lg py-16">
+    <main className="container min-h-screen max-w-screen-lg py-16">
       <SessionProvider>
         <LoginCta message="You need to be logged in to create a group">
           <div className="flex flex-col gap-4">
