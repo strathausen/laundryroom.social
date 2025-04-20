@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  ITimezone,
-  ITimezoneOption,
-  useTimezoneSelect,
-} from "react-timezone-select";
+import type { ITimezone, ITimezoneOption } from "react-timezone-select";
+import { useTimezoneSelect } from "react-timezone-select";
 
 import {
   Select,

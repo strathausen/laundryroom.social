@@ -52,7 +52,7 @@ export function GroupForm(props: Props) {
         name: group.name,
         description: group.description,
         image: group.image,
-        timeZone: group.timeZone ?? "UTC",
+        timeZone: group.timeZone,
       });
       setImageUrl(group.image ?? undefined);
     }
@@ -80,16 +80,16 @@ export function GroupForm(props: Props) {
     },
   });
 
-  const onSubmit = (data: any) => {
-    upsertGroup.mutate({
-      ...data,
-      image: data.image ?? null,
-    });
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit((data) => {
+          upsertGroup.mutate({
+            ...data,
+            image: data.image ?? null,
+          });
+        })}
+      >
         <fieldset
           className="flex w-full max-w-2xl flex-col gap-4"
           disabled={upsertGroup.isPending}
@@ -151,7 +151,7 @@ export function GroupForm(props: Props) {
                 <FormLabel>time zone 🌏⏰</FormLabel>
                 <FormControl>
                   <TimezoneSelect
-                    value={field.value}
+                    value={field.value ?? "UTC"}
                     onChange={(tz) => field.onChange(tz.value)}
                   />
                 </FormControl>
