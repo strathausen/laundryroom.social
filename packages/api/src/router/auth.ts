@@ -28,6 +28,8 @@ export const authRouter = {
         image: true,
         bio: true,
         email: true,
+        pronouns: true,
+        links: true,
       },
     });
   }),

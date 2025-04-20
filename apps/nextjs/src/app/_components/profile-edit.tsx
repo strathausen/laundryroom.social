@@ -50,7 +50,8 @@ export function EditProfileForm(props: Props) {
       name: profileQuery.data?.name ?? "",
       image: profileQuery.data?.image ?? "",
       bio: profileQuery.data?.bio ?? "",
-      // links: profileQuery.data?.links ?? [],
+      pronouns: profileQuery.data?.pronouns ?? "",
+      links: profileQuery.data?.links ?? [],
     },
   });
 
@@ -125,6 +126,50 @@ export function EditProfileForm(props: Props) {
                     {...field}
                     value={field.value ?? ""}
                     placeholder="tell us about yourself"
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="pronouns"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Pronouns</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="your pronouns"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="links"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Links</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value?.join("\n") ?? ""}
+                    onChange={(e) => {
+                      const links = e.target.value
+                        .split("\n")
+                        .map((link) => link.trim())
+                        .filter((link) => link.length > 0);
+                      field.onChange(links);
+                    }}
+                    placeholder="one link per line"
                     rows={4}
                   />
                 </FormControl>

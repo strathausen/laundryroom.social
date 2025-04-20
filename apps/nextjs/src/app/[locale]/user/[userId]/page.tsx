@@ -27,7 +27,34 @@ export default async function UserPage({
             className="border-2 border-black"
           />
         )}
+        {user?.pronouns && (
+          <p className="text-center text-gray-500">{user.pronouns}</p>
+        )}
         <p className="text-center text-black">{user?.bio}</p>
+        {user?.links && user.links.length > 0 && (
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="text-xl font-semibold">Links</h2>
+            <div className="flex flex-col gap-1">
+              {user.links.map((link, index) => {
+                // Remove protocol and www from the display text
+                const displayText = link
+                  .replace(/^https?:\/\//, "")
+                  .replace(/^www\./, "");
+                return (
+                  <a
+                    key={index}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {displayText}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {session?.user.id === params.userId && (
           <div className="text-center text-gray-500">
             <h2>you are viewing your own profile</h2>

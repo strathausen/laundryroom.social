@@ -19,6 +19,8 @@ export const profileRouter = {
           name: true,
           image: true,
           bio: true,
+          pronouns: true,
+          links: true,
         },
       });
       return profile;
