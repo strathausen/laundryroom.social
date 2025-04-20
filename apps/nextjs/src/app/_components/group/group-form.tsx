@@ -16,8 +16,8 @@ import {
 import { ImageUpload } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
 import { Textarea } from "@laundryroom/ui/textarea";
+import { TimezoneSelect } from "@laundryroom/ui/timezone-select";
 import { toast } from "@laundryroom/ui/toast";
-import TimezoneSelect, { ITimezone } from "react-timezone-select";
 
 import { api } from "~/trpc/react";
 
@@ -151,12 +151,13 @@ export function GroupForm(props: Props) {
                 <FormLabel>time zone 🌏⏰</FormLabel>
                 <FormControl>
                   <TimezoneSelect
-                    value={field.value as ITimezone}
+                    value={field.value}
                     onChange={(tz) => field.onChange(tz.value)}
-                    className="react-select-container"
-                    classNamePrefix="react-select"
                   />
                 </FormControl>
+                <div className="text-sm text-gray-500">
+                  {field.value} - {groupQuery.data?.group?.timeZone}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
