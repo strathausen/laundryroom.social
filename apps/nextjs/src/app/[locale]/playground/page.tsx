@@ -3,7 +3,7 @@ import { Input } from "@laundryroom/ui/input";
 
 export default function PlaygroundPage() {
   return (
-    <main className="container h-screen py-16 text-foreground">
+    <main className="container min-h-screen py-16 text-foreground">
       <div className="flex flex-col gap-4">
         <h1 className="text-5xl font-bold underline decoration-fancyorange decoration-4">
           Playground

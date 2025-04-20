@@ -6,6 +6,8 @@ import { UpdateProfileSchema, User } from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
+const protocolRegex = /^https?:\/\//;
+
 export const authRouter = {
   getSession: publicProcedure.query(({ ctx }) => {
     return ctx.session;
@@ -37,6 +39,18 @@ export const authRouter = {
     .input(UpdateProfileSchema)
     .mutation(({ ctx, input }) => {
       const userId = ctx.session.user.id;
+      // Ensure links have a protocol
+      if (input.links) {
+        input.links = input.links
+          .map((link) => link.trim())
+          .filter((link) => link.length > 0)
+          .map((link) => {
+            if (!protocolRegex.exec(link)) {
+              return `https://${link}`;
+            }
+            return link;
+          });
+      }
       return ctx.db.update(User).set(input).where(eq(User.id, userId));
     }),
   deleteMe: protectedProcedure.mutation(({ ctx }) => {

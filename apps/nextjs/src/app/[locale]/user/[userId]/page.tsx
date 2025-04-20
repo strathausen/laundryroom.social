@@ -14,7 +14,7 @@ export default async function UserPage({
   const user = await api.profile.getPublicProfile({ userId: params.userId });
   return (
     <HydrateClient>
-      <main className="container flex h-screen flex-col items-center gap-4 py-16">
+      <main className="container flex min-h-screen flex-col items-center gap-4 py-16">
         <h1 className="text-center text-3xl font-bold text-black">
           {user?.name}
         </h1>

@@ -163,10 +163,7 @@ export function EditProfileForm(props: Props) {
                     {...field}
                     value={field.value?.join("\n") ?? ""}
                     onChange={(e) => {
-                      const links = e.target.value
-                        .split("\n")
-                        .map((link) => link.trim())
-                        .filter((link) => link.length > 0);
+                      const links = e.target.value.split("\n");
                       field.onChange(links);
                     }}
                     placeholder="one link per line"
