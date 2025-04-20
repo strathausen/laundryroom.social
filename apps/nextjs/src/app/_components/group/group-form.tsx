@@ -32,7 +32,7 @@ export function GroupForm(props: Props) {
   const [imageUrl, setImageUrl] = useState<string>();
   const groupQuery = api.group.byId.useQuery(
     { id: props.groupId },
-    { enabled: !props.isNew },
+    { enabled: !props.isNew, staleTime: 0 },
   );
   const form = useForm({
     schema: UpsertGroupSchema,
@@ -46,7 +46,7 @@ export function GroupForm(props: Props) {
 
   useEffect(() => {
     if (groupQuery.data?.group) {
-      const group = groupQuery.data.group;
+      const { group } = groupQuery.data;
       form.reset({
         id: group.id,
         name: group.name,
@@ -155,9 +155,6 @@ export function GroupForm(props: Props) {
                     onChange={(tz) => field.onChange(tz.value)}
                   />
                 </FormControl>
-                <div className="text-sm text-gray-500">
-                  {field.value} - {groupQuery.data?.group?.timeZone}
-                </div>
                 <FormMessage />
               </FormItem>
             )}
