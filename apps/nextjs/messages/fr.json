@@ -1,6 +1,7 @@
 {
   "navBar": {
     "groups": "groupes",
+    "my_groups": "mes groupes",
     "create": "créer",
     "feed": "fil",
     "feedback": "retour",
@@ -34,5 +35,32 @@
   "home": {
     "title": "Groupes",
     "subtitle": "trouvez votre groupe de rencontre !"
+  },
+  "meetup": {
+    "form": {
+      "title": "Titre",
+      "description": "Description",
+      "location": "Lieu",
+      "dateAndTime": "Date et heure",
+      "duration": "Durée",
+      "minutes": "minutes",
+      "attendeeLimit": "Nombre maximum de participants",
+      "attendeeLimitDescription": "Nombre maximum de participants :",
+      "attendeeLimitNoLimit": "Pas de limite de participants",
+      "status": {
+        "label": "Statut",
+        "placeholder": "Sélectionner le statut",
+        "active": "Actif",
+        "hidden": "Masqué",
+        "cancelled": "Annulé",
+        "cancelledDescription": "Cette rencontre a été annulée"
+      },
+      "buttons": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "saveTooltip": "Veuillez remplir tous les champs"
+      },
+      "success": "Rencontre enregistrée"
+    }
   }
 }

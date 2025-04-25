@@ -29,11 +29,38 @@
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "Menschen treffen, Treffen organisieren, Spaß haben",
-    "site_name": "laundryroom.social 🧺 - Treffen organisieren. Spaß haben."
+    "description": "Leute treffen, Meetups organisieren, Spaß haben",
+    "site_name": "laundryroom.social 🧺 - Meetups organisieren. Spaß haben."
   },
   "home": {
     "title": "Gruppen",
     "subtitle": "finde deine Meetup-Gruppe!"
+  },
+  "meetup": {
+    "form": {
+      "title": "Titel",
+      "description": "Beschreibung",
+      "location": "Ort",
+      "dateAndTime": "Datum & Uhrzeit",
+      "duration": "Dauer",
+      "minutes": "Minuten",
+      "attendeeLimit": "Maximale Teilnehmer*innen",
+      "attendeeLimitDescription": "Maximale Anzahl der Teilnehmer*innen:",
+      "attendeeLimitNoLimit": "Keine Begrenzung der Teilnehmer*innen",
+      "status": {
+        "label": "Status",
+        "placeholder": "Status auswählen",
+        "active": "Aktiv",
+        "hidden": "Versteckt",
+        "cancelled": "Abgesagt",
+        "cancelledDescription": "Dieses Treffen wurde abgesagt"
+      },
+      "buttons": {
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "saveTooltip": "Bitte fülle alle Felder aus"
+      },
+      "success": "Treffen gespeichert"
+    }
   }
 }

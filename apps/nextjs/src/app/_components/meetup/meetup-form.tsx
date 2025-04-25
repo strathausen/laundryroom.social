@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { RouterInputs } from "@laundryroom/api";
 import { UpsertMeetupSchema } from "@laundryroom/db/schema";
@@ -46,13 +47,13 @@ interface Props {
 }
 
 export function UpsertMeetupForm(props: Props) {
+  const t = useTranslations("meetup.form");
   const utils = api.useUtils();
   const upsertMeetup = api.meetup.upsert.useMutation({
     async onSuccess(_data) {
       form.reset();
       await utils.meetup.invalidate();
-      // if ("id" in data) router.push(`/meetups?highlight=${data.id}`);
-      toast.success("Meetup saved");
+      toast.success(t("success"));
       props.onSaved?.();
     },
   });
@@ -73,7 +74,7 @@ export function UpsertMeetupForm(props: Props) {
         meetupQuery.data?.startTime ??
         new Date(new Date().setHours(18, 0, 0, 0) + 24 * 60 * 60 * 1000),
       duration: meetupQuery.data?.duration ?? 60,
-      // attendeeLimit: meetupQuery.data?.attendeeLimit ?? null,
+      attendeeLimit: meetupQuery.data?.attendeeLimit ?? null,
       status: meetupQuery.data?.status ?? "active",
     },
   });
@@ -123,7 +124,7 @@ export function UpsertMeetupForm(props: Props) {
       form.setValue("location", meetupQuery.data.location);
       form.setValue("startTime", meetupQuery.data.startTime);
       form.setValue("duration", meetupQuery.data.duration);
-      // form.setValue("attendeeLimit", meetupQuery.data.attendeeLimit);
+      form.setValue("attendeeLimit", meetupQuery.data.attendeeLimit);
       form.setValue("status", meetupQuery.data.status);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,7 +158,7 @@ export function UpsertMeetupForm(props: Props) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>title</FormLabel>
+                <FormLabel>{t("title")}</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="" />
                 </FormControl>
@@ -170,7 +171,7 @@ export function UpsertMeetupForm(props: Props) {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>description</FormLabel>
+                <FormLabel>{t("description")}</FormLabel>
                 <FormControl>
                   <Textarea {...field} placeholder="" rows={5} />
                 </FormControl>
@@ -183,7 +184,7 @@ export function UpsertMeetupForm(props: Props) {
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>location</FormLabel>
+                <FormLabel>{t("location")}</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="" />
                 </FormControl>
@@ -197,7 +198,7 @@ export function UpsertMeetupForm(props: Props) {
             render={({ field }) => (
               // TODO move this time range picker to a separate component - or use a library
               <FormItem className="my-2 flex flex-col">
-                <FormLabel>date & time</FormLabel>
+                <FormLabel>{t("dateAndTime")}</FormLabel>
                 <Popover modal>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -313,7 +314,7 @@ export function UpsertMeetupForm(props: Props) {
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>duration</FormLabel>
+                <FormLabel>{t("duration")}</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -324,7 +325,36 @@ export function UpsertMeetupForm(props: Props) {
                   />
                 </FormControl>
                 <FormDescription>
-                  {field.value ? `${field.value} minutes` : ""}
+                  {field.value ? `${field.value} ${t("minutes")}` : ""}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="attendeeLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("attendeeLimit")}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min={1}
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      form.setValue(
+                        "attendeeLimit",
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormDescription>
+                  {field.value
+                    ? `${t("attendeeLimitDescription")} ${field.value}`
+                    : t("attendeeLimitNoLimit")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -347,13 +377,17 @@ export function UpsertMeetupForm(props: Props) {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a status" />
+                      <SelectValue placeholder={t("status.placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {["active", "hidden", "cancelled"].map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {status}
+                        {[
+                          { value: "active", label: t("status.active") },
+                          { value: "hidden", label: t("status.hidden") },
+                          { value: "cancelled", label: t("status.cancelled") },
+                        ].map(({ value, label }) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -362,7 +396,7 @@ export function UpsertMeetupForm(props: Props) {
                 </FormControl>
                 <FormDescription>
                   {field.value === "cancelled"
-                    ? "This meetup is cancelled"
+                    ? t("status.cancelledDescription")
                     : ""}
                 </FormDescription>
                 <FormMessage />
@@ -378,17 +412,15 @@ export function UpsertMeetupForm(props: Props) {
               }}
               disabled={upsertMeetup.isPending}
             >
-              cancel
+              {t("buttons.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={upsertMeetup.isPending}
-              title={
-                !form.formState.isValid ? "Please fill out all fields" : ""
-              }
+              title={!form.formState.isValid ? t("buttons.saveTooltip") : ""}
               className="flex-grow"
             >
-              save
+              {t("buttons.save")}
             </Button>
           </div>
         </fieldset>

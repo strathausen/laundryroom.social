@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { UpdateProfileSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -15,10 +16,12 @@ import {
 } from "@laundryroom/ui/form";
 import { ImageUpload } from "@laundryroom/ui/image-upload";
 import { Input } from "@laundryroom/ui/input";
+import { Switch } from "@laundryroom/ui/switch";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
+import { DeleteProfile } from "./profile/delete-profile";
 
 interface Props {
   onSave?: () => void;
@@ -27,6 +30,7 @@ interface Props {
 export function EditProfileForm(props: Props) {
   const utils = api.useUtils();
   const [image, setImage] = useState<string | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
 
   // Mutation to update the user's profile
   const updateProfile = api.auth.updateProfile.useMutation({
@@ -42,6 +46,13 @@ export function EditProfileForm(props: Props) {
 
   // Query to fetch the current user's data
   const profileQuery = api.auth.getProfile.useQuery();
+
+  // Add setFlag mutation
+  const setFlag = api.auth.setFlag.useMutation({
+    onSuccess: async () => {
+      await utils.auth.invalidate();
+    },
+  });
 
   // Initialize the form with default values from the user's data
   const form = useForm({
@@ -70,6 +81,7 @@ export function EditProfileForm(props: Props) {
         onSubmit={form.handleSubmit((data) => {
           updateProfile.mutate(data);
         })}
+        className="min-w-[440px]"
       >
         <fieldset
           className="flex flex-col gap-4 rounded p-4 text-black"
@@ -186,6 +198,44 @@ export function EditProfileForm(props: Props) {
           >
             save
           </Button>
+
+          <div className="mt-4 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              className="flex w-full items-center justify-between text-gray-500"
+              onClick={() => setShowOptions(!showOptions)}
+            >
+              <span>Advanced Options</span>
+              {showOptions ? <ChevronUp /> : <ChevronDown />}
+            </Button>
+
+            {showOptions && (
+              <div className="mt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">NSFW Mode</h3>
+                    <p className="text-sm text-gray-500">
+                      Enable NSFW content in your feed
+                    </p>
+                  </div>
+                  <Switch
+                    checked={
+                      profileQuery.data?.flags?.includes("nsfw") ?? false
+                    }
+                    onCheckedChange={(checked: boolean) => {
+                      setFlag.mutate({ flag: "nsfw", enabled: checked });
+                    }}
+                    disabled={setFlag.isPending}
+                  />
+                </div>
+
+                <div className="min-h-80">
+                  <DeleteProfile />
+                </div>
+              </div>
+            )}
+          </div>
         </fieldset>
       </form>
     </Form>

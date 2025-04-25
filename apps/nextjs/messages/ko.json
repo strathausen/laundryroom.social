@@ -1,13 +1,14 @@
 {
   "navBar": {
     "groups": "그룹",
+    "my_groups": "내 그룹",
     "create": "생성",
     "feed": "피드",
     "feedback": "피드백",
     "proof_proof_mole_mop": "프로필",
     "login": "로그인",
     "logout": "로그아웃",
-    "tagline": "모임을 조직하세요. 즐기세요."
+    "tagline": "모임을 조직하세요. 즐거운 시간을 보내세요."
   },
   "LocaleSwitcher": {
     "label": "언어"
@@ -16,7 +17,7 @@
   "fuzzy_only_kestrel_learn": "삭제",
   "footer": {
     "copyright": "© {year} laundryroom.social. 모든 권리 보유.",
-    "made_with": "만든",
+    "made_with": "제작",
     "in_berlin": "베를린에서",
     "links": {
       "terms": "이용약관",
@@ -28,11 +29,38 @@
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "사람들을 만나고, 모임을 조직하고, 즐기세요",
-    "site_name": "laundryroom.social 🧺 - 모임을 조직하세요. 즐기세요."
+    "description": "사람들을 만나고, 모임을 조직하고, 즐거운 시간을 보내세요",
+    "site_name": "laundryroom.social 🧺 - 모임을 조직하세요. 즐거운 시간을 보내세요."
   },
   "home": {
     "title": "그룹",
     "subtitle": "당신의 모임 그룹을 찾아보세요!"
+  },
+  "meetup": {
+    "form": {
+      "title": "제목",
+      "description": "설명",
+      "location": "장소",
+      "dateAndTime": "날짜와 시간",
+      "duration": "기간",
+      "minutes": "분",
+      "attendeeLimit": "최대 참가자 수",
+      "attendeeLimitDescription": "최대 참가자 수:",
+      "attendeeLimitNoLimit": "참가자 수 제한 없음",
+      "status": {
+        "label": "상태",
+        "placeholder": "상태 선택",
+        "active": "활성",
+        "hidden": "숨김",
+        "cancelled": "취소됨",
+        "cancelledDescription": "이 모임이 취소되었습니다"
+      },
+      "buttons": {
+        "cancel": "취소",
+        "save": "저장",
+        "saveTooltip": "모든 필드를 입력해주세요"
+      },
+      "success": "모임이 저장되었습니다"
+    }
   }
 }

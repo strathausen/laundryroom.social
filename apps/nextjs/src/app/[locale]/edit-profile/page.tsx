@@ -1,5 +1,4 @@
 import { EditProfileForm } from "~/app/_components/profile-edit";
-import { DeleteProfile } from "~/app/_components/profile/delete-profile";
 import { HydrateClient } from "~/trpc/server";
 
 // export const runtime = "edge";
@@ -16,9 +15,6 @@ export default function EditProfilePage() {
         </p>
         <div className="flex flex-col items-center justify-center gap-4">
           <EditProfileForm />
-        </div>
-        <div>
-          <DeleteProfile />
         </div>
       </main>
     </HydrateClient>

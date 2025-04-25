@@ -1,8 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 
 import { invalidateSessionToken } from "@laundryroom/auth";
 import { eq } from "@laundryroom/db";
-import { UpdateProfileSchema, User } from "@laundryroom/db/schema";
+import { UpdateProfileSchema, User, UserFlags } from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -32,6 +33,7 @@ export const authRouter = {
         email: true,
         pronouns: true,
         links: true,
+        flags: true,
       },
     });
   }),
@@ -52,6 +54,29 @@ export const authRouter = {
           });
       }
       return ctx.db.update(User).set(input).where(eq(User.id, userId));
+    }),
+  setFlag: protectedProcedure
+    .input(
+      z.object({
+        flag: z.enum(UserFlags.enumValues),
+        enabled: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.query.User.findFirst({
+        where: eq(User.id, ctx.session.user.id),
+        columns: { flags: true },
+      });
+      if (!user) {
+        throw new Error("User not found");
+      }
+      const newFlags = input.enabled
+        ? [...(user.flags ?? []), input.flag]
+        : (user.flags?.filter((flag) => flag !== input.flag) ?? []);
+      return ctx.db
+        .update(User)
+        .set({ flags: newFlags })
+        .where(eq(User.id, ctx.session.user.id));
     }),
   deleteMe: protectedProcedure.mutation(({ ctx }) => {
     return ctx.db.delete(User).where(eq(User.id, ctx.session.user.id));

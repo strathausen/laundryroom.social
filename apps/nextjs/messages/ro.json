@@ -1,8 +1,9 @@
 {
   "navBar": {
     "groups": "grupuri",
+    "my_groups": "grupurile mele",
     "create": "creează",
-    "feed": "feed",
+    "feed": "flux",
     "feedback": "feedback",
     "proof_proof_mole_mop": "profil",
     "login": "autentificare",
@@ -22,17 +23,44 @@
       "terms": "termeni",
       "imprint": "imprint",
       "privacy_policy": "politica de confidențialitate",
-      "roadmap": "roadmap",
+      "roadmap": "plan de implementare",
       "code": "cod"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "cunoaște oameni, organizează întâlniri, distrează-te",
+    "description": "întâlnește oameni, organizează întâlniri, distrează-te",
     "site_name": "laundryroom.social 🧺 - organizează întâlniri. distrează-te."
   },
   "home": {
     "title": "Grupuri",
-    "subtitle": "găsește grupul tău de întâlniri!"
+    "subtitle": "găsește-ți grupul de întâlniri!"
+  },
+  "meetup": {
+    "form": {
+      "title": "Titlu",
+      "description": "Descriere",
+      "location": "Locație",
+      "dateAndTime": "Data și ora",
+      "duration": "Durată",
+      "minutes": "minute",
+      "attendeeLimit": "Număr maxim de participanți",
+      "attendeeLimitDescription": "Număr maxim de participanți:",
+      "attendeeLimitNoLimit": "Fără limită de participanți",
+      "status": {
+        "label": "Stare",
+        "placeholder": "Selectează starea",
+        "active": "Activ",
+        "hidden": "Ascuns",
+        "cancelled": "Anulat",
+        "cancelledDescription": "Această întâlnire a fost anulată"
+      },
+      "buttons": {
+        "cancel": "Anulează",
+        "save": "Salvează",
+        "saveTooltip": "Te rog completează toate câmpurile"
+      },
+      "success": "Întâlnire salvată"
+    }
   }
 }

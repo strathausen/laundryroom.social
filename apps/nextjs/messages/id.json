@@ -1,6 +1,7 @@
 {
   "navBar": {
     "groups": "grup",
+    "my_groups": "grup saya",
     "create": "buat",
     "feed": "feed",
     "feedback": "umpan balik",
@@ -15,7 +16,7 @@
   "aqua_wise_gazelle_amaze": "muat komentar lama",
   "fuzzy_only_kestrel_learn": "hapus",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Hak Cipta Dilindungi.",
+    "copyright": "© {year} laundryroom.social. Hak cipta dilindungi.",
     "made_with": "dibuat dengan",
     "in_berlin": "di Berlin",
     "links": {
@@ -34,5 +35,32 @@
   "home": {
     "title": "Grup",
     "subtitle": "temukan grup pertemuan Anda!"
+  },
+  "meetup": {
+    "form": {
+      "title": "Judul",
+      "description": "Deskripsi",
+      "location": "Lokasi",
+      "dateAndTime": "Tanggal dan Waktu",
+      "duration": "Durasi",
+      "minutes": "menit",
+      "attendeeLimit": "Jumlah Peserta Maksimum",
+      "attendeeLimitDescription": "Jumlah peserta maksimum:",
+      "attendeeLimitNoLimit": "Tidak ada batasan jumlah peserta",
+      "status": {
+        "label": "Status",
+        "placeholder": "Pilih status",
+        "active": "Aktif",
+        "hidden": "Tersembunyi",
+        "cancelled": "Dibatalkan",
+        "cancelledDescription": "Pertemuan ini dibatalkan"
+      },
+      "buttons": {
+        "cancel": "Batal",
+        "save": "Simpan",
+        "saveTooltip": "Silakan isi semua bidang"
+      },
+      "success": "Pertemuan disimpan"
+    }
   }
 }

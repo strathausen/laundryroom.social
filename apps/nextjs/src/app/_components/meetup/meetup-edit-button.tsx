@@ -30,7 +30,7 @@ export function MeetupEditButton({ meetup }: Props) {
           <Pen className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="uppercase text-black">
+      <DialogContent className="max-h-[90vh] overflow-y-auto uppercase text-black">
         <DialogTitle>Edit Meetup</DialogTitle>
         <UpsertMeetupForm
           groupId={meetup.groupId}

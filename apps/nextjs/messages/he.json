@@ -6,8 +6,8 @@
     "feed": "פיד",
     "feedback": "משוב",
     "proof_proof_mole_mop": "פרופיל",
-    "login": "התחבר",
-    "logout": "התנתק",
+    "login": "התחברות",
+    "logout": "התנתקות",
     "tagline": "ארגן מפגשים. תהנה."
   },
   "LocaleSwitcher": {
@@ -17,7 +17,7 @@
   "fuzzy_only_kestrel_learn": "מחק",
   "footer": {
     "copyright": "© {year} laundryroom.social. כל הזכויות שמורות.",
-    "made_with": "נעשה עם",
+    "made_with": "נוצר עם",
     "in_berlin": "בברלין",
     "links": {
       "terms": "תנאים",
@@ -35,5 +35,32 @@
   "home": {
     "title": "קבוצות",
     "subtitle": "מצא את קבוצת המפגשים שלך!"
+  },
+  "meetup": {
+    "form": {
+      "title": "כותרת",
+      "description": "תיאור",
+      "location": "מיקום",
+      "dateAndTime": "תאריך ושעה",
+      "duration": "משך",
+      "minutes": "דקות",
+      "attendeeLimit": "מספר משתתפים מקסימלי",
+      "attendeeLimitDescription": "מספר משתתפים מקסימלי:",
+      "attendeeLimitNoLimit": "אין הגבלה על מספר המשתתפים",
+      "status": {
+        "label": "סטטוס",
+        "placeholder": "בחר סטטוס",
+        "active": "פעיל",
+        "hidden": "מוסתר",
+        "cancelled": "בוטל",
+        "cancelledDescription": "המפגש הזה בוטל"
+      },
+      "buttons": {
+        "cancel": "ביטול",
+        "save": "שמור",
+        "saveTooltip": "אנא מלא את כל השדות"
+      },
+      "success": "המפגש נשמר"
+    }
   }
 }

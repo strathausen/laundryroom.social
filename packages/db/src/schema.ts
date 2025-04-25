@@ -13,12 +13,25 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// System-wide roles
 export const UserRole = pgEnum("user_role", [
   "user",
   "good_person", // a user that has been verified as a good person and doesn't need LLMs to check their contributions
   "moderator", // can moderate all groups and discussions
   "admin", // can manage all groups and users
   "owner",
+]);
+
+// options the user has opted into
+export const UserFlags = pgEnum("user_flags", [
+  "nsfw", // user has opted in to NSFW content
+  "email_notifications", // user has opted in to email notifications
+  "push_notifications", // user has opted in to push notifications
+  "newsletter", // user has opted in to the newsletter
+  "marketing", // user has opted in to marketing emails
+  "analytics", // user has opted in to analytics
+  "show_pronouns", // user has opted in to show their pronouns
+  "dark_mode", // user has opted in to dark mode
 ]);
 
 export const User = pgTable("user", {
@@ -35,6 +48,7 @@ export const User = pgTable("user", {
   links: text("links").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   role: UserRole("role").default("user").notNull(),
+  flags: UserFlags("flags").array().default([]),
 });
 
 export const UserRelations = relations(User, ({ many }) => ({
@@ -113,12 +127,12 @@ export const MeetupAttendeeStatus = pgEnum("meetup_attendee_status", [
 ]);
 
 export const GroupStatus = pgEnum("group_status", [
-  "active",
-  "archived",
-  "hidden",
+  "active", // public, searchable, accessible (maybe we need a "public" status)
+  "archived", // doesn't show up in search results and is not accessible
+  "hidden", // doesn't show up in search results but is still accessible
+  "private", // only accessible to members
+  "nsfw", // only accessible to members who have opted in
 ]);
-
-export const Visibility = pgEnum("visibility", ["public", "private", "nsfw"]);
 
 export const ModerationStatus = pgEnum("group_moderation_tags", [
   "ok",
@@ -275,7 +289,7 @@ export const Meetup = pgTable("meetup", {
   }).notNull(),
   duration: integer("duration").default(60).notNull(), // in minutes
   status: MeetupStatus("status").default("active").notNull(),
-  attendeeLimit: integer("attendee_limit").default(100),
+  attendeeLimit: integer("attendee_limit"),
   // if used as a cursor, this should be a string based timestamp for more accurate pagination
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", {
@@ -475,6 +489,7 @@ export const UpdateProfileSchema = createInsertSchema(User, {
   email: true,
   emailVerified: true,
   role: true,
+  flags: true,
 });
 
 export const GroupPromotion = pgTable("group_promotion", {

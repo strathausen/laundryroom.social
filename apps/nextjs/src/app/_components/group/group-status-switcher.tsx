@@ -14,9 +14,10 @@ import { api } from "~/trpc/react";
 
 export function GroupStatusSwitcher(props: {
   groupId: string;
-  status: "active" | "hidden" | "archived" | null;
+  status: "active" | "hidden" | "archived" | "nsfw" | "private" | null;
 }) {
   const utils = api.useUtils();
+  const profileQuery = api.auth.getProfile.useQuery();
   const updateGroupStatus = api.group.updateStatus.useMutation({
     async onSuccess() {
       await utils.group.invalidate();
@@ -34,7 +35,12 @@ export function GroupStatusSwitcher(props: {
       onValueChange={(status) => {
         updateGroupStatus.mutate({
           groupId: props.groupId,
-          status: status as "active" | "hidden" | "archived",
+          status: status as
+            | "active"
+            | "hidden"
+            | "archived"
+            | "nsfw"
+            | "private",
         });
       }}
     >
@@ -46,6 +52,10 @@ export function GroupStatusSwitcher(props: {
           <SelectItem value="active">Active</SelectItem>
           <SelectItem value="hidden">Hidden</SelectItem>
           <SelectItem value="archived">Archived</SelectItem>
+          {profileQuery.data?.flags?.includes("nsfw") && (
+            <SelectItem value="nsfw">NSFW 🌶️</SelectItem>
+          )}
+          <SelectItem value="private">Private</SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>

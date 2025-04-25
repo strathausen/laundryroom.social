@@ -57,7 +57,7 @@ interface GroupActionsProps {
   group: {
     id: string;
     name: string;
-    status: "hidden" | "active" | "archived" | null;
+    status: "hidden" | "active" | "archived" | "nsfw" | "private" | null;
   };
   membership?: {
     role: "owner" | "admin" | "member" | "moderator" | "banned";

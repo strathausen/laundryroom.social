@@ -410,7 +410,7 @@ export const groupRouter = {
     .input(
       z.object({
         groupId: z.string(),
-        status: z.enum(["active", "archived", "hidden"]),
+        status: z.enum(["active", "archived", "hidden", "nsfw", "private"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {

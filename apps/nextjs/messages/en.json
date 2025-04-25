@@ -35,5 +35,32 @@
   "home": {
     "title": "Groups",
     "subtitle": "find your meetup group!"
+  },
+  "meetup": {
+    "form": {
+      "title": "Title",
+      "description": "Description",
+      "location": "Location",
+      "dateAndTime": "Date and Time",
+      "duration": "Duration",
+      "minutes": "minutes",
+      "attendeeLimit": "Maximum Attendees",
+      "attendeeLimitDescription": "Maximum number of attendees:",
+      "attendeeLimitNoLimit": "No limit on number of attendees",
+      "status": {
+        "label": "Status",
+        "placeholder": "Select status",
+        "active": "Active",
+        "hidden": "Hidden",
+        "cancelled": "Cancelled",
+        "cancelledDescription": "This meetup has been cancelled"
+      },
+      "buttons": {
+        "save": "Save",
+        "saveTooltip": "Please fill in all required fields",
+        "cancel": "Cancel"
+      },
+      "success": "Meetup saved successfully"
+    }
   }
 }

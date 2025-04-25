@@ -1,6 +1,7 @@
 {
   "navBar": {
     "groups": "nhóm",
+    "my_groups": "nhóm của tôi",
     "create": "tạo",
     "feed": "bảng tin",
     "feedback": "phản hồi",
@@ -16,7 +17,7 @@
   "fuzzy_only_kestrel_learn": "xóa",
   "footer": {
     "copyright": "© {year} laundryroom.social. Đã đăng ký bản quyền.",
-    "made_with": "được tạo với",
+    "made_with": "được tạo bởi",
     "in_berlin": "tại Berlin",
     "links": {
       "terms": "điều khoản",
@@ -34,5 +35,32 @@
   "home": {
     "title": "Nhóm",
     "subtitle": "tìm nhóm gặp gỡ của bạn!"
+  },
+  "meetup": {
+    "form": {
+      "title": "Tiêu đề",
+      "description": "Mô tả",
+      "location": "Địa điểm",
+      "dateAndTime": "Ngày và giờ",
+      "duration": "Thời lượng",
+      "minutes": "phút",
+      "attendeeLimit": "Số người tham dự tối đa",
+      "attendeeLimitDescription": "Số người tham dự tối đa:",
+      "attendeeLimitNoLimit": "Không giới hạn số người tham dự",
+      "status": {
+        "label": "Trạng thái",
+        "placeholder": "Chọn trạng thái",
+        "active": "Hoạt động",
+        "hidden": "Ẩn",
+        "cancelled": "Đã hủy",
+        "cancelledDescription": "Cuộc gặp này đã bị hủy"
+      },
+      "buttons": {
+        "cancel": "Hủy",
+        "save": "Lưu",
+        "saveTooltip": "Vui lòng điền đầy đủ thông tin"
+      },
+      "success": "Đã lưu cuộc gặp"
+    }
   }
 }
