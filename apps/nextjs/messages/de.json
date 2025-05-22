@@ -62,5 +62,11 @@
       },
       "success": "Treffen gespeichert"
     }
+  },
+  "askForName": {
+    "greeting": "hallo du wunderschöner mensch.",
+    "prompt": "sag uns bitte deinen namen",
+    "placeholder": "wie sollen wir dich nennen?",
+    "submit": "ok"
   }
 }

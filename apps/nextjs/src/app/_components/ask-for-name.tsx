@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
@@ -11,6 +12,7 @@ import { api } from "~/trpc/react";
 
 export function AskForName() {
   const session = useSession();
+  const t = useTranslations("askForName");
   const [name, setName] = useState(session.data?.user.name ?? "");
   const updateProfileMutation = api.auth.updateProfile.useMutation();
   if (session.status === "loading") {
@@ -27,9 +29,9 @@ export function AskForName() {
     return (
       <Box className="m-auto flex max-w-lg flex-col gap-4">
         <p>
-          hi there beautiful human.
+          {t("greeting")}
           <br />
-          <strong>please tell us your name</strong>!
+          <strong>{t("prompt")}</strong>!
         </p>
         <form
           onSubmit={async (e) => {
@@ -41,7 +43,7 @@ export function AskForName() {
         >
           <Input
             type="text"
-            placeholder="what should we call you?"
+            placeholder={t("placeholder")}
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -52,7 +54,7 @@ export function AskForName() {
             type="submit"
             disabled={updateProfileMutation.isPending || name.length < 2}
           >
-            ok
+            {t("submit")}
           </Button>
         </form>
       </Box>

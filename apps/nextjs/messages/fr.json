@@ -62,5 +62,11 @@
       },
       "success": "Rencontre enregistrée"
     }
+  },
+  "askForName": {
+    "greeting": "salut toi, belle personne.",
+    "prompt": "dis-nous ton nom",
+    "placeholder": "comment on peut t'appeler ?",
+    "submit": "ok"
   }
 }

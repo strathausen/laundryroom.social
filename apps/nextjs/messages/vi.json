@@ -62,5 +62,11 @@
       },
       "success": "Đã lưu cuộc gặp"
     }
+  },
+  "askForName": {
+    "greeting": "chào bạn, người đẹp.",
+    "prompt": "cho chúng mình biết tên bạn nhé",
+    "placeholder": "chúng mình nên gọi bạn là gì?",
+    "submit": "ok"
   }
 }

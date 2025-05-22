@@ -62,5 +62,11 @@
       },
       "success": "Meetup saved successfully"
     }
+  },
+  "askForName": {
+    "greeting": "hi there beautiful human.",
+    "prompt": "please tell us your name",
+    "placeholder": "what should we call you?",
+    "submit": "ok"
   }
 }

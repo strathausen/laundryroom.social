@@ -39,12 +39,7 @@ export const isSecureContext = env.NODE_ENV !== "development";
 export const authConfig = {
   adapter,
   // In development, we need to skip checks to allow Expo to work
-  ...(!isSecureContext
-    ? {
-        skipCSRFCheck: skipCSRFCheck,
-        trustHost: true,
-      }
-    : {}),
+  ...(!isSecureContext ? { skipCSRFCheck, trustHost: true } : {}),
   secret: env.AUTH_SECRET,
   providers: [
     // Discord,
@@ -78,9 +73,7 @@ export const validateToken = async (
   const session = await adapter.getSessionAndUser?.(sessionToken);
   return session
     ? {
-        user: {
-          ...session.user,
-        },
+        user: { ...session.user },
         expires: session.session.expires.toISOString(),
       }
     : null;

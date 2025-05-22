@@ -44,6 +44,7 @@
     "react-day-picker": "8.10.1",
     "react-hook-form": "^7.52.1",
     "react-image-crop": "^11.0.7",
+    "react-qr-code": "^2.0.15",
     "react-share": "^5.1.1",
     "react-timezone-select": "^3.2.8",
     "shadcn-ui": "^0.9.2",

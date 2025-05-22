@@ -62,5 +62,11 @@
       },
       "success": "Pertemuan disimpan"
     }
+  },
+  "askForName": {
+    "greeting": "hai, manusia cantik.",
+    "prompt": "tolong beritahu nama kamu",
+    "placeholder": "kita harus panggil kamu apa?",
+    "submit": "ok"
   }
 }

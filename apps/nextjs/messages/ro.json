@@ -62,5 +62,11 @@
       },
       "success": "Întâlnire salvată"
     }
+  },
+  "askForName": {
+    "greeting": "bună, frumoase ființă umană.",
+    "prompt": "te rog spune-ne numele tău",
+    "placeholder": "cum să te numim?",
+    "submit": "ok"
   }
 }

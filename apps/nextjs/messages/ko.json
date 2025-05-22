@@ -62,5 +62,11 @@
       },
       "success": "모임이 저장되었습니다"
     }
+  },
+  "askForName": {
+    "greeting": "안녕, 아름다운 사람아.",
+    "prompt": "이름을 알려줘",
+    "placeholder": "뭐라고 불러야 할까?",
+    "submit": "ok"
   }
 }
