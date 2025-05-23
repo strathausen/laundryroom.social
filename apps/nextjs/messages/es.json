@@ -1,0 +1,72 @@
+{
+  "navBar": {
+    "groups": "grupos",
+    "my_groups": "mis grupos",
+    "create": "crear",
+    "feed": "feed",
+    "feedback": "feedback",
+    "proof_proof_mole_mop": "perfil",
+    "login": "iniciar sesión",
+    "logout": "cerrar sesión",
+    "tagline": "grupos de encuentro gratis para todos"
+  },
+  "LocaleSwitcher": {
+    "label": "idioma"
+  },
+  "aqua_wise_gazelle_amaze": "cargar comentarios anteriores",
+  "fuzzy_only_kestrel_learn": "eliminar",
+  "footer": {
+    "copyright": "© {year} laundryroom.social. todos los derechos reservados.",
+    "made_with": "hecho con",
+    "in_berlin": "en berlin",
+    "links": {
+      "terms": "términos y condiciones",
+      "imprint": "imprenta",
+      "privacy_policy": "política de privacidad",
+      "roadmap": "hoja de ruta",
+      "code": "código-fuente"
+    }
+  },
+  "metadata": {
+    "title": "laundryroom.social 🧺",
+    "description": "encuentra y únete a grupos de encuentro gratis",
+    "site_name": "laundryroom.social 🧺 - grupos de encuentro gratis para todos"
+  },
+  "home": {
+    "title": "grupos",
+    "subtitle": "¡encuentra tu grupo de encuentro!"
+  },
+  "meetup": {
+    "form": {
+      "title": "título",
+      "description": "descripción",
+      "location": "ubicación",
+      "dateAndTime": "fecha y hora",
+      "duration": "duración",
+      "minutes": "minutos",
+      "attendeeLimit": "número máximo de participantes",
+      "attendeeLimitDescription": "número máximo de participantes:",
+      "attendeeLimitNoLimit": "sin límite de participantes",
+      "status": {
+        "label": "estado",
+        "placeholder": "seleccionar estado",
+        "active": "activo",
+        "hidden": "oculto",
+        "cancelled": "cancelado",
+        "cancelledDescription": "este encuentro ha sido cancelado"
+      },
+      "buttons": {
+        "cancel": "cancelar",
+        "save": "guardar",
+        "saveTooltip": "por favor completa todos los campos"
+      },
+      "success": "encuentro guardado"
+    }
+  },
+  "askForName": {
+    "greeting": "¡hola!",
+    "prompt": "cuéntanos tu nombre",
+    "placeholder": "¿cómo te llamamos?",
+    "submit": "ok"
+  }
+} 

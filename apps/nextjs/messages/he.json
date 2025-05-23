@@ -8,7 +8,7 @@
     "proof_proof_mole_mop": "פרופיל",
     "login": "התחברות",
     "logout": "התנתקות",
-    "tagline": "ארגן מפגשים. תהנה."
+    "tagline": "קבוצות מפגשים חינם לכולם"
   },
   "LocaleSwitcher": {
     "label": "שפה"
@@ -29,8 +29,8 @@
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "פגוש אנשים, ארגן מפגשים, תהנה",
-    "site_name": "laundryroom.social 🧺 - ארגן מפגשים. תהנה."
+    "description": "מצא והצטרף לקבוצות מפגשים חינם",
+    "site_name": "laundryroom.social 🧺 - קבוצות מפגשים חינם לכולם"
   },
   "home": {
     "title": "קבוצות",
@@ -64,7 +64,7 @@
     }
   },
   "askForName": {
-    "greeting": "היי, בן אדם יפה.",
+    "greeting": "שלום!",
     "prompt": "תגיד לנו את השם שלך",
     "placeholder": "איך לקרוא לך?",
     "submit": "אישור"

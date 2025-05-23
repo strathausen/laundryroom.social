@@ -1,70 +1,70 @@
 {
   "navBar": {
-    "groups": "Gruppen",
-    "my_groups": "meine Gruppen",
+    "groups": "gruppen",
+    "my_groups": "meine gruppen",
     "create": "erstellen",
-    "feed": "Feed",
-    "feedback": "Feedback",
-    "proof_proof_mole_mop": "Profil",
-    "login": "Anmelden",
-    "logout": "Abmelden",
-    "tagline": "Treffen organisieren. Spaß haben."
+    "feed": "feed",
+    "feedback": "feedback",
+    "proof_proof_mole_mop": "profil",
+    "login": "anmelden",
+    "logout": "abmelden",
+    "tagline": "kostenlose meetup-gruppen für alle"
   },
   "LocaleSwitcher": {
-    "label": "Sprache"
+    "label": "sprache"
   },
   "aqua_wise_gazelle_amaze": "ältere Kommentare laden",
   "fuzzy_only_kestrel_learn": "löschen",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Alle Rechte vorbehalten.",
+    "copyright": "© {year} laundryroom.social. alle rechte vorbehalten.",
     "made_with": "gemacht mit",
-    "in_berlin": "in Berlin",
+    "in_berlin": "in berlin",
     "links": {
       "terms": "AGB",
-      "imprint": "Impressum",
-      "privacy_policy": "Datenschutz",
-      "roadmap": "Roadmap",
-      "code": "Code"
+      "imprint": "impressum",
+      "privacy_policy": "datenschutz",
+      "roadmap": "roadmap",
+      "code": "quelltext"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "Leute treffen, Meetups organisieren, Spaß haben",
-    "site_name": "laundryroom.social 🧺 - Meetups organisieren. Spaß haben."
+    "description": "finde und tritt kostenlosen meetup-gruppen bei",
+    "site_name": "laundryroom.social 🧺 - kostenlose meetup-gruppen für alle"
   },
   "home": {
-    "title": "Gruppen",
-    "subtitle": "finde deine Meetup-Gruppe!"
+    "title": "gruppen",
+    "subtitle": "finde deine meetups!"
   },
   "meetup": {
     "form": {
-      "title": "Titel",
-      "description": "Beschreibung",
-      "location": "Ort",
-      "dateAndTime": "Datum & Uhrzeit",
-      "duration": "Dauer",
-      "minutes": "Minuten",
-      "attendeeLimit": "Maximale Teilnehmer*innen",
-      "attendeeLimitDescription": "Maximale Anzahl der Teilnehmer*innen:",
-      "attendeeLimitNoLimit": "Keine Begrenzung der Teilnehmer*innen",
+      "title": "titel",
+      "description": "beschreibung",
+      "location": "ort",
+      "dateAndTime": "datum & uhrzeit",
+      "duration": "dauer",
+      "minutes": "minuten",
+      "attendeeLimit": "maximale teilnehmer*innen",
+      "attendeeLimitDescription": "maximale anzahl der teilnehmer*innen:",
+      "attendeeLimitNoLimit": "keine begrenzung der teilnehmer*innen",
       "status": {
-        "label": "Status",
-        "placeholder": "Status auswählen",
-        "active": "Aktiv",
-        "hidden": "Versteckt",
-        "cancelled": "Abgesagt",
-        "cancelledDescription": "Dieses Treffen wurde abgesagt"
+        "label": "status",
+        "placeholder": "status auswählen",
+        "active": "aktiv",
+        "hidden": "versteckt",
+        "cancelled": "abgesagt",
+        "cancelledDescription": "dieses treffen wurde abgesagt"
       },
       "buttons": {
-        "cancel": "Abbrechen",
-        "save": "Speichern",
-        "saveTooltip": "Bitte fülle alle Felder aus"
+        "cancel": "abbrechen",
+        "save": "speichern",
+        "saveTooltip": "bitte fülle alle felder aus"
       },
-      "success": "Treffen gespeichert"
+      "success": "treffen gespeichert"
     }
   },
   "askForName": {
-    "greeting": "hallo du wunderschöner mensch.",
+    "greeting": "hallo!",
     "prompt": "sag uns bitte deinen namen",
     "placeholder": "wie sollen wir dich nennen?",
     "submit": "ok"

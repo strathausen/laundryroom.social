@@ -6,14 +6,15 @@ import { routing } from "~/i18n/routing";
 import LocaleSwitcherSelect from "./locale-switcher-select";
 
 const languageNames: Record<string, string> = {
-  ro: "Română",
-  en: "English",
-  de: "Deutsch",
-  fr: "Français",
-  id: "Indonesia",
-  vi: "Tiếng Việt",
-  ko: "한국어",
-  he: "עברית",
+  ro: "română",
+  en: "english",
+  de: "deutsch",
+  fr: "français",
+  es: "español",
+  id: "Indonesia", // TODO proofread
+  vi: "Tiếng Việt", // TODO have family look at this
+  ko: "한국어", // TODO have family look at this
+  he: "עברית", // TODO proofread
 };
 
 export default function LocaleSwitcher() {

@@ -8,7 +8,7 @@
     "proof_proof_mole_mop": "hồ sơ",
     "login": "đăng nhập",
     "logout": "đăng xuất",
-    "tagline": "tổ chức gặp gỡ. vui vẻ."
+    "tagline": "nhóm gặp gỡ miễn phí cho mọi người"
   },
   "LocaleSwitcher": {
     "label": "Ngôn ngữ"
@@ -16,9 +16,9 @@
   "aqua_wise_gazelle_amaze": "tải bình luận cũ hơn",
   "fuzzy_only_kestrel_learn": "xóa",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Đã đăng ký bản quyền.",
+    "copyright": "© {year} laundryroom.social. đã đăng ký bản quyền.",
     "made_with": "được tạo bởi",
-    "in_berlin": "tại Berlin",
+    "in_berlin": "tại berlin",
     "links": {
       "terms": "điều khoản",
       "imprint": "in",
@@ -29,42 +29,42 @@
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "gặp gỡ mọi người, tổ chức gặp gỡ, vui vẻ",
-    "site_name": "laundryroom.social 🧺 - tổ chức gặp gỡ. vui vẻ."
+    "description": "tìm và tham gia nhóm gặp gỡ miễn phí",
+    "site_name": "laundryroom.social 🧺 - nhóm gặp gỡ miễn phí cho mọi người"
   },
   "home": {
-    "title": "Nhóm",
+    "title": "nhóm",
     "subtitle": "tìm nhóm gặp gỡ của bạn!"
   },
   "meetup": {
     "form": {
-      "title": "Tiêu đề",
-      "description": "Mô tả",
-      "location": "Địa điểm",
-      "dateAndTime": "Ngày và giờ",
-      "duration": "Thời lượng",
+      "title": "tiêu đề",
+      "description": "mô tả",
+      "location": "địa điểm",
+      "dateAndTime": "ngày và giờ",
+      "duration": "thời lượng",
       "minutes": "phút",
-      "attendeeLimit": "Số người tham dự tối đa",
-      "attendeeLimitDescription": "Số người tham dự tối đa:",
-      "attendeeLimitNoLimit": "Không giới hạn số người tham dự",
+      "attendeeLimit": "số người tham dự tối đa",
+      "attendeeLimitDescription": "số người tham dự tối đa:",
+      "attendeeLimitNoLimit": "không giới hạn số người tham dự",
       "status": {
-        "label": "Trạng thái",
-        "placeholder": "Chọn trạng thái",
-        "active": "Hoạt động",
-        "hidden": "Ẩn",
-        "cancelled": "Đã hủy",
-        "cancelledDescription": "Cuộc gặp này đã bị hủy"
+        "label": "trạng thái",
+        "placeholder": "chọn trạng thái",
+        "active": "hoạt động",
+        "hidden": "ẩn",
+        "cancelled": "đã hủy",
+        "cancelledDescription": "cuộc gặp này đã bị hủy"
       },
       "buttons": {
-        "cancel": "Hủy",
-        "save": "Lưu",
-        "saveTooltip": "Vui lòng điền đầy đủ thông tin"
+        "cancel": "hủy",
+        "save": "lưu",
+        "saveTooltip": "vui lòng điền đầy đủ thông tin"
       },
-      "success": "Đã lưu cuộc gặp"
+      "success": "đã lưu cuộc gặp"
     }
   },
   "askForName": {
-    "greeting": "chào bạn, người đẹp.",
+    "greeting": "xin chào!",
     "prompt": "cho chúng mình biết tên bạn nhé",
     "placeholder": "chúng mình nên gọi bạn là gì?",
     "submit": "ok"

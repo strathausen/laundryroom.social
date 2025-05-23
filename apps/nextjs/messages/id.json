@@ -8,63 +8,63 @@
     "proof_proof_mole_mop": "profil",
     "login": "masuk",
     "logout": "keluar",
-    "tagline": "atur pertemuan. bersenang-senang."
+    "tagline": "grup pertemuan gratis untuk semua"
   },
   "LocaleSwitcher": {
-    "label": "Bahasa"
+    "label": "bahasa"
   },
   "aqua_wise_gazelle_amaze": "muat komentar lama",
   "fuzzy_only_kestrel_learn": "hapus",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Hak cipta dilindungi.",
+    "copyright": "© {year} laundryroom.social. hak cipta dilindungi.",
     "made_with": "dibuat dengan",
-    "in_berlin": "di Berlin",
+    "in_berlin": "di berlin",
     "links": {
-      "terms": "syarat",
+      "terms": "syarat dan ketentuan",
       "imprint": "cetak",
       "privacy_policy": "kebijakan privasi",
       "roadmap": "peta jalan",
-      "code": "kode"
+      "code": "kode-sumber"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "temui orang, atur pertemuan, bersenang-senang",
-    "site_name": "laundryroom.social 🧺 - atur pertemuan. bersenang-senang."
+    "description": "temukan dan bergabung dengan grup pertemuan gratis",
+    "site_name": "laundryroom.social 🧺 - grup pertemuan gratis untuk semua"
   },
   "home": {
-    "title": "Grup",
-    "subtitle": "temukan grup pertemuan Anda!"
+    "title": "grup",
+    "subtitle": "temukan grup pertemuan anda!"
   },
   "meetup": {
     "form": {
-      "title": "Judul",
-      "description": "Deskripsi",
-      "location": "Lokasi",
-      "dateAndTime": "Tanggal dan Waktu",
-      "duration": "Durasi",
+      "title": "judul",
+      "description": "deskripsi",
+      "location": "lokasi",
+      "dateAndTime": "tanggal dan waktu",
+      "duration": "durasi",
       "minutes": "menit",
-      "attendeeLimit": "Jumlah Peserta Maksimum",
+      "attendeeLimit": "jumlah peserta maksimum",
       "attendeeLimitDescription": "Jumlah peserta maksimum:",
-      "attendeeLimitNoLimit": "Tidak ada batasan jumlah peserta",
+      "attendeeLimitNoLimit": "tidak ada batasan jumlah peserta",
       "status": {
-        "label": "Status",
-        "placeholder": "Pilih status",
-        "active": "Aktif",
-        "hidden": "Tersembunyi",
-        "cancelled": "Dibatalkan",
-        "cancelledDescription": "Pertemuan ini dibatalkan"
+        "label": "status",
+        "placeholder": "pilih status",
+        "active": "aktif",
+        "hidden": "tersembunyi",
+        "cancelled": "dibatalkan",
+        "cancelledDescription": "pertemuan ini dibatalkan"
       },
       "buttons": {
-        "cancel": "Batal",
-        "save": "Simpan",
-        "saveTooltip": "Silakan isi semua bidang"
+        "cancel": "batal",
+        "save": "simpan",
+        "saveTooltip": "silakan isi semua bidang"
       },
-      "success": "Pertemuan disimpan"
+      "success": "pertemuan disimpan"
     }
   },
   "askForName": {
-    "greeting": "hai, manusia cantik.",
+    "greeting": "halo!",
     "prompt": "tolong beritahu nama kamu",
     "placeholder": "kita harus panggil kamu apa?",
     "submit": "ok"

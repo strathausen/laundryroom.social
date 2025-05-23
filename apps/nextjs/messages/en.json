@@ -8,10 +8,10 @@
     "proof_proof_mole_mop": "profile",
     "login": "login",
     "logout": "logout",
-    "tagline": "organise meetups. have fun."
+    "tagline": "free meetup groups for everyone"
   },
   "LocaleSwitcher": {
-    "label": "Language"
+    "label": "language"
   },
   "aqua_wise_gazelle_amaze": "load older comments",
   "fuzzy_only_kestrel_learn": "delete",
@@ -24,47 +24,47 @@
       "imprint": "imprint",
       "privacy_policy": "privacy policy",
       "roadmap": "roadmap",
-      "code": "code"
+      "code": "source code"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "meet people, organise meetups, have fun",
-    "site_name": "laundryroom.social 🧺 - organise meetups. have fun."
+    "description": "find and join free meetup groups",
+    "site_name": "laundryroom.social 🧺 - free meetup groups for everyone"
   },
   "home": {
-    "title": "Groups",
+    "title": "groups",
     "subtitle": "find your meetup group!"
   },
   "meetup": {
     "form": {
-      "title": "Title",
-      "description": "Description",
-      "location": "Location",
-      "dateAndTime": "Date and Time",
-      "duration": "Duration",
+      "title": "title",
+      "description": "description",
+      "location": "location",
+      "dateAndTime": "date and time",
+      "duration": "duration",
       "minutes": "minutes",
-      "attendeeLimit": "Maximum Attendees",
-      "attendeeLimitDescription": "Maximum number of attendees:",
-      "attendeeLimitNoLimit": "No limit on number of attendees",
+      "attendeeLimit": "maximum attendees",
+      "attendeeLimitDescription": "maximum number of attendees:",
+      "attendeeLimitNoLimit": "no limit on number of attendees",
       "status": {
-        "label": "Status",
-        "placeholder": "Select status",
-        "active": "Active",
-        "hidden": "Hidden",
-        "cancelled": "Cancelled",
-        "cancelledDescription": "This meetup has been cancelled"
+        "label": "status",
+        "placeholder": "select status",
+        "active": "active",
+        "hidden": "hidden",
+        "cancelled": "cancelled",
+        "cancelledDescription": "this meetup has been cancelled"
       },
       "buttons": {
-        "save": "Save",
-        "saveTooltip": "Please fill in all required fields",
-        "cancel": "Cancel"
+        "save": "save",
+        "saveTooltip": "please fill in all required fields",
+        "cancel": "cancel"
       },
-      "success": "Meetup saved successfully"
+      "success": "meetup saved successfully"
     }
   },
   "askForName": {
-    "greeting": "hi there beautiful human.",
+    "greeting": "hi there!",
     "prompt": "please tell us your name",
     "placeholder": "what should we call you?",
     "submit": "ok"

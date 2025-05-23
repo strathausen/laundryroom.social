@@ -8,63 +8,63 @@
     "proof_proof_mole_mop": "profil",
     "login": "autentificare",
     "logout": "deconectare",
-    "tagline": "organizează întâlniri. distrează-te."
+    "tagline": "grupuri de întâlniri gratuite pentru toți"
   },
   "LocaleSwitcher": {
-    "label": "Limba"
+    "label": "limba"
   },
   "aqua_wise_gazelle_amaze": "încarcă comentarii mai vechi",
   "fuzzy_only_kestrel_learn": "șterge",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Toate drepturile rezervate.",
+    "copyright": "© {year} laundryroom.social. toate drepturile rezervate.",
     "made_with": "făcut cu",
-    "in_berlin": "în Berlin",
+    "in_berlin": "în berlin",
     "links": {
-      "terms": "termeni",
+      "terms": "termeni și condiții",
       "imprint": "imprint",
       "privacy_policy": "politica de confidențialitate",
-      "roadmap": "plan de implementare",
-      "code": "cod"
+      "roadmap": "plan de implementare a funcțiilor",
+      "code": "cod-sursă"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "întâlnește oameni, organizează întâlniri, distrează-te",
-    "site_name": "laundryroom.social 🧺 - organizează întâlniri. distrează-te."
+    "description": "găsește și alătură-te grupuri de întâlniri gratuite",
+    "site_name": "laundryroom.social 🧺 - grupuri de întâlniri gratuite pentru toți"
   },
   "home": {
-    "title": "Grupuri",
+    "title": "grupuri",
     "subtitle": "găsește-ți grupul de întâlniri!"
   },
   "meetup": {
     "form": {
-      "title": "Titlu",
-      "description": "Descriere",
-      "location": "Locație",
-      "dateAndTime": "Data și ora",
-      "duration": "Durată",
+      "title": "titlu",
+      "description": "descriere",
+      "location": "locație",
+      "dateAndTime": "data și ora",
+      "duration": "durată",
       "minutes": "minute",
-      "attendeeLimit": "Număr maxim de participanți",
-      "attendeeLimitDescription": "Număr maxim de participanți:",
-      "attendeeLimitNoLimit": "Fără limită de participanți",
+      "attendeeLimit": "număr maxim de participanți",
+      "attendeeLimitDescription": "număr maxim de participanți:",
+      "attendeeLimitNoLimit": "fără limită de participanți",
       "status": {
-        "label": "Stare",
-        "placeholder": "Selectează starea",
-        "active": "Activ",
-        "hidden": "Ascuns",
-        "cancelled": "Anulat",
-        "cancelledDescription": "Această întâlnire a fost anulată"
+        "label": "stare",
+        "placeholder": "selectează starea",
+        "active": "activ",
+        "hidden": "ascuns",
+        "cancelled": "anulat",
+        "cancelledDescription": "această întâlnire a fost anulată"
       },
       "buttons": {
-        "cancel": "Anulează",
-        "save": "Salvează",
-        "saveTooltip": "Te rog completează toate câmpurile"
+        "cancel": "anulează",
+        "save": "salvează",
+        "saveTooltip": "te rog completează toate câmpurile"
       },
-      "success": "Întâlnire salvată"
+      "success": "întâlnire salvată"
     }
   },
   "askForName": {
-    "greeting": "bună, frumoase ființă umană.",
+    "greeting": "bună!",
     "prompt": "te rog spune-ne numele tău",
     "placeholder": "cum să te numim?",
     "submit": "ok"

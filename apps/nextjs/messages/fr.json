@@ -8,7 +8,7 @@
     "proof_proof_mole_mop": "profil",
     "login": "connexion",
     "logout": "déconnexion",
-    "tagline": "organisez des rencontres. amusez-vous."
+    "tagline": "groupes de rencontre gratuits pour tous"
   },
   "LocaleSwitcher": {
     "label": "Langue"
@@ -16,55 +16,55 @@
   "aqua_wise_gazelle_amaze": "charger les commentaires plus anciens",
   "fuzzy_only_kestrel_learn": "supprimer",
   "footer": {
-    "copyright": "© {year} laundryroom.social. Tous droits réservés.",
+    "copyright": "© {year} laundryroom.social. tous droits réservés.",
     "made_with": "fait avec",
-    "in_berlin": "à Berlin",
+    "in_berlin": "à berlin",
     "links": {
       "terms": "conditions",
       "imprint": "mentions légales",
       "privacy_policy": "politique de confidentialité",
       "roadmap": "feuille de route",
-      "code": "code"
+      "code": "code-source"
     }
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "rencontrez des gens, organisez des rencontres, amusez-vous",
-    "site_name": "laundryroom.social 🧺 - organisez des rencontres. amusez-vous."
+    "description": "trouve et rejoins des groupes de rencontre gratuits",
+    "site_name": "laundryroom.social 🧺 - groupes de rencontre gratuits pour tous"
   },
   "home": {
-    "title": "Groupes",
+    "title": "groupes",
     "subtitle": "trouvez votre groupe de rencontre !"
   },
   "meetup": {
     "form": {
-      "title": "Titre",
-      "description": "Description",
-      "location": "Lieu",
-      "dateAndTime": "Date et heure",
-      "duration": "Durée",
+      "title": "titre",
+      "description": "description",
+      "location": "lieu",
+      "dateAndTime": "date et heure",
+      "duration": "durée",
       "minutes": "minutes",
-      "attendeeLimit": "Nombre maximum de participants",
-      "attendeeLimitDescription": "Nombre maximum de participants :",
-      "attendeeLimitNoLimit": "Pas de limite de participants",
+      "attendeeLimit": "nombre maximum de participants",
+      "attendeeLimitDescription": "nombre maximum de participants :",
+      "attendeeLimitNoLimit": "pas de limite de participants",
       "status": {
-        "label": "Statut",
-        "placeholder": "Sélectionner le statut",
-        "active": "Actif",
-        "hidden": "Masqué",
-        "cancelled": "Annulé",
-        "cancelledDescription": "Cette rencontre a été annulée"
+        "label": "statut",
+        "placeholder": "sélectionner le statut",
+        "active": "actif",
+        "hidden": "masqué",
+        "cancelled": "annulé",
+        "cancelledDescription": "cette rencontre a été annulée"
       },
       "buttons": {
-        "cancel": "Annuler",
-        "save": "Enregistrer",
-        "saveTooltip": "Veuillez remplir tous les champs"
+        "cancel": "annuler",
+        "save": "enregistrer",
+        "saveTooltip": "veuillez remplir tous les champs"
       },
-      "success": "Rencontre enregistrée"
+      "success": "rencontre enregistrée"
     }
   },
   "askForName": {
-    "greeting": "salut toi, belle personne.",
+    "greeting": "bonjour!",
     "prompt": "dis-nous ton nom",
     "placeholder": "comment on peut t'appeler ?",
     "submit": "ok"

@@ -8,7 +8,7 @@
     "proof_proof_mole_mop": "프로필",
     "login": "로그인",
     "logout": "로그아웃",
-    "tagline": "모임을 조직하세요. 즐거운 시간을 보내세요."
+    "tagline": "모두를 위한 무료 모임 그룹"
   },
   "LocaleSwitcher": {
     "label": "언어"
@@ -29,8 +29,8 @@
   },
   "metadata": {
     "title": "laundryroom.social 🧺",
-    "description": "사람들을 만나고, 모임을 조직하고, 즐거운 시간을 보내세요",
-    "site_name": "laundryroom.social 🧺 - 모임을 조직하세요. 즐거운 시간을 보내세요."
+    "description": "무료 모임 그룹 찾고 참여하기",
+    "site_name": "laundryroom.social 🧺 - 모두를 위한 무료 모임 그룹"
   },
   "home": {
     "title": "그룹",
@@ -64,7 +64,7 @@
     }
   },
   "askForName": {
-    "greeting": "안녕, 아름다운 사람아.",
+    "greeting": "안녕하세요!",
     "prompt": "이름을 알려줘",
     "placeholder": "뭐라고 불러야 할까?",
     "submit": "ok"
