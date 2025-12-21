@@ -4,11 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@laundryroom/db/client";
 import { Group } from "@laundryroom/db/schema";
 
-import { env } from "../env";
-
-const baseUrl = env.VERCEL_URL
-  ? `https://${env.VERCEL_URL}`
-  : "https://www.laundryroom.social";
+const baseUrl = "https://www.laundryroom.social";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const groups = await db.query.Group.findMany({
