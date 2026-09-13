@@ -4,8 +4,7 @@ import { handleUpload } from "@vercel/blob/client";
 
 import { auth } from "@laundryroom/auth";
 
-// interface ClientPayload {
-// }
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
@@ -14,17 +13,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (_pathname, clientPayload) => {
+      // the client payload is untrusted json from the browser; we deliberately
+      // ignore it and only ever put our own userId into the token payload.
+      onBeforeGenerateToken: async (_pathname, _clientPayload) => {
         const session = await auth();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const payload = JSON.parse(clientPayload ?? "{}"); //as ClientPayload;
 
         if (!session) {
           throw new Error("Unauthorized");
         }
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/gif"],
-          tokenPayload: JSON.stringify({ userId: session.user.id, ...payload }),
+          maximumSizeInBytes: MAX_UPLOAD_BYTES,
+          tokenPayload: JSON.stringify({ userId: session.user.id }),
         };
       },
       onUploadCompleted: async ({ blob: _blob, tokenPayload }) => {

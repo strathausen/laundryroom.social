@@ -6,7 +6,6 @@ import { meetupRouter } from "./router/meetup";
 import { pledgeboardRouter } from "./router/pledgeboard";
 import { profileRouter } from "./router/profile";
 import { promotionRouter } from "./router/promotion";
-import { utilsRouter } from "./router/utils";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
@@ -18,7 +17,6 @@ export const appRouter = createTRPCRouter({
   meetup: meetupRouter,
   pledge: pledgeboardRouter,
   promotion: promotionRouter,
-  utils: utilsRouter,
 });
 
 // export type definition of API

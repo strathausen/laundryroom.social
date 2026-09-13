@@ -28,7 +28,7 @@ export const CookieConsent = () => {
         🍪🍪🍪 this website uses cookies for basic functionality. no tracking.
         no ads. no analytics.{" "}
         <Link
-          href="/pages/privacy-policy"
+          href="/pages/privacy_policy"
           passHref
           className="underline decoration-green-500 decoration-4"
         >

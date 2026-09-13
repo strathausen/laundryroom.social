@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 import { FaHeart } from "react-icons/fa";
 
+import { Link } from "~/i18n/routing";
+
+// keys double as the route segment under /pages/ (e.g. /pages/privacy_policy)
 type FooterLink = "terms" | "imprint" | "privacy_policy" | "roadmap";
 
 export function Footer() {
@@ -20,12 +23,12 @@ export function Footer() {
             ["terms", "imprint", "privacy_policy", "roadmap"] as FooterLink[]
           ).map((link) => (
             <li key={link}>
-              <a
-                href={`/pages/${link.replaceAll("_", " ")}`}
+              <Link
+                href={`/pages/${link}`}
                 className="mr-4 hover:underline hover:decoration-accent md:mr-6"
               >
                 {t(`links.${link}` as const)}
-              </a>
+              </Link>
             </li>
           ))}
           <li>
