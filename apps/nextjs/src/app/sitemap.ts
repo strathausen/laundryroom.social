@@ -4,7 +4,13 @@ import { eq } from "drizzle-orm";
 import { db } from "@laundryroom/db/client";
 import { Group } from "@laundryroom/db/schema";
 
-const baseUrl = "https://www.laundryroom.social";
+import { env } from "~/env";
+
+// Rendered per request: the sitemap reads the database, and a static prerender
+// at build time would need one (the docker image is built without).
+export const dynamic = "force-dynamic";
+
+const baseUrl = env.APP_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const groups = await db.query.Group.findMany({

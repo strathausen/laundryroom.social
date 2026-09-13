@@ -1,12 +1,11 @@
 /* eslint-disable no-restricted-properties */
 import { createEnv } from "@t3-oss/env-nextjs";
-import { vercel } from "@t3-oss/env-nextjs/presets";
 import { z } from "zod";
 
 import { env as authEnv } from "@laundryroom/auth/env";
 
 export const env = createEnv({
-  extends: [authEnv, vercel()],
+  extends: [authEnv],
   shared: {
     NODE_ENV: z
       .enum(["development", "production", "test"])
@@ -17,6 +16,11 @@ export const env = createEnv({
    * This way you can ensure the app isn't built with invalid env vars.
    */
   server: {
+    /** canonical public origin, e.g. https://www.laundryroom.social or http://localhost:3000; a trailing slash is stripped so it can be concatenated */
+    APP_URL: z
+      .string()
+      .url()
+      .transform((url) => url.replace(/\/+$/, "")),
     POSTGRES_URL: z.string().url(),
   },
 
@@ -36,5 +40,7 @@ export const env = createEnv({
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   skipValidation:
-    !!process.env.CI || process.env.npm_lifecycle_event === "lint",
+    !!process.env.CI ||
+    !!process.env.SKIP_ENV_VALIDATION ||
+    process.env.npm_lifecycle_event === "lint",
 });

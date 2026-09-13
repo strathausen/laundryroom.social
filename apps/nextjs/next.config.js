@@ -1,3 +1,4 @@
+import path from "path";
 import { fileURLToPath } from "url";
 import createMDX from "@next/mdx";
 import createJiti from "jiti";
@@ -9,6 +10,16 @@ createJiti(fileURLToPath(import.meta.url))("./src/env");
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+
+  /** Self-contained build for the docker image; lands at .next/standalone/apps/nextjs/server.js */
+  output: "standalone",
+  experimental: {
+    /** trace from the monorepo root so the workspace packages end up in the standalone bundle */
+    outputFileTracingRoot: path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../",
+    ),
+  },
 
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [

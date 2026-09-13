@@ -1,4 +1,0 @@
-{
-  "extends": "@laundryroom/tsconfig/base.json",
-  "include": ["routes"]
-}

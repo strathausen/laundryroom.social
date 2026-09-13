@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Provider as JotaiProvider } from "jotai";
@@ -33,21 +32,13 @@ export async function generateMetadata({
   const t = await getTranslations("metadata");
 
   return {
-    // relative image paths below resolve against this, so preview deployments
-    // must use their own vercel url rather than localhost
-    metadataBase: new URL(
-      env.VERCEL_ENV === "production"
-        ? "https://www.laundryroom.social"
-        : env.VERCEL_URL
-          ? `https://${env.VERCEL_URL}`
-          : "http://localhost:3000",
-    ),
+    metadataBase: new URL(env.APP_URL),
     title: t("title"),
     description: t("description"),
     openGraph: {
       title: t("title"),
       description: t("description"),
-      url: "https://www.laundryroom.social",
+      url: env.APP_URL,
       siteName: t("site_name"),
       images: "/og-default.png",
     },
@@ -86,7 +77,6 @@ export default async function RootLayout(props: {
           GeistMono.variable,
         )}
       >
-        <Analytics />
         {/* for now, only allow the light theme until we have time to look at the dark theme as well */}
         <ThemeProvider
           attribute="class"

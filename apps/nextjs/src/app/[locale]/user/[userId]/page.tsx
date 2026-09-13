@@ -3,8 +3,6 @@ import Image from "next/image";
 import { Link } from "~/i18n/routing";
 import { api, HydrateClient } from "~/trpc/server";
 
-// export const runtime = "edge";
-
 export default async function UserPage({
   params,
 }: {

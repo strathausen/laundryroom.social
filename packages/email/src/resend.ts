@@ -3,8 +3,13 @@ import { Resend } from "resend";
 import { emailTemplates } from "./email-templates";
 import { env } from "./env";
 
-const resend = new Resend(env.RESEND_KEY);
-type Attachments = Parameters<typeof resend.emails.send>[0]["attachments"];
+// Created on first use rather than at import time: the resend sdk throws when
+// the api key is undefined, and `next build` evaluates every route module that
+// (transitively) imports this package while it collects page data, where no
+// key exists (the docker image is built with SKIP_ENV_VALIDATION=1).
+let resend: Resend | undefined;
+const getResend = () => (resend ??= new Resend(env.RESEND_KEY));
+type Attachments = Parameters<Resend["emails"]["send"]>[0]["attachments"];
 
 export async function sendEmail<K extends keyof typeof emailTemplates>(
   to: string,
@@ -16,7 +21,7 @@ export async function sendEmail<K extends keyof typeof emailTemplates>(
   const renderedTemplate = emailTemplates[template](params as any);
   // the resend sdk reports failures (rate limits, 4xx/5xx, network errors)
   // via the result instead of throwing, so surface them to callers
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     to,
     from: "events@laundryroom.social",
     subject: renderedTemplate.subject,

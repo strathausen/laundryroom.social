@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { instructorClient } from "./instructor_client";
+import { getInstructorClient } from "./instructor_client";
 
 enum CLASSIFICATION_LABELS {
   "ok" = "ok",
@@ -31,7 +31,7 @@ const ModerationClassificationSchema = z.object({
 type ModerationClassification = z.infer<typeof ModerationClassificationSchema>;
 
 export async function classify(data: string): Promise<SimpleClassification> {
-  const classification = await instructorClient.chat.completions.create({
+  const classification = await getInstructorClient().chat.completions.create({
     messages: [
       {
         role: "user",
@@ -52,7 +52,7 @@ export async function classify(data: string): Promise<SimpleClassification> {
 export async function classifyModeration(
   data: string,
 ): Promise<ModerationClassification> {
-  const classification = await instructorClient.chat.completions.create({
+  const classification = await getInstructorClient().chat.completions.create({
     messages: [
       {
         role: "user",
@@ -75,6 +75,6 @@ Fuck and shit is fine.
 }
 
 export async function classifyModerationModel(input: string) {
-  const { results } = await instructorClient.moderations.create({ input });
+  const { results } = await getInstructorClient().moderations.create({ input });
   return results[0];
 }

@@ -1,8 +1,6 @@
 import { EditProfileForm } from "~/app/_components/profile-edit";
 import { HydrateClient } from "~/trpc/server";
 
-// export const runtime = "edge";
-
 export default function EditProfilePage() {
   return (
     <HydrateClient>

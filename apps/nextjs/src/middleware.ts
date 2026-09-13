@@ -1,12 +1,12 @@
 import createMiddleware from "next-intl/middleware";
 
-import { auth } from "@laundryroom/auth";
-
 import { routing } from "./i18n/routing";
 
-const i18n = createMiddleware(routing);
-
-export default auth(i18n);
+// Locale negotiation only. Wrapping it in Auth.js' `auth()` pulled the database
+// adapter, and with it node-postgres, into the edge middleware bundle, where
+// `net`/`tls` do not exist; `req.auth` was unused here anyway (next-intl ignores
+// it) and every page and api route resolves the session server-side itself.
+export default createMiddleware(routing);
 
 // Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
