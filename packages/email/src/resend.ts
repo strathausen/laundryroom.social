@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 
+import type { RenderedEmail } from "./email-templates";
 import { emailTemplates } from "./email-templates";
 import { env } from "./env";
 
@@ -18,12 +19,14 @@ export async function sendEmail<K extends keyof typeof emailTemplates>(
   attachments?: Attachments,
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-  const renderedTemplate = emailTemplates[template](params as any);
+  const renderedTemplate: RenderedEmail = emailTemplates[template](
+    params as any,
+  );
   // the resend sdk reports failures (rate limits, 4xx/5xx, network errors)
   // via the result instead of throwing, so surface them to callers
   const { error } = await getResend().emails.send({
     to,
-    from: "events@laundryroom.social",
+    from: renderedTemplate.from ?? "events@laundryroom.social",
     subject: renderedTemplate.subject,
     text: renderedTemplate.body,
     attachments,

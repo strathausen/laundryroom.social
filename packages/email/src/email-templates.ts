@@ -33,7 +33,38 @@ interface MeetupInput {
   };
 }
 
+/**
+ * What a template renders to. `from` is optional: sendEmail falls back to the
+ * shared events sender when a template does not name its own.
+ */
+export interface RenderedEmail {
+  subject: string;
+  body: string;
+  from?: string;
+}
+
 export const emailTemplates = {
+  // sign-in link. confirmUrl is the interstitial page in the app that asks
+  // for a click before the token is consumed (packages/auth builds it), so a
+  // link scanner fetching this url does not sign anyone in
+  magicLink({ confirmUrl }: { confirmUrl: string }): RenderedEmail {
+    return {
+      // its own sender, like the auth.js sign-in mail had: recipients (and
+      // their filters) should not confuse a login link with meetup updates
+      from: "laundryroom sign-in <noreply@laundryroom.social>",
+      subject: "your laundryroom sign-in link",
+      body: `hi there,
+
+someone (hopefully you) asked to sign in to laundryroom.social with this email address. open the link below and press the button on that page to finish signing in:
+
+${confirmUrl}
+
+the link is valid for 15 minutes and works once. if you did not request it, just ignore this email, nothing happens without that click.
+
+see you in the laundryroom!`,
+    };
+  },
+
   eventUpdate({
     isNew,
     group,

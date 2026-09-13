@@ -6,12 +6,17 @@ import { Button } from "@laundryroom/ui/button";
 import { Input } from "@laundryroom/ui/input";
 import { toast } from "@laundryroom/ui/toast";
 
+import { authClient } from "~/auth-client";
 import { api } from "~/trpc/react";
 
 export function DeleteProfile() {
   const deleteProfileMutation = api.auth.deleteMe.useMutation({
-    onSuccess() {
-      window.location.href = "/api/auth/signout";
+    async onSuccess() {
+      // the server already expired the session cookies; signing out here as
+      // well clears the client's session store (it succeeds without a cookie),
+      // and a full reload leaves nothing of the deleted account behind
+      await authClient.signOut();
+      window.location.href = "/";
     },
     onError(error) {
       // e.g. the user still owns groups and has to transfer them first

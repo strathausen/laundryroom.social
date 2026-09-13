@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Edit3, MenuIcon, Trash } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
@@ -15,6 +14,7 @@ import {
 } from "@laundryroom/ui/popover";
 import { toast } from "@laundryroom/ui/toast";
 
+import { authClient } from "~/auth-client";
 import { useDiscussions } from "~/hooks/use-discussions";
 import { DiscussionComments } from "./discussion-comments";
 import { DiscussionForm } from "./discussion-form";
@@ -28,7 +28,7 @@ interface Props {
 }
 
 export function DiscussionPost({ discussion, groupId }: Props) {
-  const session = useSession();
+  const session = authClient.useSession();
   const discussions = useDiscussions({ groupId });
   const [editMode, setEditMode] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);

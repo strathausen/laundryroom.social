@@ -1,22 +1,16 @@
+// `cache` is only typed in react's canary build (next 14 ships against it);
+// nothing in this package's import graph pulls in next's types any more
+/// <reference types="react/canary" />
 import { cache } from "react";
-import NextAuth from "next-auth";
 
-import { authConfig } from "./config";
+import { getSession as uncachedGetSession } from "./index";
 
-export type { Session } from "next-auth";
-
-const { handlers, auth: defaultAuth, signIn, signOut } = NextAuth(authConfig);
+export * from "./index";
 
 /**
- * This is the main way to get session data for your RSCs.
- * This will de-duplicate all calls to next-auth's default `auth()` function and only call it once per request
+ * React server components resolve the session in several places per request
+ * (the locale layout, the group layout, the server-side tRPC caller). `cache`
+ * de-duplicates those calls for the same `headers()` instance, so better-auth
+ * is asked once per request.
  */
-const auth = cache(defaultAuth);
-
-export { handlers, auth, signIn, signOut };
-
-export {
-  invalidateSessionToken,
-  validateToken,
-  isSecureContext,
-} from "./config";
+export const getSession = cache(uncachedGetSession);

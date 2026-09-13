@@ -1,11 +1,11 @@
 import { format } from "date-fns";
 import { Pen } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 
+import { authClient } from "~/auth-client";
 import { Link } from "~/i18n/routing";
 import { MembersCount } from "../members-count";
 import { RsvpSelect } from "../rsvp-select";
@@ -19,7 +19,7 @@ interface Props {
 export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
   const isCancelled = meetup.status === "cancelled";
   const isPast = new Date(meetup.startTime) < new Date();
-  const session = useSession();
+  const session = authClient.useSession();
 
   return (
     <Box

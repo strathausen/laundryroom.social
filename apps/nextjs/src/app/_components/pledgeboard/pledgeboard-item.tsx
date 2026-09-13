@@ -13,13 +13,13 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 import type { RouterOutputs } from "@laundryroom/api";
 import { AutoHeightTextarea } from "@laundryroom/ui/auto-height-textarea";
 import { AutoWidthTextarea } from "@laundryroom/ui/auto-width-textarea";
 import { toast } from "@laundryroom/ui/toast";
 
+import { authClient } from "~/auth-client";
 import { api } from "~/trpc/react";
 
 export type PledgeItemData = NonNullable<
@@ -80,7 +80,7 @@ export function PledgeItem({
   const [description, setDescription] = useState(item.description ?? "");
   const [capacity, setCapacity] = useState(item.capacity);
   const [fulfillments, setFulfillments] = useState(item.fulfillments);
-  const session = useSession();
+  const session = authClient.useSession();
   const currentUserId = session.data?.user.id;
 
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -157,7 +157,7 @@ export function PledgeItem({
               quantity,
               user: {
                 id: currentUserId,
-                name: session.data?.user.name ?? null,
+                name: session.data?.user.name ?? "",
               },
             },
           ];

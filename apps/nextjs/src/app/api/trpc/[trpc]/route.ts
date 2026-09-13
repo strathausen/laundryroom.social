@@ -1,7 +1,7 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 import { appRouter, createTRPCContext } from "@laundryroom/api";
-import { auth } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 
 /**
  * Configure basic CORS headers
@@ -22,14 +22,14 @@ export const OPTIONS = () => {
   return response;
 };
 
-const handler = auth(async (req) => {
+const handler = async (req: Request) => {
   const response = await fetchRequestHandler({
     endpoint: "/api/trpc",
     router: appRouter,
     req,
-    createContext: () =>
+    createContext: async () =>
       createTRPCContext({
-        session: req.auth,
+        session: await getSession(req.headers),
         headers: req.headers,
       }),
     onError({ error, path }) {
@@ -39,6 +39,6 @@ const handler = auth(async (req) => {
 
   setCorsHeaders(response);
   return response;
-});
+};
 
 export { handler as GET, handler as POST };

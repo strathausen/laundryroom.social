@@ -1,8 +1,8 @@
 import { atom, useAtom } from "jotai";
-import { useSession } from "next-auth/react";
 
 import type { RouterInputs, RouterOutputs } from "@laundryroom/api";
 
+import { authClient } from "~/auth-client";
 import { api } from "~/trpc/react";
 
 type Discussion =
@@ -14,7 +14,7 @@ const deletedItemsAtom = atom<string[]>([]);
 type DiscussionInput = RouterInputs["discussion"]["upsert"];
 
 export function useDiscussions({ groupId }: { groupId: string }) {
-  const session = useSession();
+  const session = authClient.useSession();
   const listQuery = api.discussion.byGroupId.useInfiniteQuery(
     { groupId },
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
@@ -26,7 +26,8 @@ export function useDiscussions({ groupId }: { groupId: string }) {
 
   const upsert = async (item: DiscussionInput) => {
     // Temporarily add the new item to the list with a temporary ID
-    if (!session.data?.user) return; // for typescript to be happy
+    const user = session.data?.user;
+    if (!user) return; // for typescript to be happy
     // if the item has an id, it's an update
     let tempId: string | undefined;
     setPostedItems((prev) => {
@@ -47,7 +48,7 @@ export function useDiscussions({ groupId }: { groupId: string }) {
               ...item,
               id: tempId,
               createdAt: new Date().toISOString(),
-              user: { name: null, image: null, ...session.data.user },
+              user: { image: null, ...user },
               commentCount: 0,
             },
             ...groupDiscussions,
@@ -67,7 +68,7 @@ export function useDiscussions({ groupId }: { groupId: string }) {
             ? {
                 ...i,
                 ...newItem,
-                user: { name: null, image: null, ...session.data.user },
+                user: { image: null, ...user },
               }
             : i,
         ) ?? [],

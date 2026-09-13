@@ -24,25 +24,17 @@ pnpm ui-add           # Add shadcn/ui components via interactive CLI
 git push dokku main   # Deploy the web app: dokku builds the root Dockerfile, swaps containers after the app.json healthcheck
 ```
 
-### App-specific commands
-```bash
-# Expo app (in apps/expo/)
-pnpm dev:ios          # Start iOS simulator
-pnpm dev:android      # Start Android emulator
-```
-
 ## Architecture
 
 This is a T3 Turbo monorepo using pnpm workspaces and Turborepo.
 
 ### Apps
 - **apps/nextjs**: Next.js 14 web app with App Router, next-intl for i18n (locales: de, en, es, fr, ro)
-- **apps/expo**: React Native app using Expo SDK 51, Expo Router, NativeWind
 
 ### Packages
 - **@laundryroom/api**: tRPC v11 router (routers: auth, profile, comment, discussion, group, meetup, pledge, promotion)
 - **@laundryroom/db**: Drizzle ORM with Postgres, schema definitions
-- **@laundryroom/auth**: NextAuth.js authentication
+- **@laundryroom/auth**: Better Auth (Google OAuth + email magic links via Resend; exports `auth`, `getSession(headers)`, `Session`). The magic-link email links to the in-app `/auth/confirm` interstitial, not the verify endpoint, so link scanners cannot consume tokens
 - **@laundryroom/ui**: shadcn/ui components
 - **@laundryroom/validators**: Shared Zod schemas
 - **@laundryroom/llm**: OpenAI integration via Instructor
@@ -61,7 +53,7 @@ This is a T3 Turbo monorepo using pnpm workspaces and Turborepo.
 - Database schema is in `packages/db/src/schema.ts` with Drizzle Zod schemas for validation
 - tRPC routers are in `packages/api/src/router/`
 - Next.js uses `[locale]` route segments for i18n
-- The `@laundryroom/api` package is a production dependency in Next.js, dev dependency in Expo (type-safety only)
+- The `@laundryroom/api` package is a production dependency in Next.js
 - Shared validators in `@laundryroom/validators` are used by both API and clients
 - UI copy is all-lowercase english; translations (`apps/nextjs/messages/*.json`) should be informal, casual, friendly, and concise
 - Production is one Docker image on a self-hosted dokku box: root `Dockerfile` (multi-stage on `node:22-bookworm-slim`, `turbo prune` → `pnpm install --frozen-lockfile` → `next build` with `output: "standalone"`), `Procfile` (`web: node apps/nextjs/server.js`) and `app.json` (startup healthcheck on `GET /en`). dokku injects all env vars at runtime; the image build runs with `SKIP_ENV_VALIDATION=1`, so no secret is needed to build. Keep `.nvmrc` and `tooling/github/setup/action.yml` on the same Node major as the image so lint/typecheck/CI exercise what serves traffic

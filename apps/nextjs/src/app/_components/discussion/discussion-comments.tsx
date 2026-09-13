@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ChevronDown, MenuIcon, MessageCircle, Trash } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@laundryroom/ui/button";
@@ -15,6 +14,7 @@ import {
 import { toast } from "@laundryroom/ui/toast";
 import { UserProfile } from "@laundryroom/ui/user-profile";
 
+import { authClient } from "~/auth-client";
 import { useComments } from "~/hooks/use-comments";
 
 export function DiscussionComments({
@@ -24,7 +24,7 @@ export function DiscussionComments({
   discussionId: string;
   commentCount: number;
 }) {
-  const session = useSession();
+  const session = authClient.useSession();
   const [commentContent, setCommentContent] = useState("");
   const {
     addComment,

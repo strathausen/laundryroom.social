@@ -24,6 +24,7 @@
     "clean": "rm -rf .turbo dist node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
+    "migrate:sql": "echo 'hand-written migrations live in migrations/. apply one with: psql -v ON_ERROR_STOP=1 \"$POSTGRES_URL\" -f migrations/<file>.sql'",
     "push": "pnpm with-env drizzle-kit push",
     "studio": "pnpm with-env drizzle-kit studio",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -41,7 +42,7 @@
     "@laundryroom/tsconfig": "workspace:*",
     "@types/pg": "^8.23.1",
     "dotenv-cli": "^7.4.2",
-    "drizzle-kit": "^0.31.0",
+    "drizzle-kit": "^0.31.10",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

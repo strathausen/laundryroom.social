@@ -17,12 +17,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CheckIcon, PencilIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import { toast } from "@laundryroom/ui/toast";
 
+import { authClient } from "~/auth-client";
 import { api } from "~/trpc/react";
 import type { PledgeItemData, SavedPledgeItem } from "./pledgeboard-item";
 import { PledgeItem } from "./pledgeboard-item";
@@ -53,7 +53,7 @@ export default function PledgeBoardWidget({
   const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation({
     onError: (e) => toast.error(e.message),
   });
-  const session = useSession();
+  const session = authClient.useSession();
   const [pledgeItems, setPledgeItems] = useState<PledgeItemData[]>();
   const currentUserId = session.data?.user.id;
   const canPledge =

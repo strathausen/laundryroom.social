@@ -13,9 +13,10 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/app/globals.css";
 
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { auth } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 import { CookieConsent } from "@laundryroom/ui/cookie-consent";
 
 import { env } from "~/env";
@@ -66,7 +67,7 @@ export default async function RootLayout(props: {
   if (!routing.locales.includes(props.params.locale as Locale)) {
     notFound();
   }
-  const session = await auth();
+  const session = await getSession(headers());
   const messages = await getMessages();
   return (
     <html lang={props.params.locale} suppressHydrationWarning>
@@ -85,7 +86,7 @@ export default async function RootLayout(props: {
         >
           <NextIntlClientProvider messages={messages}>
             <JotaiProvider>
-              <NavBar session={session} />
+              <NavBar user={session?.user ?? null} />
               <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-4 print:min-h-0">
                 <TRPCReactProvider>{props.children}</TRPCReactProvider>
                 <div className="mt-4 flex flex-col items-center print:mt-0">

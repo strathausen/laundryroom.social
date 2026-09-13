@@ -19,7 +19,7 @@ export default async function UserPage({
         {user?.image && (
           <Image
             src={user.image}
-            alt={user.name ?? "user profile image"}
+            alt={user.name || "user profile image"}
             width={200}
             height={200}
             className="border-2 border-black"

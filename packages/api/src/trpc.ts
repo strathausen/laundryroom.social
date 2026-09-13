@@ -11,19 +11,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import type { Session } from "@laundryroom/auth";
-import { auth, validateToken } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 import { db } from "@laundryroom/db/client";
-
-/**
- * Isomorphic Session getter for API requests
- * - Expo requests will have a session token in the Authorization header
- * - Next.js requests will have a session token in cookies
- */
-const isomorphicGetSession = async (headers: Headers) => {
-  const authToken = headers.get("Authorization") ?? null;
-  if (authToken) return validateToken(authToken);
-  return auth();
-};
 
 /**
  * 1. CONTEXT
@@ -35,14 +24,17 @@ const isomorphicGetSession = async (headers: Headers) => {
  * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
  * wrap this and provides the required context.
  *
+ * The session is resolved from the request cookies by Better Auth. Callers that
+ * already resolved it for the same request may pass it in to skip the lookup.
+ *
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: {
   headers: Headers;
-  session: Session | null;
+  session?: Session | null;
 }) => {
-  const authToken = opts.headers.get("Authorization") ?? null;
-  const session = await isomorphicGetSession(opts.headers);
+  const session =
+    opts.session === undefined ? await getSession(opts.headers) : opts.session;
 
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(
@@ -55,7 +47,7 @@ export const createTRPCContext = async (opts: {
   return {
     session,
     db,
-    token: authToken,
+    headers: opts.headers,
   };
 };
 

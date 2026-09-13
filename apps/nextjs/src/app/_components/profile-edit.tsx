@@ -20,6 +20,8 @@ import { Switch } from "@laundryroom/ui/switch";
 import { Textarea } from "@laundryroom/ui/textarea";
 import { toast } from "@laundryroom/ui/toast";
 
+import { authClient } from "~/auth-client";
+import { useRouter } from "~/i18n/routing";
 import { api } from "~/trpc/react";
 import { DeleteProfile } from "./profile/delete-profile";
 
@@ -29,6 +31,8 @@ interface Props {
 
 export function EditProfileForm(props: Props) {
   const utils = api.useUtils();
+  const router = useRouter();
+  const session = authClient.useSession();
   const [image, setImage] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
 
@@ -37,6 +41,11 @@ export function EditProfileForm(props: Props) {
     async onSuccess(_data) {
       // form.reset();
       await utils.auth.invalidate(); // Invalidate user cache
+      // better auth caches the user in a cookie for a few minutes; refetching
+      // through the hook rewrites that cookie and updates every useSession()
+      // consumer, and the refresh lets server components re-read the cookie
+      await session.refetch({ query: { disableCookieCache: true } });
+      router.refresh();
       toast.success("Profile updated successfully");
       if (props.onSave) {
         props.onSave();

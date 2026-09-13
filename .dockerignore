@@ -17,7 +17,6 @@ node_modules
 coverage
 .env
 .env.*
-apps/expo
 project.inlang
 **/*.md
 **/.DS_Store

@@ -2,7 +2,7 @@ import type { HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { handleUpload } from "@vercel/blob/client";
 
-import { auth } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -16,7 +16,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       // the client payload is untrusted json from the browser; we deliberately
       // ignore it and only ever put our own userId into the token payload.
       onBeforeGenerateToken: async (_pathname, _clientPayload) => {
-        const session = await auth();
+        const session = await getSession(request.headers);
 
         if (!session) {
           throw new Error("Unauthorized");

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { and, eq, not } from "drizzle-orm";
 
-import { auth } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 import { db } from "@laundryroom/db/client";
 import { Group, GroupMember } from "@laundryroom/db/schema";
 
@@ -52,7 +53,7 @@ export async function generateMetadata({
     // the same response as for a missing group. note that this only keeps the
     // group's details out of link previews and crawler results: group.byId
     // does not gate on status, so non-members can still open the page itself.
-    const session = await auth();
+    const session = await getSession(headers());
     const membership = session?.user
       ? await db.query.GroupMember.findFirst({
           where: and(

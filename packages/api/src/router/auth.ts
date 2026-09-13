@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { invalidateSessionToken } from "@laundryroom/auth";
+import { auth } from "@laundryroom/auth";
 import { and, eq } from "@laundryroom/db";
 import {
   Group,
@@ -20,11 +20,9 @@ export const authRouter = {
   getSession: publicProcedure.query(({ ctx }) => {
     return ctx.session;
   }),
-  signOut: protectedProcedure.mutation(async (opts) => {
-    if (!opts.ctx.token) {
-      return { success: false };
-    }
-    await invalidateSessionToken(opts.ctx.token);
+  signOut: protectedProcedure.mutation(async ({ ctx }) => {
+    // revokes the session row and expires the cookie (via the nextCookies plugin)
+    await auth.api.signOut({ headers: ctx.headers });
     return { success: true };
   }),
   getProfile: protectedProcedure.query(({ ctx }) => {
@@ -42,7 +40,17 @@ export const authRouter = {
     });
   }),
   updateProfile: protectedProcedure
-    .input(UpdateProfileSchema)
+    // allow-list the editable columns: the insert schema also carries id and
+    // createdAt, which must not be settable by the user
+    .input(
+      UpdateProfileSchema.pick({
+        name: true,
+        pronouns: true,
+        links: true,
+        bio: true,
+        image: true,
+      }),
+    )
     .mutation(({ ctx, input }) => {
       const userId = ctx.session.user.id;
       // Ensure links have a protocol
@@ -103,6 +111,11 @@ export const authRouter = {
       });
     }
 
-    return ctx.db.delete(User).where(eq(User.id, userId));
+    await ctx.db.delete(User).where(eq(User.id, userId));
+    // the session rows are gone by cascade, but the browser still holds the
+    // session cookies (and the signed cookie cache, good for 5 minutes without
+    // a db lookup); sign-out expires them even when the row no longer exists
+    await auth.api.signOut({ headers: ctx.headers });
+    return { success: true };
   }),
 } satisfies TRPCRouterRecord;

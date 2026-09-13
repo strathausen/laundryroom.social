@@ -4,7 +4,7 @@ import { createHydrationHelpers } from "@trpc/react-query/rsc";
 
 import type { AppRouter } from "@laundryroom/api";
 import { createCaller, createTRPCContext } from "@laundryroom/api";
-import { auth } from "@laundryroom/auth";
+import { getSession } from "@laundryroom/auth";
 
 import { createQueryClient } from "./query-client";
 
@@ -17,7 +17,8 @@ const createContext = cache(async () => {
   heads.set("x-trpc-source", "rsc");
 
   return createTRPCContext({
-    session: await auth(),
+    // same headers() instance as the layouts, so the request-cached lookup is shared
+    session: await getSession(headers()),
     headers: heads,
   });
 });
