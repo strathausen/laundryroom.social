@@ -72,6 +72,11 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/no-non-null-assertion": "error",
+      // typescript-eslint 8 stable defaults ignoreTernaryTests to false (the rc-v8 alpha did not); keep pre-existing `a ? a : b` ternaries lint-clean
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        { ignoreTernaryTests: true },
+      ],
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
     },
   },

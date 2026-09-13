@@ -24,8 +24,8 @@ RUN npm install -g pnpm@9.6.0
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-# same version as the root devDependency (turbo ^2.5.0 resolves to 2.5.0 in the lockfile)
-RUN pnpm dlx turbo@2.5.0 prune @laundryroom/nextjs --docker
+# same version as the root devDependency (turbo ^2.10.12 resolves to 2.10.12 in the lockfile)
+RUN pnpm dlx turbo@2.10.12 prune @laundryroom/nextjs --docker
 
 # ---------------------------------------------------------------------------
 # builder: install from the pruned lockfile, build the workspace packages, build next
