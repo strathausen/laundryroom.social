@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 "use client";
 
 import { useState } from "react";
@@ -16,44 +15,63 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
+import type { RouterOutputs } from "@laundryroom/api";
 import { AutoHeightTextarea } from "@laundryroom/ui/auto-height-textarea";
 import { AutoWidthTextarea } from "@laundryroom/ui/auto-width-textarea";
+import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 
-// TODO use router outputs type instead
-interface PledgeItemData {
+export type PledgeItemData = NonNullable<
+  RouterOutputs["pledge"]["getPledgeBoard"]
+>["pledges"][number] & {
+  /** item was added locally and not saved to the server yet */
+  isNew?: boolean;
+};
+
+/** what the server knows about an item after it was saved */
+export interface SavedPledgeItem {
   id: string;
   title: string;
-  description: string | null;
+  description: string;
   capacity: number;
-  fulfillments: {
-    quantity: number;
-    user: { id: string; name: string | null; email: string };
-  }[];
-  isNew?: boolean;
 }
+
+// keep in sync with the bounds enforced by the pledge router
+const MAX_QUANTITY = 999;
+const clampQuantity = (n: number) => Math.min(Math.max(n, 0), MAX_QUANTITY);
 
 interface PledgeItemProps {
   item: PledgeItemData;
   isAdmin: boolean;
+  /** the viewer has rsvp'd "going" and may pledge */
+  canPledge: boolean;
   pledgeBoardId: string;
   sortOrder: number;
   disabled?: boolean;
   onDelete?: () => void;
+  onSaved?: (saved: SavedPledgeItem) => void;
 }
 
 export function PledgeItem({
   item,
   isAdmin,
+  canPledge,
   pledgeBoardId,
   sortOrder,
   onDelete,
+  onSaved,
   disabled,
 }: PledgeItemProps) {
-  const upsertPledgeMutation = api.pledge.upsertPledge.useMutation();
-  const deletePledgeMutation = api.pledge.deletePledge.useMutation();
-  const fulfillmentMutation = api.pledge.setFulfillment.useMutation();
+  const upsertPledgeMutation = api.pledge.upsertPledge.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
+  const deletePledgeMutation = api.pledge.deletePledge.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
+  const fulfillmentMutation = api.pledge.setFulfillment.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
   const [editMode, setEditMode] = useState(!!item.isNew);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isNew, setIsNew] = useState(item.isNew);
@@ -82,72 +100,85 @@ export function PledgeItem({
   };
 
   const handleEdit = async () => {
-    const res = await upsertPledgeMutation.mutateAsync({
-      id: isNew ? undefined : id,
-      title,
-      description,
-      capacity,
-      pledgeBoardId,
-      sortOrder,
-    });
-    if (isNew && res) {
-      setId(res.id);
-      setIsNew(false);
+    try {
+      const res = await upsertPledgeMutation.mutateAsync({
+        id: isNew ? undefined : id,
+        title,
+        description,
+        capacity,
+        pledgeBoardId,
+        sortOrder,
+      });
+      if (isNew) {
+        setId(res.id);
+        setIsNew(false);
+      }
+      setEditMode(false);
+      onSaved?.({ id: res.id, title, description, capacity });
+    } catch {
+      // the mutation's onError already showed a toast; stay in edit mode so nothing is lost
     }
-    setEditMode(false);
   };
 
   const handleDelete = async () => {
-    if (isNew) {
-      onDelete?.();
-    } else {
-      await deletePledgeMutation.mutateAsync(id);
-      onDelete?.();
+    if (!isNew) {
+      try {
+        await deletePledgeMutation.mutateAsync(id);
+      } catch {
+        // the mutation's onError already showed a toast; keep the item
+        return;
+      }
     }
+    onDelete?.();
   };
 
-  const handlePledge = async (quantity: number) => {
-    const myFulfillment = fulfillments.find(
-      (fulfillment) => fulfillment.user.id === currentUserId,
-    );
-    if (myFulfillment) {
-      quantity += myFulfillment.quantity;
-      quantity = Math.max(quantity, 0);
-    } else if (quantity < 0) {
-      return;
-    }
+  const handlePledge = async (delta: number) => {
+    if (!currentUserId) return;
+    const myQuantity =
+      fulfillments.find((fulfillment) => fulfillment.user.id === currentUserId)
+        ?.quantity ?? 0;
+    const quantity = clampQuantity(myQuantity + delta);
+    if (quantity === myQuantity) return;
+    const previous = fulfillments;
+    // optimistic update, rolled back below if the server rejects the pledge
     setFulfillments((prev) => {
-      const newFulfillments = prev.map((fulfillment) => {
-        if (fulfillment.user.id === currentUserId) {
-          return { ...fulfillment, quantity };
-        }
-        return fulfillment;
-      });
-      const fulfillmentExists = newFulfillments.some(
+      const mine = prev.some(
         (fulfillment) => fulfillment.user.id === currentUserId,
       );
-      if (!fulfillmentExists) {
-        newFulfillments.push({
-          quantity,
-          user: {
-            id: currentUserId!,
-            name: session.data!.user.name!,
-            email: session.data!.user.email!,
-          },
-        });
-      }
-      return newFulfillments;
+      const next = mine
+        ? prev.map((fulfillment) =>
+            fulfillment.user.id === currentUserId
+              ? { ...fulfillment, quantity }
+              : fulfillment,
+          )
+        : [
+            ...prev,
+            {
+              quantity,
+              user: {
+                id: currentUserId,
+                name: session.data?.user.name ?? null,
+              },
+            },
+          ];
+      return next.filter((fulfillment) => fulfillment.quantity > 0);
     });
-    await fulfillmentMutation.mutateAsync({
-      pledgeId: id,
-      quantity,
-    });
+    try {
+      await fulfillmentMutation.mutateAsync({ pledgeId: id, quantity });
+    } catch {
+      setFulfillments(previous);
+    }
   };
 
   const pledgedAmount = fulfillments.reduce(
     (acc, fulfillment) => acc + fulfillment.quantity,
     0,
   );
+  const pledgeDisabled =
+    Boolean(isNew) ||
+    Boolean(disabled) ||
+    !canPledge ||
+    fulfillmentMutation.isPending;
 
   return (
     <div
@@ -169,6 +200,7 @@ export function PledgeItem({
               className="w-full border-b border-[#f0f] text-xl font-bold"
               placeholder="what do you need?"
               value={title}
+              maxLength={255}
               onChange={(e) => {
                 setTitle(e.target.value);
               }}
@@ -206,7 +238,8 @@ export function PledgeItem({
             <AutoWidthTextarea
               className={`${editMode ? "border-[#f0f] bg-white" : "border-transparent bg-transparent"} -mr-[4px] border-b pl-[2px] outline-none`}
               onChange={(v) => {
-                setCapacity(v ? parseInt(v, 10) : 0);
+                const parsed = parseInt(v, 10);
+                setCapacity(Number.isNaN(parsed) ? 0 : clampQuantity(parsed));
               }}
               value={capacity.toString()}
               readonly={!editMode}
@@ -216,10 +249,10 @@ export function PledgeItem({
                     await handleEdit();
                     break;
                   case "ArrowUp":
-                    setCapacity((prev) => prev + 1);
+                    setCapacity((prev) => clampQuantity(prev + 1));
                     break;
                   case "ArrowDown":
-                    setCapacity((prev) => Math.max(prev - 1, 1));
+                    setCapacity((prev) => clampQuantity(prev - 1));
                     break;
                 }
               }}
@@ -229,15 +262,21 @@ export function PledgeItem({
             <>
               <button
                 onClick={async () => {
-                  if (editMode) await handleEdit();
-                  setEditMode(!editMode);
+                  if (editMode) {
+                    // leaves edit mode only when the save succeeded
+                    await handleEdit();
+                  } else {
+                    setEditMode(true);
+                  }
                 }}
-                className={`${editMode ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"} p-1 text-white transition-colors duration-300`}
+                disabled={upsertPledgeMutation.isPending}
+                className={`${editMode ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"} p-1 text-white transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {editMode ? <CheckIcon size={20} /> : <Edit2 size={20} />}
               </button>
               <button
                 onClick={handleDelete}
+                disabled={deletePledgeMutation.isPending}
                 className="bg-red-500 p-1 text-white transition-colors duration-300 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Trash2 size={20} />
@@ -254,7 +293,7 @@ export function PledgeItem({
       </div>
       {isExpanded && (
         <div className="space-y-2 p-4">
-          <h4 className="font-bold">Pledgers:</h4>
+          <h4 className="font-bold">pledgers:</h4>
           <ul className="list-inside list-disc">
             {fulfillments.map((pledger) => (
               <li
@@ -269,17 +308,22 @@ export function PledgeItem({
             <button
               onClick={() => handlePledge(1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isNew ?? disabled}
+              disabled={pledgeDisabled}
             >
               <Plus size={20} />
             </button>
             <button
               onClick={() => handlePledge(-1)}
               className="border-2 border-black bg-black p-2 text-white transition-colors duration-300 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isNew ?? disabled}
+              disabled={pledgeDisabled}
             >
               <Minus size={20} />
             </button>
+            {!canPledge && !disabled && (
+              <span className="text-sm text-gray-600">
+                rsvp &quot;going&quot; to pledge
+              </span>
+            )}
           </div>
         </div>
       )}

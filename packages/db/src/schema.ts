@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -579,20 +580,35 @@ export const Pledge = pgTable("pledge", {
     .notNull(),
 });
 
-export const PledgeFulfillment = pgTable("pledge_fulfillment", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  pledgeId: uuid("pledge_id")
-    .notNull()
-    .references(() => Pledge.id, { onDelete: "cascade" }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => User.id, { onDelete: "cascade" }),
-  quantity: integer("quantity").default(1).notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
-    .$onUpdateFn(() => new Date())
-    .notNull(),
-});
+export const PledgeFulfillment = pgTable(
+  "pledge_fulfillment",
+  {
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    pledgeId: uuid("pledge_id")
+      .notNull()
+      .references(() => Pledge.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => User.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").default(1).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .$onUpdateFn(() => new Date())
+      .notNull(),
+  },
+  // one fulfillment row per user and pledge. pledgeboard.setFulfillment
+  // upserts on this index, so it has to exist before that code is deployed:
+  // there are no migration files, only `pnpm db:push`, and the push fails
+  // while legacy duplicate (pledge_id, user_id) rows exist. find them with
+  //   SELECT pledge_id, user_id, count(*) FROM pledge_fulfillment
+  //   GROUP BY 1, 2 HAVING count(*) > 1
+  // and delete all but one row per pair first
+  (t) => [
+    uniqueIndex("pledge_fulfillment_pledge_user_idx").on(t.pledgeId, t.userId),
+  ],
+);
 
 export const UpsertPledgeBoardSchema = createInsertSchema(PledgeBoard, {
   id: z.string().optional(),

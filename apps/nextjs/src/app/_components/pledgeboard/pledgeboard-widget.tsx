@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
+import type { DragEndEvent } from "@dnd-kit/core";
 import React, { useEffect, useState } from "react";
 import {
   closestCenter,
@@ -22,21 +21,11 @@ import { useSession } from "next-auth/react";
 
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
+import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
+import type { PledgeItemData, SavedPledgeItem } from "./pledgeboard-item";
 import { PledgeItem } from "./pledgeboard-item";
-
-interface PledgeItemData {
-  id: string;
-  title: string;
-  description: string | null;
-  capacity: number;
-  fulfillments: {
-    quantity: number;
-    user: { id: string; name: string | null; email: string };
-  }[];
-  isNew?: boolean;
-}
 
 interface PledgeboardProps {
   meetupId: string;
@@ -49,15 +38,27 @@ export default function PledgeBoardWidget({
   meetupId,
   disabled,
 }: PledgeboardProps) {
+  const utils = api.useUtils();
   const getPledgeboardQuery = api.pledge.getPledgeBoard.useQuery({ meetupId });
-  const reorderPledgesMutation = api.pledge.reorderPledges.useMutation();
+  // same query as the meetup page (deduped by react query). its attendees are
+  // server-filtered to "going" rsvps and RsvpSelect invalidates it after every
+  // rsvp change, so this stays in sync with the viewer's current rsvp.
+  const meetupQuery = api.meetup.byId.useQuery({ id: meetupId });
+  const reorderPledgesMutation = api.pledge.reorderPledges.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation();
+  const upsertPedgeboardQuery = api.pledge.upsertPledgeBoard.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
   const session = useSession();
   const [pledgeItems, setPledgeItems] = useState<PledgeItemData[]>();
   const currentUserId = session.data?.user.id;
+  const canPledge =
+    meetupQuery.data?.attendees.some((attendee) => attendee.isCurrentUser) ??
+    false;
 
   useEffect(() => {
     if (getPledgeboardQuery.data) {
@@ -82,11 +83,10 @@ export default function PledgeBoardWidget({
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
+    if (over && active.id !== over.id) {
       setPledgeItems((items) => {
         if (!items) return [];
         const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -95,7 +95,10 @@ export default function PledgeBoardWidget({
         if (getPledgeboardQuery.data?.id)
           reorderPledgesMutation.mutate({
             pledgeBoardId: getPledgeboardQuery.data.id,
-            sorting: newItems.map((item) => item.id),
+            // unsaved items only exist locally and have no server id yet
+            sorting: newItems
+              .filter((item) => !item.isNew)
+              .map((item) => item.id),
           });
         return newItems;
       });
@@ -106,13 +109,34 @@ export default function PledgeBoardWidget({
     setPledgeItems((items) => items?.filter((item) => item.id !== itemId));
   };
 
+  // keep the list in sync with what the item saved, so a freshly created item
+  // gets its real id (used as sortable id) instead of the temporary local one
+  const handleSaved = (localId: string, saved: SavedPledgeItem) => {
+    setPledgeItems((items) =>
+      items?.map((item) =>
+        item.id === localId ? { ...item, ...saved, isNew: false } : item,
+      ),
+    );
+  };
+
   const handleEdit = async () => {
-    await upsertPedgeboardQuery.mutateAsync({
-      meetupId,
-      title,
-      description,
-    });
-    setEditMode(false);
+    try {
+      const { id } = await upsertPedgeboardQuery.mutateAsync({
+        meetupId,
+        title,
+        description,
+      });
+      setEditMode(false);
+      // the item list and the "add new item" button are gated on the board id
+      // from the query cache, so a freshly created board needs a refetch right
+      // away. plain title edits skip it: a refetch would reset the local item
+      // list and drop items that were added but not saved yet.
+      if (getPledgeboardQuery.data?.id !== id) {
+        await utils.pledge.getPledgeBoard.invalidate({ meetupId });
+      }
+    } catch {
+      // the mutation's onError already showed a toast; stay in edit mode
+    }
   };
 
   // for non admin users, don't show the pledgeboard if it doesn't exist
@@ -172,9 +196,14 @@ export default function PledgeBoardWidget({
           >
             <button
               onClick={async () => {
-                if (editMode) await handleEdit();
-                setEditMode(!editMode);
+                if (editMode) {
+                  // leaves edit mode only when the save succeeded
+                  await handleEdit();
+                } else {
+                  setEditMode(true);
+                }
               }}
+              disabled={upsertPedgeboardQuery.isPending}
             >
               {editMode ? (
                 <CheckIcon className="h-4 w-4" />
@@ -202,9 +231,11 @@ export default function PledgeBoardWidget({
                     key={item.id}
                     item={item}
                     isAdmin={isAdmin}
+                    canPledge={canPledge}
                     sortOrder={i + 1}
                     pledgeBoardId={pledgeBoardId}
                     onDelete={() => handleDelete(item.id)}
+                    onSaved={(saved) => handleSaved(item.id, saved)}
                     disabled={disabled}
                   />
                 ))}
@@ -230,7 +261,7 @@ export default function PledgeBoardWidget({
               }
               variant={"ghost"}
             >
-              Add New Item
+              add new item
             </Button>
           </div>
         )}
