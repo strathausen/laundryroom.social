@@ -12,22 +12,22 @@ This is a [Turborepo](https://turborepo.org) monorepo (pnpm workspaces), origina
 
 - **Web**: Next.js 14 (App Router), React 18, Tailwind CSS, [next-intl](https://next-intl.dev) for i18n (`de`, `en`, `es`, `fr`, `ro`)
 - **API**: tRPC v11, end-to-end typesafe between server and clients
-- **Database**: Postgres on Supabase via Drizzle ORM and the Vercel Postgres driver
+- **Database**: Postgres via Drizzle ORM (the dokku postgres plugin in production, any Postgres url such as Neon locally)
 - **Auth**: Auth.js (NextAuth) with Google OAuth and email magic links (Resend)
-- **Storage**: Vercel Blob for group and profile images
+- **Storage**: Vercel Blob for group and profile images (only needs `BLOB_READ_WRITE_TOKEN`)
+- **Hosting**: one Docker image on a self-hosted [dokku](https://dokku.com) box, see [Deployment](#deployment)
 - **LLM**: OpenAI via Instructor for content moderation and search text
 - **Mobile**: Expo SDK 51 / Expo Router / NativeWind (work in progress)
 
 ```text
 apps
-  ├─ auth-proxy   Nitro server that proxies OAuth requests in preview deployments
   ├─ expo         React Native app (Expo Router, NativeWind, tRPC client)
   └─ nextjs       the web app (Next.js 14, App Router, next-intl, tRPC server)
 packages
   ├─ api          tRPC v11 routers (auth, profile, group, meetup, pledge, ...)
   ├─ auth         Auth.js configuration and session helpers
   ├─ calendar     ical / calendar helpers
-  ├─ db           Drizzle schema + client (Postgres / Supabase)
+  ├─ db           Drizzle schema + client (Postgres)
   ├─ email        transactional email via Resend
   ├─ llm          OpenAI + Instructor helpers
   ├─ ui           shadcn/ui based component library
@@ -37,6 +37,9 @@ tooling
   ├─ prettier     shared prettier config
   ├─ tailwind     shared tailwind config
   └─ typescript   shared tsconfig
+Dockerfile        multi-stage image dokku builds on push (turbo prune → next build, standalone output)
+Procfile          `web: node apps/nextjs/server.js`
+app.json          dokku startup healthcheck (GET /en) for zero-downtime deploys
 ```
 
 All day-to-day commands (`pnpm dev`, `pnpm check`, `pnpm db:push`, ...) and the architecture notes live in [CLAUDE.md](./CLAUDE.md).
@@ -44,7 +47,7 @@ All day-to-day commands (`pnpm dev`, `pnpm check`, `pnpm db:push`, ...) and the 
 ## Quick Start
 
 > **Note**
-> The [db](./packages/db) package is preconfigured to use Supabase with the [Vercel Postgres](https://github.com/vercel/storage/tree/main/packages/postgres) driver. If you're using something else, adjust the [schema](./packages/db/src/schema.ts), the [client](./packages/db/src/client.ts) and the [drizzle config](./packages/db/drizzle.config.ts).
+> The [db](./packages/db) package talks to whatever Postgres `POSTGRES_URL` points at: a hosted dev database such as Neon locally (with `?sslmode=verify-full`), the dokku postgres plugin in production. If you use something more exotic, adjust the [client](./packages/db/src/client.ts) and the [drizzle config](./packages/db/drizzle.config.ts).
 
 ### 1. Setup dependencies
 
@@ -93,17 +96,10 @@ Environment variables are loaded from the root `.env` by the per-package `with-e
 
 ### 3. Configuring Auth.js to work with Expo
 
-In order to get Auth.js to work with Expo, you must either:
+OAuth providers need a callback url they can reach. Two options:
 
-#### Deploy the Auth Proxy (RECOMMENDED)
-
-In [apps/auth-proxy](./apps/auth-proxy) you can find a Nitro server that proxies OAuth requests. By deploying this and setting the `AUTH_REDIRECT_PROXY_URL` environment variable to the URL of this proxy, you can get OAuth working in preview deployments and development for Expo apps. See more deployment instructions in the [auth proxy README](./apps/auth-proxy/README.md).
-
-By using the proxy server, the Next.js app will forward any auth requests to the proxy server, which will handle the OAuth flow and then redirect back to the Next.js app. This gives you a stable, publicly accessible URL that doesn't change for every deployment and doesn't depend on which port the app is running on.
-
-#### Add your local IP to your OAuth provider
-
-You can alternatively add your local IP (e.g. `192.168.x.y:$PORT`) to your OAuth provider. This may not be as reliable as your local IP may change when you change networks. Some OAuth providers may also only support a single callback URL for each app making this approach unviable for some providers (e.g. GitHub).
+- Point the Expo app at the deployed web app (`https://www.laundryroom.social`) and register `https://www.laundryroom.social/api/auth/callback/google` with your OAuth provider. This is what production does.
+- For local development, add your local IP (e.g. `192.168.x.y:$PORT`) to your OAuth provider. This may not be as reliable as your local IP may change when you change networks. Some OAuth providers may also only support a single callback URL for each app making this approach unviable for some providers (e.g. GitHub).
 
 ### 4a. When it's time to add a new UI component
 
@@ -123,29 +119,89 @@ The generator sets up the `package.json`, `tsconfig.json` and a `index.ts`, as w
 
 ## Deployment
 
-### Next.js
+### Web app (dokku)
+
+Production is one container on a self-hosted [dokku](https://dokku.com) box. On every push dokku builds the root [Dockerfile](./Dockerfile) (multi-stage: `turbo prune` → `pnpm install --frozen-lockfile` → `next build` with `output: "standalone"`), starts it from the [Procfile](./Procfile) (`web: node apps/nextjs/server.js`) and only routes traffic to the new container once the startup healthcheck in [app.json](./app.json) (`GET /en` on port 3000) passes. Postgres comes from the [dokku postgres plugin](https://github.com/dokku/dokku-postgres), image uploads stay on Vercel Blob (the token is all it needs). No secret is baked into the image; the build runs with `SKIP_ENV_VALIDATION=1` and everything is injected by dokku at runtime.
 
 > **Note**
-> The Next.js application with tRPC must be deployed in order for the Expo app to communicate with the server in a production environment.
+> The Expo app talks to this deployment's `/api/trpc`, so the web app has to be up before the mobile app is useful in production.
 
-The web app is deployed on [Vercel](https://vercel.com). If you've never deployed a Turborepo app there, the [official Turborepo guide](https://vercel.com/docs/concepts/monorepos/turborepo) covers the details.
+#### One-time setup on the server
 
-1. Create a new project on Vercel, select the `apps/nextjs` folder as the root directory. Vercel's zero-config system should handle all configurations for you.
+```bash
+# postgres, letsencrypt and redirect are plugins, not part of core dokku: install them once, as root
+sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --name postgres
+sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+sudo dokku plugin:install https://github.com/dokku/dokku-redirect.git
+sudo dokku letsencrypt:cron-job --add   # certificate auto-renewal
 
-2. Add the environment variables from [.env.example](./.env.example) (at minimum `POSTGRES_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `RESEND_KEY`, `BLOB_READ_WRITE_TOKEN`).
+dokku apps:create laundryroom
+dokku postgres:create laundryroom-db --image-version 18
+# injects POSTGRES_URL=postgres://postgres:<pw>@dokku-postgres-laundryroom-db:5432/laundryroom_db (no ssl, docker network only)
+dokku postgres:link laundryroom-db laundryroom --alias POSTGRES
+# the Dockerfile EXPOSEs 3000; without this dokku would proxy public port 3000 instead of 80
+dokku ports:set laundryroom http:80:3000
+# both hosts, so the certificate covers the apex too; www is the only origin the app serves (see redirect:set below)
+dokku domains:set laundryroom www.laundryroom.social laundryroom.social
+dokku config:set laundryroom \
+  APP_URL=https://www.laundryroom.social \
+  AUTH_URL=https://www.laundryroom.social \
+  AUTH_SECRET="$(openssl rand -base64 32)" \
+  AUTH_GOOGLE_ID=... \
+  AUTH_GOOGLE_SECRET=... \
+  RESEND_KEY=... \
+  OPENAI_API_KEY=... \
+  BLOB_READ_WRITE_TOKEN=...
+dokku letsencrypt:set laundryroom email you@example.com
+dokku letsencrypt:enable laundryroom   # adds the https:443:3000 mapping
+# 301 the apex to www at the nginx layer (http and https). Auth.js rewrites every auth request
+# to AUTH_URL, so a sign-in started on the apex would set its state/pkce cookies on the apex and
+# lose them on the www callback ("pkce/state cookie was missing"); a session cookie issued on
+# one host is invisible on the other. Set it after letsencrypt:enable so the first issuance
+# never depends on the redirect; renewals follow it fine.
+dokku redirect:set laundryroom laundryroom.social www.laundryroom.social
+```
 
-3. Done! Your app should successfully deploy. Assign your domain and use that instead of `localhost` for the `url` in the Expo app so that your Expo app can communicate with your backend when you are not in development.
+Required config vars (what each one does is documented in [.env.example](./.env.example)): `POSTGRES_URL` (set by `postgres:link`), `APP_URL`, `AUTH_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `RESEND_KEY`, `OPENAI_API_KEY` and `BLOB_READ_WRITE_TOKEN`. Already covered, nothing to set: `NODE_ENV=production` is baked into the image, `AUTH_TRUST_HOST` is optional because `trustHost: true` is hardcoded in [packages/auth/src/config.ts](./packages/auth/src/config.ts), and `PORT` is derived by dokku from the port mapping. Register only `https://www.laundryroom.social/api/auth/callback/google` with Google; the apex redirects to www before Auth.js ever sees a request.
 
-### Auth Proxy
+#### Deploying
 
-The auth proxy is a Nitro server that proxies OAuth requests in preview deployments. This is required for the Next.js app to be able to authenticate users in preview deployments. The auth proxy is not used for OAuth requests in production deployments. To get it running, it's easiest to use Vercel Edge functions. See the [Nitro docs](https://nitro.unjs.io/deploy/providers/vercel#vercel-edge-functions) for how to deploy Nitro to Vercel.
+```bash
+git remote add dokku dokku@<your-host>:laundryroom   # once
+git push dokku main
+```
 
-Then, there are some environment variables you need to set in order to get OAuth working:
+`dokku logs laundryroom -t` tails the app, `dokku ps:report laundryroom` shows the running container and `dokku checks:run laundryroom` re-runs the healthcheck by hand.
 
-- For the Next.js app, set `AUTH_REDIRECT_PROXY_URL` to the URL of the auth proxy.
-- For the auth proxy server, set `AUTH_REDIRECT_PROXY_URL` to the same as above, as well as the OAuth client id and secret for your provider(s). Lastly, set `AUTH_SECRET` **to the same value as in the Next.js app** for preview environments.
+#### Schema changes
 
-Read more about the setup in [the auth proxy README](./apps/auth-proxy/README.md).
+The image only contains the built app, not drizzle-kit, so schema pushes run from your laptop against the dokku database. Either expose the postgres container on the host for a moment or tunnel to it over ssh, then point `pnpm db:push` at it (an inline `POSTGRES_URL` wins over the one in `.env`).
+
+```bash
+# credentials (user, password, database name)
+ssh dokku@<your-host> postgres:info laundryroom-db --dsn
+
+# option a: expose it on a host port, push, unexpose again
+ssh dokku@<your-host> postgres:expose laundryroom-db 5433
+POSTGRES_URL='postgres://postgres:<pw>@<your-host>:5433/laundryroom_db' pnpm db:push
+ssh dokku@<your-host> postgres:unexpose laundryroom-db
+
+# option b: ssh tunnel straight to the service container, no public port at all
+ssh -N -L 5433:$(ssh dokku@<your-host> postgres:info laundryroom-db --internal-ip):5432 root@<your-host> &
+POSTGRES_URL='postgres://postgres:<pw>@localhost:5433/laundryroom_db' pnpm db:push
+```
+
+#### Backups
+
+```bash
+# s3 (or s3-compatible) credentials for the backup jobs; region, signature version and
+# endpoint are only needed for non-default regions or non-aws stores
+dokku postgres:backup-auth laundryroom-db <aws-access-key-id> <aws-secret-access-key> [<region> <signature-version> <endpoint-url>]
+dokku postgres:backup-schedule laundryroom-db "0 3 * * *" <bucket-name>   # nightly at 03:00
+dokku postgres:backup-schedule-cat laundryroom-db                          # shows the cron entry
+dokku postgres:backup laundryroom-db <bucket-name>                         # one-off backup
+dokku postgres:export laundryroom-db > laundryroom.dump                    # ad-hoc dump, restore with postgres:import
+```
 
 ### Expo
 

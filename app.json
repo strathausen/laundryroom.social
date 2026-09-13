@@ -1,0 +1,16 @@
+{
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "name": "web",
+        "description": "the english landing page renders before traffic is switched to the new container",
+        "path": "/en",
+        "port": 3000,
+        "attempts": 12,
+        "wait": 5,
+        "timeout": 10
+      }
+    ]
+  }
+}

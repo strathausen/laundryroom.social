@@ -1,0 +1,25 @@
+# Keeps the build context small: the pruner stage (turbo prune) only needs the
+# sources, the package manifests and the lockfile. Never ship local env files,
+# git history or build output into the image.
+.git
+.github
+.vscode
+.claude
+.cursorrules
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+**/dist
+**/*.tsbuildinfo
+coverage
+.env
+.env.*
+apps/expo
+project.inlang
+**/*.md
+**/.DS_Store
+Dockerfile
+.dockerignore
