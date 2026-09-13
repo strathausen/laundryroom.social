@@ -1,7 +1,18 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, gt, ilike, inArray, not, sql } from "@laundryroom/db";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  not,
+  sql,
+} from "@laundryroom/db";
 import {
   Attendee,
   Group,
@@ -15,6 +26,14 @@ import { sendEmail } from "@laundryroom/email";
 import { classify } from "@laundryroom/llm";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
+
+type ModerationStatus = NonNullable<typeof Group.$inferSelect.moderationStatus>;
+/** statuses assigned by moderation that an edit must not reset */
+const manualModerationStatuses: ModerationStatus[] = [
+  "rejected",
+  "review",
+  "reported",
+];
 
 export const groupRouter = {
   search: publicProcedure
@@ -236,6 +255,17 @@ export const groupRouter = {
           throw new Error("Not authorized");
         }
 
+        // a manual moderation decision (or a pending review) must not be
+        // clobbered by re-classifying on every edit; keep the stored status.
+        // note: the short-code backfill below needs a classification run, so
+        // groups in one of these statuses are not backfilled here
+        if (
+          membership.group.moderationStatus &&
+          manualModerationStatuses.includes(membership.group.moderationStatus)
+        ) {
+          return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
+        }
+
         const data = await classifyAndUpdate(input);
         // if the group has no short code, create one, only for old groups, could be removed in the future
         if (!membership.group.shortCodes.length) {
@@ -316,31 +346,74 @@ export const groupRouter = {
       const userId = ctx.session.user.id;
       const { groupId } = input;
 
-      await ctx.db.insert(GroupMember).values({
-        groupId,
-        userId,
-        role: "member",
+      const group = await ctx.db.query.Group.findFirst({
+        columns: { id: true, status: true },
+        where: eq(Group.id, groupId),
       });
+      if (!group) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "group not found" });
+      }
+      if (group.status === "archived") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "this group is archived",
+        });
+      }
 
-      const ownerMembership = await ctx.db.query.GroupMember.findFirst({
+      const existingMembership = await ctx.db.query.GroupMember.findFirst({
         where: and(
           eq(GroupMember.groupId, groupId),
-          eq(GroupMember.role, "owner"),
+          eq(GroupMember.userId, userId),
         ),
-        with: {
-          user: { columns: { id: true, email: true, name: true } },
-          group: { columns: { id: true, name: true } },
-        },
       });
+      // already a member: nothing to do. this also covers banned users, who
+      // must keep their ban row - and must not learn that they are banned
+      if (existingMembership) {
+        return { success: true };
+      }
 
-      // Ideally this should not happen, we need to find a way to handle this
-      if (!ownerMembership) throw new Error("Group has no owner");
+      // two concurrent joins (double-click, two tabs) can both pass the check
+      // above; the second must not fail on the (group_id, user_id) primary key
+      await ctx.db
+        .insert(GroupMember)
+        .values({
+          groupId,
+          userId,
+          role: "member",
+        })
+        .onConflictDoNothing({
+          target: [GroupMember.groupId, GroupMember.userId],
+        });
 
-      await sendEmail(ownerMembership.user.email, "newMember", {
-        member: ctx.session.user,
-        group: ownerMembership.group,
-        user: ownerMembership.user,
-      });
+      // the membership row is written at this point; a notification failure
+      // must not fail the join
+      try {
+        const ownerMembership = await ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.role, "owner"),
+          ),
+          with: {
+            user: { columns: { id: true, email: true, name: true } },
+            group: { columns: { id: true, name: true } },
+          },
+        });
+
+        // Ideally this should not happen, we need to find a way to handle this
+        if (!ownerMembership) {
+          console.error(
+            `group ${groupId} has no owner, skipping new member notification`,
+          );
+        } else {
+          await sendEmail(ownerMembership.user.email, "newMember", {
+            member: ctx.session.user,
+            group: ownerMembership.group,
+            user: ownerMembership.user,
+          });
+        }
+      } catch (err) {
+        console.error("failed to send new member notification", err);
+      }
 
       return { success: true };
     }),
@@ -349,20 +422,38 @@ export const groupRouter = {
     .input(z.object({ groupId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const removeMembership = ctx.db
-        .delete(GroupMember)
-        .where(
-          and(
-            eq(GroupMember.groupId, input.groupId),
-            eq(GroupMember.userId, ctx.session.user.id),
-          ),
-        );
-      const futureMeetupsOfGroup = await ctx.db.query.Meetup.findMany({
+      const { groupId } = input;
+
+      const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(Meetup.groupId, input.groupId),
+          eq(GroupMember.groupId, groupId),
+          eq(GroupMember.userId, userId),
+        ),
+      });
+      // not a member: nothing to do. banned users must keep their ban row,
+      // otherwise they could leave and re-join
+      if (!membership || membership.role === "banned") {
+        return;
+      }
+      if (membership.role === "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "transfer ownership before leaving",
+        });
+      }
+
+      const futureMeetupsOfGroup = await ctx.db.query.Meetup.findMany({
+        columns: { id: true },
+        where: and(
+          eq(Meetup.groupId, groupId),
           gt(Meetup.startTime, new Date()),
         ),
       });
+      const removeMembership = ctx.db
+        .delete(GroupMember)
+        .where(
+          and(eq(GroupMember.groupId, groupId), eq(GroupMember.userId, userId)),
+        );
       const removeFutureMeetupAttendances = ctx.db.delete(Attendee).where(
         and(
           eq(Attendee.userId, userId),
@@ -381,19 +472,45 @@ export const groupRouter = {
       const userId = ctx.session.user.id;
       const { groupId, userId: targetUserId } = input;
 
-      const membership = await ctx.db.query.GroupMember.findFirst({
-        where: and(
-          eq(GroupMember.groupId, groupId),
-          eq(GroupMember.userId, userId),
-        ),
-      });
+      const [membership, target] = await Promise.all([
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, userId),
+          ),
+        }),
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, targetUserId),
+          ),
+        }),
+      ]);
 
-      if (!["owner", "admin"].includes(membership?.role ?? "")) {
+      if (!membership || !["owner", "admin"].includes(membership.role)) {
         throw new Error("Not authorized");
       }
-
-      if (membership?.userId === targetUserId) {
-        throw new Error("Cannot remove owner");
+      if (targetUserId === userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you cannot remove yourself, leave the group instead",
+        });
+      }
+      if (!target) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "member not found" });
+      }
+      if (target.role === "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "cannot remove owner",
+        });
+      }
+      // admins must not remove each other, only the owner can
+      if (membership.role === "admin" && target.role === "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "only the owner can remove an admin",
+        });
       }
 
       return ctx.db
@@ -447,44 +564,54 @@ export const groupRouter = {
       }
       // return nothing for banned members
       if (membership.role === "banned") {
-        return { members: [], count: 0, role: "member" };
+        return {
+          members: [],
+          count: 0,
+          role: "member",
+          userId: membership.userId,
+        };
       }
-      const members = await ctx.db
-        .select({
-          userId: User.id,
-          userName: User.name,
-          role: GroupMember.role,
-        })
-        .from(GroupMember)
-        .innerJoin(User, eq(GroupMember.userId, User.id))
-        .where(
-          search
-            ? and(
-                eq(GroupMember.groupId, groupId),
-                ilike(User.name, `%${search}%`),
-              )
-            : eq(GroupMember.groupId, groupId),
-        )
-        .limit(10);
+      const isAdmin = ["owner", "admin"].includes(membership.role);
 
-      const membersCount = await ctx.db
-        .select({
-          count: sql`count(*)`,
-        })
-        .from(GroupMember)
-        .where(eq(GroupMember.groupId, groupId));
+      const [members, membersCount] = await Promise.all([
+        ctx.db
+          .select({
+            userId: User.id,
+            userName: User.name,
+            role: GroupMember.role,
+          })
+          .from(GroupMember)
+          .innerJoin(User, eq(GroupMember.userId, User.id))
+          .where(
+            and(
+              eq(GroupMember.groupId, groupId),
+              // only admins get to see banned members
+              isAdmin ? undefined : not(eq(GroupMember.role, "banned")),
+              search ? ilike(User.name, `%${search}%`) : undefined,
+            ),
+          )
+          .limit(10),
+        ctx.db
+          .select({ count: count() })
+          .from(GroupMember)
+          .where(
+            and(
+              eq(GroupMember.groupId, groupId),
+              not(eq(GroupMember.role, "banned")),
+            ),
+          ),
+      ]);
 
-      //  if the user is not an admin or owner, replace the role with "member"
-      if (!["owner", "admin"].includes(membership.role)) {
-        // for non-admins, filter out banned members
-        members
-          .filter((member) => member.role !== "banned")
-          .forEach((member) => {
-            member.role = "member";
-          });
-      }
-
-      return { members, count: membersCount[0]?.count, role: membership.role };
+      return {
+        // non-admins don't get to see roles, everyone is just a "member"
+        members: isAdmin
+          ? members
+          : members.map((member) => ({ ...member, role: "member" as const })),
+        count: membersCount[0]?.count ?? 0,
+        role: membership.role,
+        // the viewer's own id, so the client can mirror the role-change rules
+        userId: membership.userId,
+      };
     }),
 
   changeRole: protectedProcedure
@@ -499,15 +626,52 @@ export const groupRouter = {
       const userId = ctx.session.user.id;
       const { groupId, userId: targetUserId, role } = input;
 
-      const membership = await ctx.db.query.GroupMember.findFirst({
-        where: and(
-          eq(GroupMember.groupId, groupId),
-          eq(GroupMember.userId, userId),
-        ),
-      });
+      const [membership, target] = await Promise.all([
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, userId),
+          ),
+        }),
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, targetUserId),
+          ),
+        }),
+      ]);
 
-      if (!["owner", "admin"].includes(membership?.role ?? "")) {
+      if (!membership || !["owner", "admin"].includes(membership.role)) {
         throw new Error("Not authorized");
+      }
+      if (!target) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "member not found" });
+      }
+      // the owner's role only changes via transferOwnership
+      if (target.role === "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "cannot change the owner's role",
+        });
+      }
+      // an admin may step down, but a self-ban cannot be undone by themselves
+      if (targetUserId === userId && role === "banned") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you cannot ban yourself",
+        });
+      }
+      // admins must not demote (or ban) each other, only the owner can;
+      // an admin may still step down themselves
+      if (
+        membership.role === "admin" &&
+        target.role === "admin" &&
+        targetUserId !== userId
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "only the owner can change another admin's role",
+        });
       }
 
       return ctx.db
@@ -519,5 +683,94 @@ export const groupRouter = {
             eq(GroupMember.userId, targetUserId),
           ),
         );
+    }),
+
+  transferOwnership: protectedProcedure
+    .input(z.object({ groupId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { groupId, userId: targetUserId } = input;
+
+      if (targetUserId === userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you already own this group",
+        });
+      }
+
+      const [membership, target] = await Promise.all([
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, userId),
+          ),
+        }),
+        ctx.db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, groupId),
+            eq(GroupMember.userId, targetUserId),
+          ),
+        }),
+      ]);
+
+      if (membership?.role !== "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "only the owner can transfer ownership",
+        });
+      }
+      if (!target) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "member not found" });
+      }
+      if (target.role === "banned") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "cannot transfer ownership to a banned user",
+        });
+      }
+
+      // the checks above ran outside the transaction, so re-verify inside it:
+      // the target may have left (or been removed / banned) and a concurrent
+      // transfer may already have demoted the caller. both updates are
+      // conditional and a throw rolls the whole transaction back, so the group
+      // never ends up with zero or two owners
+      await ctx.db.transaction(async (tx) => {
+        const [promoted] = await tx
+          .update(GroupMember)
+          .set({ role: "owner" })
+          .where(
+            and(
+              eq(GroupMember.groupId, groupId),
+              eq(GroupMember.userId, targetUserId),
+              not(eq(GroupMember.role, "banned")),
+            ),
+          )
+          .returning({ userId: GroupMember.userId });
+        if (!promoted) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "member not found",
+          });
+        }
+        const [demoted] = await tx
+          .update(GroupMember)
+          .set({ role: "admin" })
+          .where(
+            and(
+              eq(GroupMember.groupId, groupId),
+              eq(GroupMember.userId, userId),
+              eq(GroupMember.role, "owner"),
+            ),
+          )
+          .returning({ userId: GroupMember.userId });
+        if (!demoted) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "only the owner can transfer ownership",
+          });
+        }
+      });
+
+      return { success: true };
     }),
 } satisfies TRPCRouterRecord;

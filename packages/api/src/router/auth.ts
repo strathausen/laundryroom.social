@@ -1,9 +1,16 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { invalidateSessionToken } from "@laundryroom/auth";
-import { eq } from "@laundryroom/db";
-import { UpdateProfileSchema, User, UserFlags } from "@laundryroom/db/schema";
+import { and, eq } from "@laundryroom/db";
+import {
+  Group,
+  GroupMember,
+  UpdateProfileSchema,
+  User,
+  UserFlags,
+} from "@laundryroom/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -12,9 +19,6 @@ const protocolRegex = /^https?:\/\//;
 export const authRouter = {
   getSession: publicProcedure.query(({ ctx }) => {
     return ctx.session;
-  }),
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can see this secret message!";
   }),
   signOut: protectedProcedure.mutation(async (opts) => {
     if (!opts.ctx.token) {
@@ -78,7 +82,27 @@ export const authRouter = {
         .set({ flags: newFlags })
         .where(eq(User.id, ctx.session.user.id));
     }),
-  deleteMe: protectedProcedure.mutation(({ ctx }) => {
-    return ctx.db.delete(User).where(eq(User.id, ctx.session.user.id));
+  deleteMe: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    // deleting an owner would cascade-delete their membership and leave the
+    // group ownerless, so refuse until ownership is transferred
+    const ownedGroups = await ctx.db
+      .select({ name: Group.name })
+      .from(GroupMember)
+      .innerJoin(Group, eq(GroupMember.groupId, Group.id))
+      .where(
+        and(eq(GroupMember.userId, userId), eq(GroupMember.role, "owner")),
+      );
+    if (ownedGroups.length > 0) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: `transfer ownership or delete these groups first: ${ownedGroups
+          .map((group) => group.name)
+          .join(", ")}`,
+      });
+    }
+
+    return ctx.db.delete(User).where(eq(User.id, userId));
   }),
 } satisfies TRPCRouterRecord;

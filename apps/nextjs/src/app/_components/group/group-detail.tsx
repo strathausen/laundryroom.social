@@ -7,6 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 import { ShareMenu } from "@laundryroom/ui/share-menu";
+import { toast } from "@laundryroom/ui/toast";
 
 import { Link } from "~/i18n/routing";
 import { api } from "~/trpc/react";
@@ -168,10 +169,17 @@ export function GroupDetail(props: GroupDetailProps) {
     async onMutate(_variables) {
       await utils.group.myGroups.invalidate();
     },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const leaveGroup = api.group.leave.useMutation({
     async onMutate(_variables) {
       await utils.group.myGroups.invalidate();
+    },
+    onError(error) {
+      // e.g. an owner trying to leave before transferring ownership
+      toast.error(error.message);
     },
   });
 
@@ -198,14 +206,29 @@ export function GroupDetail(props: GroupDetailProps) {
           membership={membership}
           promotion={promotion}
           onJoin={async () => {
-            await joinGroup.mutateAsync({ groupId: group.id });
-            await groupQuery.refetch();
+            try {
+              await joinGroup.mutateAsync({ groupId: group.id });
+            } catch {
+              // the error toast is shown by the mutation
+              return;
+            }
+            const { data } = await groupQuery.refetch();
+            // join succeeds silently for banned users (the api must not reveal
+            // the ban), so the only signal is that there is still no membership
+            if (data && !data.membership) {
+              toast.error("you cannot join this group right now");
+            }
           }}
           onLeave={async () => {
             if (!groupQuery.data.group) return;
-            await leaveGroup.mutateAsync({
-              groupId: groupQuery.data.group.id,
-            });
+            try {
+              await leaveGroup.mutateAsync({
+                groupId: groupQuery.data.group.id,
+              });
+            } catch {
+              // the error toast is shown by the mutation
+              return;
+            }
             await groupQuery.refetch();
           }}
           isJoining={joinGroup.isPending}

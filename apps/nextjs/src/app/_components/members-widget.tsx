@@ -23,6 +23,42 @@ export function MembersWidget(props: MembersModerationProps) {
   if (fetchMembers.error) {
     return <div>Error: {fetchMembers.error.message}</div>;
   }
+
+  const viewerRole = fetchMembers.data?.role;
+  const viewerUserId = fetchMembers.data?.userId;
+  const isAdmin = ["owner", "admin"].includes(viewerRole ?? "");
+  const isOwner = viewerRole === "owner";
+  const members = fetchMembers.data?.members ?? [];
+  // non-admins never receive banned rows from the api, this is just for admins
+  const activeMembers = members.filter((u) => u.role !== "banned");
+  const bannedMembers = members.filter((u) => u.role === "banned");
+
+  const renderMember = ({
+    userId,
+    userName,
+    role,
+  }: (typeof members)[number]) => (
+    // key on the role too, so a row remounts (and drops its local state) when
+    // the role changes server-side, e.g. after an ownership transfer
+    <li key={`${userId}-${role}`}>
+      <UserModerator
+        userName={userName}
+        userId={userId}
+        userRole={role}
+        groupId={props.groupId}
+        // mirror the server rules: the owner's role never changes here, and an
+        // admin cannot change another admin's role (but may step down)
+        enableRoleChange={
+          isAdmin &&
+          role !== "owner" &&
+          (isOwner || role !== "admin" || userId === viewerUserId)
+        }
+        enableOwnershipTransfer={isOwner && role !== "owner"}
+        isSelf={userId === viewerUserId}
+      />
+    </li>
+  );
+
   return (
     <div className="mx-auto flex min-w-96 max-w-lg flex-col gap-4">
       <Input
@@ -31,25 +67,8 @@ export function MembersWidget(props: MembersModerationProps) {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search members"
       />
-      <ul className="flex flex-col gap-2">
-        {fetchMembers.data?.members
-          .filter((u) => u.role !== "banned")
-          .map(({ userId, userName, role }) => (
-            <li key={userId}>
-              <UserModerator
-                userName={userName}
-                userId={userId}
-                userRole={role}
-                groupId={props.groupId}
-                enableRoleChange={
-                  role !== "owner" &&
-                  ["owner", "admin"].includes(fetchMembers.data.role)
-                }
-              />
-            </li>
-          ))}
-      </ul>
-      {fetchMembers.data?.members.some((u) => u.role === "banned") && (
+      <ul className="flex flex-col gap-2">{activeMembers.map(renderMember)}</ul>
+      {isAdmin && bannedMembers.length > 0 && (
         <Button
           onClick={() => setShowBanned(!showBanned)}
           variant="link"
@@ -58,24 +77,9 @@ export function MembersWidget(props: MembersModerationProps) {
           {showBanned ? "hide banned users" : "show banned users"}
         </Button>
       )}
-      {showBanned && (
+      {isAdmin && showBanned && (
         <ul className="flex flex-col gap-2">
-          {fetchMembers.data?.members
-            .filter((u) => u.role === "banned")
-            .map(({ userId, userName, role }) => (
-              <li key={userId}>
-                <UserModerator
-                  userName={userName}
-                  userId={userId}
-                  userRole={role}
-                  groupId={props.groupId}
-                  enableRoleChange={
-                    role !== "owner" &&
-                    ["owner", "admin"].includes(fetchMembers.data.role)
-                  }
-                />
-              </li>
-            ))}
+          {bannedMembers.map(renderMember)}
         </ul>
       )}
     </div>

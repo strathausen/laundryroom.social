@@ -24,6 +24,10 @@ interface Props {
   userRole: UserRole;
   groupId: string;
   enableRoleChange?: boolean;
+  /** only the group owner can hand over ownership */
+  enableOwnershipTransfer?: boolean;
+  /** the viewer's own row: they may step down, but not ban themselves */
+  isSelf?: boolean;
 }
 
 const getRoleIcon = (role: UserRole) => {
@@ -49,24 +53,63 @@ export function UserModerator({
   userRole,
   groupId,
   enableRoleChange,
+  enableOwnershipTransfer,
+  isSelf = false,
 }: Props) {
+  const utils = api.useUtils();
   const changeUserRole = api.group.changeRole.useMutation({
-    onSuccess(_data) {
-      toast.success("User role changed");
+    async onSuccess(_data) {
+      toast.success("user role changed");
+      await utils.group.members.invalidate();
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const transferOwnership = api.group.transferOwnership.useMutation({
+    async onSuccess() {
+      toast.success("ownership transferred");
+      // both the new owner's and the previous owner's rows changed
+      await Promise.all([
+        utils.group.members.invalidate(),
+        utils.group.byId.invalidate(),
+      ]);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const [role, setRole] = useState(userRole);
   const [expanded, setExpanded] = useState(false);
+  const [confirmTransfer, setConfirmTransfer] = useState(false);
+  const isPending = changeUserRole.isPending || transferOwnership.isPending;
 
   const changeRole = async (
-    role: RouterInputs["group"]["changeRole"]["role"],
+    newRole: RouterInputs["group"]["changeRole"]["role"],
   ) => {
-    setRole(role);
-    await changeUserRole.mutateAsync({
-      userId,
-      groupId,
-      role,
-    });
+    const previousRole = role;
+    setRole(newRole);
+    try {
+      await changeUserRole.mutateAsync({
+        userId,
+        groupId,
+        role: newRole,
+      });
+    } catch {
+      // the error toast is shown by the mutation, just roll back the optimistic update
+      setRole(previousRole);
+    }
+  };
+
+  const makeOwner = async () => {
+    try {
+      await transferOwnership.mutateAsync({ userId, groupId });
+      setRole("owner");
+      setConfirmTransfer(false);
+      setExpanded(false);
+    } catch {
+      // the error toast is shown by the mutation
+    }
   };
 
   return (
@@ -93,23 +136,19 @@ export function UserModerator({
       </div>
       {expanded && enableRoleChange && (
         <div className="border-t-2 border-black bg-gray-100 p-2">
-          <p className="mb-2 font-bold">Change user status:</p>
-          <div className="flex space-x-2">
+          <p className="mb-2 font-bold">change user status:</p>
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => changeRole("admin")}
               className={`rounded-none ${role === "admin" ? "bg-green-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
-              disabled={
-                changeUserRole.isPending || ["owner", "admin"].includes(role)
-              }
+              disabled={isPending || ["owner", "admin"].includes(role)}
             >
               admin
             </Button>
             <Button
               onClick={() => changeRole("member")}
               className={`rounded-none ${role === "member" ? "bg-yellow-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
-              disabled={
-                changeUserRole.isPending || ["owner", "member"].includes(role)
-              }
+              disabled={isPending || ["owner", "member"].includes(role)}
             >
               member
             </Button>
@@ -117,12 +156,45 @@ export function UserModerator({
               onClick={() => changeRole("banned")}
               className={`rounded-none ${role === "banned" ? "bg-red-600" : "bg-black"} text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]`}
               disabled={
-                changeUserRole.isPending || ["owner", "banned"].includes(role)
+                isPending || isSelf || ["owner", "banned"].includes(role)
               }
             >
               ban
             </Button>
+            {enableOwnershipTransfer && role !== "banned" && (
+              <Button
+                onClick={() => setConfirmTransfer(true)}
+                className="rounded-none bg-black text-white shadow-[2px_2px_0px_0px_#ff00ff] transition-all duration-300 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-[4px_4px_0px_0px_#ff00ff] active:translate-x-0 active:translate-y-0 active:bg-gray-700 active:shadow-[1px_1px_0px_0px_#ff00ff]"
+                disabled={isPending || confirmTransfer || role === "owner"}
+              >
+                make owner
+              </Button>
+            )}
           </div>
+          {confirmTransfer && (
+            <div className="mt-2 flex flex-col gap-2 border-2 border-black bg-white p-2">
+              <p>
+                make <b>{userName ?? "this user"}</b> the owner of this group?
+                you will become an admin, and only the new owner can undo this.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={makeOwner}
+                  disabled={isPending}
+                >
+                  yes, make owner
+                </Button>
+                <Button
+                  variant="plattenbau"
+                  onClick={() => setConfirmTransfer(false)}
+                  disabled={isPending}
+                >
+                  nah never mind
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

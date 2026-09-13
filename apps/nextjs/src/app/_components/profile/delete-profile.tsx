@@ -4,11 +4,20 @@ import { useState } from "react";
 
 import { Button } from "@laundryroom/ui/button";
 import { Input } from "@laundryroom/ui/input";
+import { toast } from "@laundryroom/ui/toast";
 
 import { api } from "~/trpc/react";
 
 export function DeleteProfile() {
-  const deleteProfileMutation = api.auth.deleteMe.useMutation();
+  const deleteProfileMutation = api.auth.deleteMe.useMutation({
+    onSuccess() {
+      window.location.href = "/api/auth/signout";
+    },
+    onError(error) {
+      // e.g. the user still owns groups and has to transfer them first
+      toast.error(error.message);
+    },
+  });
   const [confirmationInput, setConfirmationInput] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -40,13 +49,14 @@ export function DeleteProfile() {
           />
           <Button
             variant="destructive"
-            onClick={async () => {
+            onClick={() => {
               if (confirmationInput === "delete") {
-                await deleteProfileMutation.mutateAsync();
-                window.location.href = "/api/auth/signout";
+                deleteProfileMutation.mutate();
               }
             }}
-            disabled={confirmationInput !== "delete"}
+            disabled={
+              confirmationInput !== "delete" || deleteProfileMutation.isPending
+            }
           >
             🔥🔥🔥 yes, delete 🔥🔥🔥
           </Button>
