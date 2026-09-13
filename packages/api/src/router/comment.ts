@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, lte } from "@laundryroom/db";
+import { and, desc, eq, inArray, lte, ne } from "@laundryroom/db";
 import { Comment, Discussion, GroupMember } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 import { classifyModeration } from "@laundryroom/llm";
@@ -82,6 +82,13 @@ export const commentRouter = {
       const userId = ctx.session.user.id;
       const discussion = await ctx.db.query.Discussion.findFirst({
         where: eq(Discussion.id, input.discussionId),
+        columns: {
+          id: true,
+          title: true,
+          content: true,
+          groupId: true,
+          userId: true,
+        },
       });
       if (!discussion) {
         throw new Error("Discussion not found");
@@ -98,35 +105,12 @@ export const commentRouter = {
       if (membership.role === "banned") {
         throw new Error("Something went wrong");
       }
-      const { moderationStatus } = await classifyModeration(input.content);
-      // get all users involved in the discussion
-      const comments = await ctx.db.query.Comment.findMany({
-        where: eq(Comment.discussionId, input.discussionId),
-        with: { user: true },
-      });
-      // TODO check if user is still a member of the group
-      const users: Record<string, (typeof comments)[number]["user"]> = {};
-      comments.forEach((comment) => (users[comment.userId] = comment.user));
-      // notify participating users
-      await Promise.all(
-        Object.keys(users).map(async (userId) => {
-          const user = users[userId];
-          if (!user?.email) {
-            return;
-          }
-          if (user.id === userId) {
-            return;
-          }
-          const { email } = user;
-          await sendEmail(email, "newComment", {
-            user,
-            discussion,
-            comment: input,
-            groupId: discussion.groupId,
-          });
-        }),
-      );
-      return ctx.db
+      // typed as the column's literal union rather than the llm package's enum,
+      // so the "ok" check below is a plain string comparison
+      const moderationStatus: typeof Comment.$inferInsert.moderationStatus = (
+        await classifyModeration(input.content)
+      ).moderationStatus;
+      const inserted = await ctx.db
         .insert(Comment)
         .values({
           ...input,
@@ -135,5 +119,52 @@ export const commentRouter = {
           moderationStatus,
         })
         .returning({ id: Comment.id });
+      if (moderationStatus !== "ok") {
+        return inserted;
+      }
+
+      // notify everyone who visibly took part in the thread plus the discussion
+      // author, except the commenter themselves. comments that moderation hid
+      // don't count as participation.
+      const participants = await ctx.db.query.Comment.findMany({
+        where: and(
+          eq(Comment.discussionId, input.discussionId),
+          eq(Comment.moderationStatus, "ok"),
+        ),
+        columns: { userId: true },
+      });
+      const candidateIds = new Set(participants.map((c) => c.userId));
+      candidateIds.add(discussion.userId);
+      candidateIds.delete(userId);
+      if (candidateIds.size === 0) {
+        return inserted;
+      }
+      // only people who are still (non-banned) members of the group get the email
+      const recipients = await ctx.db.query.GroupMember.findMany({
+        where: and(
+          eq(GroupMember.groupId, discussion.groupId),
+          inArray(GroupMember.userId, [...candidateIds]),
+          ne(GroupMember.role, "banned"),
+        ),
+        with: {
+          user: { columns: { id: true, name: true, email: true } },
+        },
+      });
+      // the comment is already saved, so a failing email must not fail the
+      // mutation. sends stay sequential on purpose: resend rate-limits bursts
+      // (2 requests/second), so firing all sends at once would drop most of them
+      for (const { user } of recipients) {
+        try {
+          await sendEmail(user.email, "newComment", {
+            user,
+            discussion,
+            comment: input,
+            groupId: discussion.groupId,
+          });
+        } catch (error) {
+          console.error("failed to send newComment email", error);
+        }
+      }
+      return inserted;
     }),
 } satisfies TRPCRouterRecord;

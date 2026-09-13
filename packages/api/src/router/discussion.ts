@@ -1,4 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { and, count, desc, eq, lte } from "@laundryroom/db";
@@ -11,6 +12,16 @@ import {
 import { classifyModeration } from "@laundryroom/llm";
 
 import { protectedProcedure } from "../trpc";
+
+type ModerationStatus = NonNullable<
+  typeof Discussion.$inferSelect.moderationStatus
+>;
+/** statuses assigned by moderation that an author's edit must not reset */
+const lockedModerationStatuses: ModerationStatus[] = [
+  "rejected",
+  "review",
+  "reported",
+];
 
 export const discussionRouter = {
   byId: protectedProcedure
@@ -62,24 +73,50 @@ export const discussionRouter = {
     .input(UpsertDiscussionSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
+      const existing = input.id
+        ? await ctx.db.query.Discussion.findFirst({
+            where: and(
+              eq(Discussion.id, input.id),
+              eq(Discussion.userId, userId),
+            ),
+            columns: { id: true, groupId: true, moderationStatus: true },
+          })
+        : undefined;
+      if (input.id && !existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "discussion not found",
+        });
+      }
+      // an existing discussion stays in its group, whatever groupId the client sends
+      const groupId = existing?.groupId ?? input.groupId;
       const membership = await ctx.db.query.GroupMember.findFirst({
         where: and(
-          eq(GroupMember.groupId, input.groupId),
+          eq(GroupMember.groupId, groupId),
           eq(GroupMember.userId, userId),
         ),
       });
       if (!membership) {
         throw new Error("Not a member of the group");
       }
-      const { moderationStatus } = await classifyModeration(input.content);
-      if (input.id) {
+      if (membership.role === "banned") {
+        throw new Error("Something went wrong");
+      }
+      if (existing) {
+        // a status set by moderation sticks; re-classifying would let an edit clear it
+        const moderationStatus =
+          existing.moderationStatus &&
+          lockedModerationStatuses.includes(existing.moderationStatus)
+            ? existing.moderationStatus
+            : (await classifyModeration(input.content)).moderationStatus;
         return ctx.db
           .update(Discussion)
-          .set({ ...input, moderationStatus })
+          .set({ title: input.title, content: input.content, moderationStatus })
           .where(
-            and(eq(Discussion.id, input.id), eq(Discussion.userId, userId)),
+            and(eq(Discussion.id, existing.id), eq(Discussion.userId, userId)),
           );
       }
+      const { moderationStatus } = await classifyModeration(input.content);
       return ctx.db
         .insert(Discussion)
         .values({ ...input, userId, moderationStatus })
@@ -91,7 +128,6 @@ export const discussionRouter = {
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      await new Promise((resolve) => setTimeout(resolve, 5000));
       return ctx.db
         .delete(Discussion)
         .where(and(eq(Discussion.id, input), eq(Discussion.userId, userId)));
