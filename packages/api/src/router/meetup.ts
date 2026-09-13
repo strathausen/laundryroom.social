@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createEventUpdate } from "@laundryroom/calendar";
@@ -106,6 +107,8 @@ export const meetupRouter = createTRPCRouter({
         (m) => m.user.id === user?.id && ["admin", "owner"].includes(m.role),
       );
       const isGroupMember = !!group && group.members.length > 0; // we are only interested in the length
+      // attendees are already filtered to status "going"
+      const goingCount = meetup.attendees.length;
       return {
         ...meetup,
         isOngoing:
@@ -115,6 +118,8 @@ export const meetupRouter = createTRPCRouter({
         isOver:
           new Date() >
           new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
+        isFull:
+          meetup.attendeeLimit != null && goingCount >= meetup.attendeeLimit,
         attendees: meetup.attendees.map((a) => ({
           ...a,
           isCurrentUser: a.user.id === user?.id,
@@ -125,8 +130,8 @@ export const meetupRouter = createTRPCRouter({
       };
     }),
 
-  // with cursor: load meetups from the past
-  // without cursor: load all of the upcoming meetups
+  // with cursor: load meetups from the past (before the cursor)
+  // without cursor: load the upcoming meetups
   byGroupId: publicProcedure
     .input(
       z.object({
@@ -139,37 +144,34 @@ export const meetupRouter = createTRPCRouter({
       const user = ctx.session?.user;
       const { limit, groupId, cursor } = input;
       const direction = cursor ? "backward" : "forward";
+      const now = new Date();
+      const boundary = cursor ? new Date(cursor) : now;
 
       // check if user is member of the group
-      const membershipQuery = user
-        ? ctx.db.query.GroupMember.findFirst({
+      const membership = user
+        ? await ctx.db.query.GroupMember.findFirst({
             where: and(
               eq(GroupMember.groupId, groupId),
               eq(GroupMember.userId, user.id),
             ),
           })
         : undefined;
+      const isSuperUser = ["admin", "owner", "moderator"].includes(
+        membership?.role ?? "",
+      );
+      // omit hidden meetups for non-admins
+      const visibilityFilter = isSuperUser
+        ? undefined
+        : not(eq(Meetup.status, "hidden"));
 
-      // TODO FIXME over time, this query will become slow
-      // (O(n) with number of past attended meetups per group)
-      const attendancesQuery = user
-        ? ctx.db.query.Attendee.findMany({
-            where: and(
-              eq(Attendee.userId, user.id),
-              inArray(
-                Attendee.meetupId,
-                sql`(SELECT id FROM meetup WHERE group_id = ${groupId})`,
-              ),
-            ),
-          })
-        : [];
-      // only show past meetups, paginated, omit hidden meetups for non-admins
+      // forward: upcoming meetups, oldest first; backward: past meetups, newest first
       const meetupsQuery = ctx.db.query.Meetup.findMany({
         where: and(
-          eq(Meetup.groupId, input.groupId),
+          eq(Meetup.groupId, groupId),
+          visibilityFilter,
           direction === "forward"
-            ? gt(Meetup.startTime, cursor ? new Date(cursor) : new Date())
-            : lt(Meetup.startTime, cursor ? new Date(cursor) : new Date()),
+            ? gt(Meetup.startTime, boundary)
+            : lt(Meetup.startTime, boundary),
         ),
         orderBy:
           direction === "forward"
@@ -178,68 +180,98 @@ export const meetupRouter = createTRPCRouter({
         limit: limit + 1,
       });
 
-      const attendeesCountQuery = ctx.db
-        .select({
-          count: count(Attendee.meetupId),
-          meetupId: Attendee.meetupId,
-        })
-        .from(Attendee)
-        .where(
-          inArray(
-            Attendee.meetupId,
-            sql`(SELECT id FROM meetup WHERE group_id = ${groupId})`,
-          ),
-        )
-        .groupBy(Attendee.meetupId);
+      // on the first (forward) page, find out whether there are past meetups
+      // to load. this must apply the same visibility filter as the page, or a
+      // group whose only past meetups are hidden would offer non-admins a
+      // "load past meetups" button that loads an empty page
+      const pastMeetupQuery =
+        direction === "forward"
+          ? ctx.db.query.Meetup.findFirst({
+              where: and(
+                eq(Meetup.groupId, groupId),
+                visibilityFilter,
+                lt(Meetup.startTime, now),
+              ),
+              columns: { id: true },
+            })
+          : undefined;
 
-      const [attendances, meetups, attendeesCount, membership] =
-        await Promise.all([
-          attendancesQuery,
-          meetupsQuery,
-          attendeesCountQuery,
-          membershipQuery,
-        ]);
+      const [meetups, pastMeetup] = await Promise.all([
+        meetupsQuery,
+        pastMeetupQuery,
+      ]);
       const hasMore = meetups.length > limit;
       if (hasMore) {
         meetups.pop();
       }
-      // if we have more than the limit, we have a next/prev page depending on the direction
+      // backward: continue before the oldest meetup of this page (if there are more)
+      // forward: the next page is the past, starting from now. the cursor is
+      // single-direction, so upcoming meetups beyond `limit` are not paginated
+      // (the client requests the cap of 50, which is plenty for now)
       const nextCursor =
-        hasMore && direction === "backward"
-          ? meetups[meetups.length - 1]?.startTime.toISOString()
-          : direction === "forward"
-            ? meetups[0]?.startTime.toISOString()
+        direction === "backward"
+          ? hasMore
+            ? (meetups[meetups.length - 1]?.startTime.toISOString() ?? null)
+            : null
+          : pastMeetup
+            ? now.toISOString()
             : null;
 
       // reverse the order if backward
       if (direction === "backward") {
         meetups.reverse();
       }
-      const isSuperUser = ["admin", "owner", "moderator"].includes(
-        membership?.role ?? "",
-      );
+      const meetupIds = meetups.map((meetup) => meetup.id);
+
+      // only look up attendance for the meetups on this page
+      const attendancesQuery =
+        user && meetupIds.length
+          ? ctx.db.query.Attendee.findMany({
+              where: and(
+                eq(Attendee.userId, user.id),
+                inArray(Attendee.meetupId, meetupIds),
+              ),
+            })
+          : [];
+      const attendeesCountQuery = meetupIds.length
+        ? ctx.db
+            .select({
+              count: count(Attendee.meetupId),
+              meetupId: Attendee.meetupId,
+            })
+            .from(Attendee)
+            .where(
+              and(
+                inArray(Attendee.meetupId, meetupIds),
+                eq(Attendee.status, "going"),
+              ),
+            )
+            .groupBy(Attendee.meetupId)
+        : [];
+      const [attendances, attendeesCount] = await Promise.all([
+        attendancesQuery,
+        attendeesCountQuery,
+      ]);
+
       // combine meetups with the user's attendance status
       return {
-        meetups: meetups
-          // omit hidden meetups for non-admins
-          .filter((meetup) => isSuperUser || meetup.status !== "hidden")
-          .map((meetup) => ({
+        meetups: meetups.map((meetup) => {
+          const endTime = new Date(
+            meetup.startTime.getTime() + meetup.duration * 60 * 1000,
+          );
+          const goingCount =
+            attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0;
+          return {
             ...meetup,
-            isOngoing:
-              meetup.startTime < new Date() &&
-              new Date() <
-                new Date(
-                  meetup.startTime.getTime() + meetup.duration * 60 * 1000,
-                ),
-            isOver:
-              new Date() >
-              new Date(
-                meetup.startTime.getTime() + meetup.duration * 60 * 1000,
-              ),
+            isOngoing: meetup.startTime < now && now < endTime,
+            isOver: now > endTime,
             attendance: attendances.find((a) => a.meetupId === meetup.id),
-            attendeesCount:
-              attendeesCount.find((a) => a.meetupId === meetup.id)?.count ?? 0,
-          })),
+            attendeesCount: goingCount,
+            isFull:
+              meetup.attendeeLimit != null &&
+              goingCount >= meetup.attendeeLimit,
+          };
+        }),
         nextCursor,
       };
     }),
@@ -253,6 +285,18 @@ export const meetupRouter = createTRPCRouter({
       });
       if (!meetup) {
         throw new Error("Meetup not found");
+      }
+      const isOver =
+        new Date() >
+        new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000);
+      if (meetup.status === "cancelled" || isOver) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            meetup.status === "cancelled"
+              ? "this meetup has been cancelled"
+              : "this meetup is over",
+        });
       }
       // check if user is member of the group
       const membership = await ctx.db.query.GroupMember.findFirst({
@@ -274,6 +318,25 @@ export const meetupRouter = createTRPCRouter({
           eq(Attendee.userId, user.id),
         ),
       });
+      // enforce the attendee limit, unless the user is already going
+      if (
+        input.status === "going" &&
+        meetup.attendeeLimit != null &&
+        attendee?.status !== "going"
+      ) {
+        const [row] = await ctx.db
+          .select({ going: count() })
+          .from(Attendee)
+          .where(
+            and(eq(Attendee.meetupId, meetup.id), eq(Attendee.status, "going")),
+          );
+        if ((row?.going ?? 0) >= meetup.attendeeLimit) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "this meetup is full",
+          });
+        }
+      }
       // maybe
       if (attendee) {
         await ctx.db
@@ -356,9 +419,15 @@ export const meetupRouter = createTRPCRouter({
 
       // Some additional checks when updating a meetup
       let meetupId: string;
-      let members: {
+      let recipients: {
         user: { email: string; id: string; name: string | null };
-      }[] = group.members;
+      }[] = [];
+      // columns with a default are optional in the input; when omitted they
+      // keep the stored value (update) or get the column default (create)
+      let status: NonNullable<typeof data.status> = data.status ?? "active";
+      let location = data.location ?? "";
+      let duration = data.duration ?? 60;
+      let description = data.description ?? "";
       if (input.id) {
         // check if group is the same, you cannot move meetups between groups
         const meetup = await ctx.db.query.Meetup.findFirst({
@@ -380,10 +449,20 @@ export const meetupRouter = createTRPCRouter({
         if (meetup.groupId !== input.groupId) {
           throw new Error("Group mismatch");
         }
-        if (data.status !== "hidden") {
-          members = [];
-        } else {
-          members = meetup.attendees;
+        status = data.status ?? meetup.status;
+        location = data.location ?? meetup.location;
+        duration = data.duration ?? meetup.duration;
+        description = data.description ?? meetup.description;
+        // only notify people who are going, and only about relevant changes
+        // (description-only edits are not worth an email)
+        const hasRelevantChange =
+          data.startTime.getTime() !== meetup.startTime.getTime() ||
+          location !== meetup.location ||
+          status !== meetup.status ||
+          data.title !== meetup.title ||
+          duration !== meetup.duration;
+        if (status !== "hidden" && hasRelevantChange) {
+          recipients = meetup.attendees;
         }
         await ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
         meetupId = input.id;
@@ -397,40 +476,57 @@ export const meetupRouter = createTRPCRouter({
         if (!res[0]) {
           throw new Error("Failed to create meetup");
         }
-        meetupId = res[0]?.id;
+        meetupId = res[0].id;
+        // announce new meetups to the whole group, unless they are hidden
+        if (data.status !== "hidden") {
+          recipients = group.members;
+        }
       }
       const icsInvite = createEventUpdate({
         uuid: meetupId,
         title: data.title,
-        description: data.description ?? "",
+        description,
         start: data.startTime,
-        duration: data.duration ?? 60,
-        status: data.status === "active" ? "CONFIRMED" : "CANCELLED",
-        // TODO: use URL from config
-        url: `https://laundryroom.social/meetup/${meetupId}`,
-        location: data.location ?? "",
+        duration,
+        status: status === "cancelled" ? "CANCELLED" : "CONFIRMED",
+        url: `https://www.laundryroom.social/meetup/${meetupId}`,
+        location,
       });
-
-      for (const member of members) {
-        if (member.user.id === user.id || !meetupId) {
-          continue;
-        }
-        await sendEmail(
-          member.user.email,
-          "eventUpdate",
-          {
-            isNew: !data.id,
-            meetup: { ...data, id: meetupId },
-            group,
-          },
-          [
+      if (icsInvite.error) {
+        console.error("failed to create ics invite", icsInvite.error);
+      }
+      const attachments = icsInvite.value
+        ? [
             {
               filename: "invite.ics",
               content: icsInvite.value,
               contentType: "text/calendar",
             },
-          ],
-        );
+          ]
+        : undefined;
+
+      // the meetup is already saved at this point, so a failing email must not
+      // fail the mutation. sends stay sequential on purpose: resend rate-limits
+      // bursts (2 requests/second) and its sdk reports failures via the result
+      // rather than by throwing, so firing all sends at once would drop most of them
+      for (const member of recipients) {
+        if (member.user.id === user.id) {
+          continue;
+        }
+        try {
+          await sendEmail(
+            member.user.email,
+            "eventUpdate",
+            {
+              isNew: !input.id,
+              meetup: { ...data, id: meetupId, description, location },
+              group,
+            },
+            attachments,
+          );
+        } catch (error) {
+          console.error("failed to send meetup email", error);
+        }
       }
       return { id: meetupId };
     }),

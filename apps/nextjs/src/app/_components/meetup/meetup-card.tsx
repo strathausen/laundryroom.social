@@ -74,8 +74,19 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
             groupId={meetup.groupId}
             rsvp={meetup.attendance?.status}
             disabled={isCancelled || isPast || !session.data}
+            isFull={meetup.isFull}
           />
-          <MembersCount count={meetup.attendeesCount} />
+          <div className="flex items-center gap-3">
+            {meetup.isFull && !isCancelled && (
+              <span className="rotate-[-6deg] transform border-2 border-black bg-hotpink px-2 py-0.5 text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000]">
+                full
+              </span>
+            )}
+            <MembersCount
+              count={meetup.attendeesCount}
+              limit={meetup.attendeeLimit}
+            />
+          </div>
         </div>
       </div>
     </Box>

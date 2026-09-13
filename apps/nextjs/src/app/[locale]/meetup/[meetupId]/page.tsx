@@ -104,6 +104,9 @@ export default function MeetupPage() {
             <h2 className="font-extrabold underline decoration-green-400 decoration-4">
               are you coming?
             </h2>
+            {meetupQuery.data.isFull && (
+              <div className="text-red-500">this meetup is full</div>
+            )}
             <div className="flex items-center gap-4">
               please rsvp here:{" "}
               <RsvpSelect
@@ -111,6 +114,7 @@ export default function MeetupPage() {
                 meetupId={meetupQuery.data.id}
                 rsvp={rsvpQuery.data}
                 disabled={disabled}
+                isFull={meetupQuery.data.isFull}
               />
             </div>
             {meetupQuery.data.organizer && (
@@ -131,7 +135,10 @@ export default function MeetupPage() {
               </p>
             ) : (
               <p>
-                so far, {meetupQuery.data.attendees.length}{" "}
+                so far, {meetupQuery.data.attendees.length}
+                {meetupQuery.data.attendeeLimit != null
+                  ? ` of ${meetupQuery.data.attendeeLimit}`
+                  : ""}{" "}
                 {meetupQuery.data.attendees.length === 1
                   ? "person is"
                   : "people are"}{" "}

@@ -10,8 +10,10 @@ type MeetupInput = RouterInputs["meetup"]["upsert"];
 const postedItemsAtom = atom<Record<string, Meetup[]>>({});
 
 export function useMeetups({ groupId }: { groupId: string }) {
+  // the first page holds all upcoming meetups (up to the api's cap of 50),
+  // every further page loads past meetups
   const listQuery = api.meetup.byGroupId.useInfiniteQuery(
-    { groupId, limit: 3 },
+    { groupId, limit: 50 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     },
@@ -34,7 +36,8 @@ export function useMeetups({ groupId }: { groupId: string }) {
       isOngoing: false,
       isOver: false,
       status: "active",
-      attendeeLimit: -1,
+      attendeeLimit: item.attendeeLimit ?? null,
+      isFull: false,
       organizerId: "",
     };
     setPostedItems((prev) => {
@@ -63,14 +66,20 @@ export function useMeetups({ groupId }: { groupId: string }) {
       ),
     }));
   }
+  const allItems = (postedItems[groupId] ?? []).concat(
+    listQuery.data?.pages.flatMap((page) => page.meetups) ?? [],
+  );
+  const startOf = (meetup: Meetup) => new Date(meetup.startTime).getTime();
+  // upcoming meetups first, nearest first; then past meetups, most recent first
+  const upcoming = allItems
+    .filter((meetup) => !meetup.isOver)
+    .sort((a, b) => startOf(a) - startOf(b));
+  const past = allItems
+    .filter((meetup) => meetup.isOver)
+    .sort((a, b) => startOf(b) - startOf(a));
   return {
     upsert,
-    items: (postedItems[groupId] ?? [])
-      .concat(listQuery.data?.pages.flatMap((page) => page.meetups) ?? [])
-      .sort(
-        (a, b) =>
-          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
-      ),
+    items: upcoming.concat(past),
     hasNextPage: listQuery.hasNextPage,
     fetchNextPage: () => listQuery.fetchNextPage(),
     isLoading: listQuery.isLoading,
