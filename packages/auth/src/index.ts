@@ -138,7 +138,7 @@ export type Session = typeof auth.$Infer.Session;
 /**
  * Resolve the session for a request from its cookies. Route handlers and the
  * tRPC context pass the incoming request's headers; server components pass
- * `headers()` from next/headers.
+ * `await headers()` from next/headers (a promise since next 15).
  */
 export function getSession(headers: Headers): Promise<Session | null> {
   return auth.api.getSession({ headers });

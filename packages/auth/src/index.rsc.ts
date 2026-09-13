@@ -1,6 +1,3 @@
-// `cache` is only typed in react's canary build (next 14 ships against it);
-// nothing in this package's import graph pulls in next's types any more
-/// <reference types="react/canary" />
 import { cache } from "react";
 
 import { getSession as uncachedGetSession } from "./index";

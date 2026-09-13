@@ -22,9 +22,9 @@
     "@laundryroom/email": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",
     "better-auth": "^1.7.4",
-    "next": "^14.2.35",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18",
+    "next": "^15.5.25",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "zod": "catalog:"
   },
   "devDependencies": {

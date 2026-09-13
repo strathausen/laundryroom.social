@@ -2,7 +2,6 @@
 
 import type { ChangeEvent, ReactNode } from "react";
 import { useTransition } from "react";
-import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { FaGlobe } from "react-icons/fa6";
 
@@ -23,18 +22,14 @@ export default function LocaleSwitcherSelect({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
-  const params = useParams();
 
   function onSelectChange(event: ChangeEvent<HTMLSelectElement>) {
     const nextLocale = event.target.value as Locale;
     startTransition(() => {
-      router.replace(
-        // @ts-expect-error -- TypeScript will validate that only known `params`
-        // are used in combination with a given `pathname`. Since the two will
-        // always match for the current route, we can skip runtime checks.
-        { pathname, params },
-        { locale: nextLocale },
-      );
+      // `usePathname` from `~/i18n/routing` already strips the locale prefix,
+      // and without `pathnames` in the routing config the href is a plain
+      // string; `createNavigation` prefixes it with the new locale.
+      router.replace(pathname, { locale: nextLocale });
     });
   }
 

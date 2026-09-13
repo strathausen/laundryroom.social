@@ -39,15 +39,16 @@ function describeError(code: string | undefined) {
 }
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     callbackUrl?: string | string[];
     error?: string | string[];
-  };
+  }>;
 }
 
-export default async function LoginPage({ searchParams }: Props) {
+export default async function LoginPage(props: Props) {
+  const searchParams = await props.searchParams;
   const callbackUrl = safeCallbackUrl(searchParams.callbackUrl);
-  const session = await getSession(headers());
+  const session = await getSession(await headers());
   if (session) {
     redirect(callbackUrl);
   }

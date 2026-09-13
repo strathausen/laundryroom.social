@@ -9,6 +9,11 @@ export const routing = defineRouting({
 
   // Used when no locale matches
   defaultLocale: "en",
+
+  // next-intl 4 made the NEXT_LOCALE cookie a session cookie by default (v3
+  // kept it for a year), so an explicitly picked locale would be forgotten as
+  // soon as the browser closes. Keep remembering it, as before the upgrade.
+  localeCookie: { maxAge: 60 * 60 * 24 * 365 },
 });
 
 export type Locale = (typeof routing.locales)[number];

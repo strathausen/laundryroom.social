@@ -3,11 +3,10 @@ import Image from "next/image";
 import { Link } from "~/i18n/routing";
 import { api, HydrateClient } from "~/trpc/server";
 
-export default async function UserPage({
-  params,
-}: {
-  params: { userId: string };
+export default async function UserPage(props: {
+  params: Promise<{ userId: string }>;
 }) {
+  const params = await props.params;
   const session = await api.auth.getSession();
   const user = await api.profile.getPublicProfile({ userId: params.userId });
   return (
@@ -17,12 +16,16 @@ export default async function UserPage({
           {user?.name}
         </h1>
         {user?.image && (
+          // `user.image` may point at an oauth provider host (google's
+          // lh3.googleusercontent.com) that is not in images.remotePatterns, so
+          // serve the 200px avatar as-is instead of through /_next/image.
           <Image
             src={user.image}
             alt={user.name || "user profile image"}
             width={200}
             height={200}
             className="border-2 border-black"
+            unoptimized
           />
         )}
         {user?.pronouns && (

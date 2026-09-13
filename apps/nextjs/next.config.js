@@ -13,13 +13,11 @@ const config = {
 
   /** Self-contained build for the docker image; lands at .next/standalone/apps/nextjs/server.js */
   output: "standalone",
-  experimental: {
-    /** trace from the monorepo root so the workspace packages end up in the standalone bundle */
-    outputFileTracingRoot: path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      "../../",
-    ),
-  },
+  /** trace from the monorepo root so the workspace packages end up in the standalone bundle */
+  outputFileTracingRoot: path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../",
+  ),
 
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [
@@ -35,10 +33,6 @@ const config = {
   typescript: { ignoreBuildErrors: true },
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   images: {
-    // next 14 is not patched for the image-optimizer rce advisories (fix is
-    // next >= 15.5.24); serve originals and block /_next/image at nginx until
-    // the next 15 upgrade lands
-    unoptimized: true,
     remotePatterns: [
       {
         hostname: "utfs.io",

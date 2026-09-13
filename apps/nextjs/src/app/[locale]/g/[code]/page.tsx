@@ -7,10 +7,10 @@ import { GroupShortCode } from "@laundryroom/db/schema";
 import { redirect } from "~/i18n/routing";
 
 interface ShortCodePageProps {
-  params: {
+  params: Promise<{
     code: string;
     locale: string;
-  };
+  }>;
 }
 
 /**
@@ -20,9 +20,8 @@ interface ShortCodePageProps {
  * JavaScript, so a client-side redirect would always leave them on the generic
  * site card instead of following through to the group's own metadata.
  */
-export default async function ShortCodeRedirect({
-  params,
-}: ShortCodePageProps) {
+export default async function ShortCodeRedirect(props: ShortCodePageProps) {
+  const params = await props.params;
   const shortCode = await db.query.GroupShortCode.findFirst({
     where: eq(GroupShortCode.code, params.code),
     columns: { groupId: true },

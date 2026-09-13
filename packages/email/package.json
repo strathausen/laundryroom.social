@@ -26,6 +26,6 @@
   "prettier": "@laundryroom/prettier-config",
   "dependencies": {
     "render": "^0.1.4",
-    "resend": "^4.0.0"
+    "resend": "^4.8.0"
   }
 }

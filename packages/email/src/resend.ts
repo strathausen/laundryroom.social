@@ -18,8 +18,8 @@ export async function sendEmail<K extends keyof typeof emailTemplates>(
   params: Parameters<(typeof emailTemplates)[K]>[0],
   attachments?: Attachments,
 ): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
   const renderedTemplate: RenderedEmail = emailTemplates[template](
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
     params as any,
   );
   // the resend sdk reports failures (rate limits, 4xx/5xx, network errors)

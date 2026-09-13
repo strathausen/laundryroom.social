@@ -11,10 +11,10 @@ import { GroupLayoutContent } from "~/app/_components/group/group-layout-content
 
 interface GroupLayoutProps {
   children: ReactNode;
-  params: {
+  params: Promise<{
     groupId: string;
     locale: string;
-  };
+  }>;
 }
 
 const notFoundMetadata: Metadata = {
@@ -22,9 +22,10 @@ const notFoundMetadata: Metadata = {
   description: "The requested group could not be found",
 };
 
-export async function generateMetadata({
-  params,
-}: GroupLayoutProps): Promise<Metadata> {
+export async function generateMetadata(
+  props: GroupLayoutProps,
+): Promise<Metadata> {
+  const params = await props.params;
   const group = await db.query.Group.findFirst({
     where: eq(Group.id, params.groupId),
     columns: {
@@ -53,7 +54,7 @@ export async function generateMetadata({
     // the same response as for a missing group. note that this only keeps the
     // group's details out of link previews and crawler results: group.byId
     // does not gate on status, so non-members can still open the page itself.
-    const session = await getSession(headers());
+    const session = await getSession(await headers());
     const membership = session?.user
       ? await db.query.GroupMember.findFirst({
           where: and(

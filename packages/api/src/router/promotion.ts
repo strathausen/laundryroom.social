@@ -60,11 +60,7 @@ export const promotionRouter = createTRPCRouter({
       try {
         await sendEmail("strathausen@pm.me", "promotionStatusChange", {
           group,
-          user: {
-            ...user,
-            email: user.email ?? "no-email",
-            name: user.name ?? "human",
-          },
+          user,
           status: input.status,
           message: input.message,
         });

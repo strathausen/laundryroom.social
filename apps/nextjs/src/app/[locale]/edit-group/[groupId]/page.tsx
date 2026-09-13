@@ -1,16 +1,19 @@
 "use client";
 
+import { use } from "react";
+
 import { GroupForm } from "~/app/_components/group/group-form";
 import { LoginCta } from "~/app/_components/login-cta";
 import { useRouter } from "~/i18n/routing";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     groupId: string;
-  };
+  }>;
 }
 
-export default function EditGroupPage({ params }: PageProps) {
+export default function EditGroupPage(props: PageProps) {
+  const params = use(props.params);
   const isNew = params.groupId === "new";
   const router = useRouter();
   return (

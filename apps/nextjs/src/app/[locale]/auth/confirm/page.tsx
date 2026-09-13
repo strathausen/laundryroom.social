@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  params: { locale: string };
-  searchParams: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{
     token?: string | string[];
     callbackURL?: string | string[];
-  };
+  }>;
 }
 
 /**
@@ -28,7 +28,9 @@ interface Props {
  * through a plain html form submit that needs a real click: no auto-submit,
  * no javascript redirect.
  */
-export default function ConfirmSignInPage({ params, searchParams }: Props) {
+export default async function ConfirmSignInPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const token = firstParam(searchParams.token);
   const callbackURL = safeCallbackUrl(searchParams.callbackURL);
   // used or expired tokens send the person back to the login page with ?error=

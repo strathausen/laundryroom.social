@@ -10,7 +10,7 @@
 
 This is a [Turborepo](https://turborepo.org) monorepo (pnpm workspaces), originally bootstrapped from [create-t3-turbo](https://github.com/t3-oss/create-t3-turbo).
 
-- **Web**: Next.js 14 (App Router), React 18, Tailwind CSS, [next-intl](https://next-intl.dev) for i18n (`de`, `en`, `es`, `fr`, `ro`)
+- **Web**: Next.js 15 (App Router), React 19, Tailwind CSS, [next-intl](https://next-intl.dev) for i18n (`de`, `en`, `es`, `fr`, `ro`)
 - **API**: tRPC v11, end-to-end typesafe between server and clients
 - **Database**: Postgres via Drizzle ORM (the dokku postgres plugin in production, any Postgres url such as Neon locally)
 - **Auth**: [Better Auth](https://www.better-auth.com) with Google OAuth and email magic links (Resend), see [Auth](#3-auth)
@@ -20,7 +20,7 @@ This is a [Turborepo](https://turborepo.org) monorepo (pnpm workspaces), origina
 
 ```text
 apps
-  └─ nextjs       the web app (Next.js 14, App Router, next-intl, tRPC server)
+  └─ nextjs       the web app (Next.js 15, App Router, next-intl, tRPC server)
 packages
   ├─ api          tRPC v11 routers (auth, profile, group, meetup, pledge, ...)
   ├─ auth         Better Auth server config (`auth`, `getSession`, the `Session` type)

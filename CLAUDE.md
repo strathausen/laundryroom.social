@@ -29,7 +29,7 @@ git push dokku main   # Deploy the web app: dokku builds the root Dockerfile, sw
 This is a T3 Turbo monorepo using pnpm workspaces and Turborepo.
 
 ### Apps
-- **apps/nextjs**: Next.js 14 web app with App Router, next-intl for i18n (locales: de, en, es, fr, ro)
+- **apps/nextjs**: Next.js 15 web app with App Router, React 19, next-intl 4 for i18n (locales: de, en, es, fr, ro)
 
 ### Packages
 - **@laundryroom/api**: tRPC v11 router (routers: auth, profile, comment, discussion, group, meetup, pledge, promotion)

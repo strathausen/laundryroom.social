@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Provider as JotaiProvider } from "jotai";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 import { cn } from "@laundryroom/ui";
 import { ThemeProvider, ThemeToggle } from "@laundryroom/ui/theme";
@@ -20,7 +20,6 @@ import { getSession } from "@laundryroom/auth";
 import { CookieConsent } from "@laundryroom/ui/cookie-consent";
 
 import { env } from "~/env";
-import type { Locale } from "~/i18n/routing";
 import { routing } from "~/i18n/routing";
 import { Footer } from "../_components/footer";
 import { NavBar } from "../_components/navbar";
@@ -28,8 +27,10 @@ import { NavBar } from "../_components/navbar";
 export async function generateMetadata({
   params: _params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
+  // The locale is picked up from the request config (`~/i18n/request.ts`), so
+  // `params` does not need to be awaited here.
   const t = await getTranslations("metadata");
 
   return {
@@ -59,18 +60,23 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout(props: {
+export default async function RootLayout({
+  children,
+  params,
+}: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  // Ensure that the incoming `locale` is valid
-  if (!routing.locales.includes(props.params.locale as Locale)) {
+  // Ensure that the incoming `locale` is valid. The middleware only lets known
+  // locales through, but paths it skips (anything with a file extension) still
+  // land in this segment, e.g. `/unknown.txt`.
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
-  const session = await getSession(headers());
-  const messages = await getMessages();
+  const session = await getSession(await headers());
   return (
-    <html lang={props.params.locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-background font-sans text-foreground antialiased print:min-h-0",
@@ -84,11 +90,13 @@ export default async function RootLayout(props: {
           defaultTheme="light"
           forcedTheme="light" /*enableSystem*/
         >
-          <NextIntlClientProvider messages={messages}>
+          {/* Rendered from a server component, so next-intl 4 fills in locale,
+              messages, timeZone and now from the request config itself. */}
+          <NextIntlClientProvider>
             <JotaiProvider>
               <NavBar user={session?.user ?? null} />
               <div className="flex min-h-svh flex-col justify-between pl-0 md:pt-4 print:min-h-0">
-                <TRPCReactProvider>{props.children}</TRPCReactProvider>
+                <TRPCReactProvider>{children}</TRPCReactProvider>
                 <div className="mt-4 flex flex-col items-center print:mt-0">
                   <div className="max-w-5xl">
                     <Footer />
