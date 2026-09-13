@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { eq } from "drizzle-orm";
+import { and, eq, not } from "drizzle-orm";
 
+import { auth } from "@laundryroom/auth";
 import { db } from "@laundryroom/db/client";
-import { Group } from "@laundryroom/db/schema";
+import { Group, GroupMember } from "@laundryroom/db/schema";
 
 import { GroupLayoutContent } from "~/app/_components/group/group-layout-content";
-import { env } from "~/env";
 
 interface GroupLayoutProps {
   children: ReactNode;
@@ -15,6 +15,11 @@ interface GroupLayoutProps {
     locale: string;
   };
 }
+
+const notFoundMetadata: Metadata = {
+  title: "Group not found",
+  description: "The requested group could not be found",
+};
 
 export async function generateMetadata({
   params,
@@ -25,20 +30,48 @@ export async function generateMetadata({
       name: true,
       description: true,
       image: true,
+      status: true,
     },
   });
 
   if (!group) {
-    return {
-      title: "Group not found",
-      description: "The requested group could not be found",
-    };
+    return notFoundMetadata;
   }
 
-  const baseUrl =
-    env.VERCEL_ENV === "production"
-      ? "https://www.laundryroom.social"
-      : "http://localhost:3000";
+  // metadata is also served to anonymous fetches (link scrapers, crawlers), so
+  // only publicly reachable groups expose their name, description and image to
+  // non-members. "hidden" groups are unlisted but still accessible, and the
+  // status column defaults to "active", so a missing value counts as public.
+  const isPublic =
+    group.status === null ||
+    group.status === "active" ||
+    group.status === "hidden";
+
+  if (!isPublic) {
+    // private/nsfw/archived: members get the real title, everyone else gets
+    // the same response as for a missing group. note that this only keeps the
+    // group's details out of link previews and crawler results: group.byId
+    // does not gate on status, so non-members can still open the page itself.
+    const session = await auth();
+    const membership = session?.user
+      ? await db.query.GroupMember.findFirst({
+          where: and(
+            eq(GroupMember.groupId, params.groupId),
+            eq(GroupMember.userId, session.user.id),
+            not(eq(GroupMember.role, "banned")),
+          ),
+          columns: { userId: true },
+        })
+      : null;
+
+    if (!membership) {
+      return notFoundMetadata;
+    }
+  }
+
+  // relative paths resolve against metadataBase set in the root layout, which
+  // already knows about production vs preview deployments vs localhost
+  const image = group.image ? group.image : "/og-default.png";
 
   return {
     title: `${group.name} | laundryroom.social`,
@@ -46,15 +79,15 @@ export async function generateMetadata({
     openGraph: {
       title: group.name,
       description: group.description,
-      url: `${baseUrl}/${params.locale}/group/${params.groupId}`,
+      url: `/${params.locale}/group/${params.groupId}/meetups`,
       siteName: "laundryroom.social 🧺",
-      images: group.image ? [group.image] : undefined,
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       site: "@strathausen",
       creator: "@strathausen",
-      images: group.image ? [group.image] : undefined,
+      images: [image],
     },
   };
 }

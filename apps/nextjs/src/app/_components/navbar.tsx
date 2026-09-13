@@ -17,10 +17,8 @@ interface Props {
 }
 
 const menuLinks = [
-  // { label: "my home", link: "playground", icon: <FaCalendar /> },
   { label: "groups", link: "groups", icon: <FaPeopleGroup /> },
   { label: "create", link: "edit-group/new", icon: <FaPlus /> },
-  // { label: "feed", link: "feed", icon: <FaBowlRice /> },
   // { label: "notifications", link: "notifications", icon: <BellDot /> },
 ] as const;
 
@@ -49,7 +47,6 @@ export function NavBar(props: Props) {
           <Link
             key={link}
             href={`/${link}`}
-            // href={`/${link === "feed" && !props.session?.user ? "" : link}`}
             className={`drop-shadow-white flex flex-col items-center gap-3 underline decoration-4 transition-all hover:decoration-green-400 md:flex-none ${
               pathName.startsWith(`/${link}`)
                 ? "font-bold decoration-green-400"
@@ -88,7 +85,11 @@ export function NavBar(props: Props) {
           <LocaleSwitcher />
         </div>
         <NavLink
-          href={props.session ? "/api/auth/signout" : "/api/auth/signin"}
+          href={
+            props.session
+              ? "/api/auth/signout"
+              : `/api/auth/signin?callbackUrl=${encodeURIComponent(pathName)}`
+          }
           className="hidden md:flex"
         >
           {props.session ? t("logout") : t("login")}

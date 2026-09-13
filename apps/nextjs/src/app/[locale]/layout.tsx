@@ -20,6 +20,7 @@ import { auth } from "@laundryroom/auth";
 import { CookieConsent } from "@laundryroom/ui/cookie-consent";
 
 import { env } from "~/env";
+import type { Locale } from "~/i18n/routing";
 import { routing } from "~/i18n/routing";
 import { Footer } from "../_components/footer";
 import { NavBar } from "../_components/navbar";
@@ -32,10 +33,14 @@ export async function generateMetadata({
   const t = await getTranslations("metadata");
 
   return {
+    // relative image paths below resolve against this, so preview deployments
+    // must use their own vercel url rather than localhost
     metadataBase: new URL(
       env.VERCEL_ENV === "production"
         ? "https://www.laundryroom.social"
-        : "http://localhost:3000",
+        : env.VERCEL_URL
+          ? `https://${env.VERCEL_URL}`
+          : "http://localhost:3000",
     ),
     title: t("title"),
     description: t("description"),
@@ -44,15 +49,13 @@ export async function generateMetadata({
       description: t("description"),
       url: "https://www.laundryroom.social",
       siteName: t("site_name"),
-      images:
-        "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
+      images: "/og-default.png",
     },
     twitter: {
       card: "summary_large_image",
       site: "@strathausen",
       creator: "@strathausen",
-      images:
-        "https://ey3fdc1u0dkxj9mc.public.blob.vercel-storage.com/group/0.1066204683658376-TTkqZFJioOD4hDp2lXFkMmg7GlZiLe.png",
+      images: "/og-default.png",
     },
   };
 }
@@ -69,13 +72,13 @@ export default async function RootLayout(props: {
   params: { locale: string };
 }) {
   // Ensure that the incoming `locale` is valid
-  if (!routing.locales.includes(props.params.locale as "en" | "de")) {
+  if (!routing.locales.includes(props.params.locale as Locale)) {
     notFound();
   }
   const session = await auth();
   const messages = await getMessages();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={props.params.locale} suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-background font-sans text-foreground antialiased print:min-h-0",

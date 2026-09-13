@@ -1,44 +1,40 @@
-"use client";
+import { notFound } from "next/navigation";
+import { eq } from "drizzle-orm";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { db } from "@laundryroom/db/client";
+import { GroupShortCode } from "@laundryroom/db/schema";
 
-import { api } from "~/trpc/react";
+import { redirect } from "~/i18n/routing";
 
-export default function ShortCodeRedirect() {
-  const params = useParams<{ code: string }>();
-  const router = useRouter();
+interface ShortCodePageProps {
+  params: {
+    code: string;
+    locale: string;
+  };
+}
 
-  const { data, error } = api.group.byShortCode.useQuery(
-    { code: params.code },
-    { retry: false },
-  );
+/**
+ * Resolves a group short code (used in QR codes and shared links) on the
+ * server and redirects to the group's meetups page. This has to be a server
+ * component: link scrapers (WhatsApp, Twitter, Facebook, ...) don't run
+ * JavaScript, so a client-side redirect would always leave them on the generic
+ * site card instead of following through to the group's own metadata.
+ */
+export default async function ShortCodeRedirect({
+  params,
+}: ShortCodePageProps) {
+  const shortCode = await db.query.GroupShortCode.findFirst({
+    where: eq(GroupShortCode.code, params.code),
+    columns: { groupId: true },
+  });
 
-  useEffect(() => {
-    if (data?.groupId) {
-      router.push(`/group/${data.groupId}/meetups`);
-    }
-  }, [data, router]);
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Group not found</h1>
-          <p className="mt-2 text-gray-600">
-            The group you're looking for doesn't exist or has been removed.
-          </p>
-        </div>
-      </div>
-    );
+  if (!shortCode) {
+    notFound();
   }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">Redirecting...</h1>
-        <p className="mt-2 text-gray-600">Please wait while we redirect you.</p>
-      </div>
-    </div>
-  );
+  // locale-aware redirect from next-intl, lands on /<locale>/group/<id>/meetups
+  redirect({
+    href: `/group/${shortCode.groupId}/meetups`,
+    locale: params.locale,
+  });
 }
