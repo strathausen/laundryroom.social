@@ -3,7 +3,6 @@
     "groups": "grupos",
     "my_groups": "mis grupos",
     "create": "crear",
-    "feed": "feed",
     "feedback": "feedback",
     "proof_proof_mole_mop": "perfil",
     "login": "iniciar sesión",
@@ -69,4 +68,4 @@
     "placeholder": "¿cómo te llamamos?",
     "submit": "ok"
   }
-} 
+}
