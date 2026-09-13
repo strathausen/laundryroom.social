@@ -46,7 +46,7 @@ export const emailTemplates = {
       subject: `${isNew ? "📅 New Meetup:" : "📆 Meetup changed:"} ${meetup.title} in ${group.name}`,
       body: `Dear human,
 
-A meetup has been ${isNew ? "upd" : "cre"}ated in your group "${group.name}" on https://www.laundryroom.social/meetup/${meetup.id}
+A meetup has been ${isNew ? "cre" : "upd"}ated in your group "${group.name}" on https://www.laundryroom.social/meetup/${meetup.id}
 
 
 ${meetup.title}

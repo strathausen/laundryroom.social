@@ -56,16 +56,21 @@ export const promotionRouter = createTRPCRouter({
           message: input.message,
         })
         .where(eq(GroupPromotion.id, promotion.id));
-      await sendEmail("strathausen@pm.me", "promotionStatusChange", {
-        group,
-        user: {
-          ...user,
-          email: user.email ?? "no-email",
-          name: user.name ?? "human",
-        },
-        status: input.status,
-        message: input.message,
-      });
+      // the status is already saved, a failing email must not fail the mutation
+      try {
+        await sendEmail("strathausen@pm.me", "promotionStatusChange", {
+          group,
+          user: {
+            ...user,
+            email: user.email ?? "no-email",
+            name: user.name ?? "human",
+          },
+          status: input.status,
+          message: input.message,
+        });
+      } catch (error) {
+        console.error("failed to send promotion status email", error);
+      }
       return true;
     }),
 });
