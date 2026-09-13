@@ -35,6 +35,10 @@ const config = {
   typescript: { ignoreBuildErrors: true },
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   images: {
+    // next 14 is not patched for the image-optimizer rce advisories (fix is
+    // next >= 15.5.24); serve originals and block /_next/image at nginx until
+    // the next 15 upgrade lands
+    unoptimized: true,
     remotePatterns: [
       {
         hostname: "utfs.io",
