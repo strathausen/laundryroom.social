@@ -50,10 +50,8 @@ export const commentRouter = {
         limit: input.limit + 1,
         orderBy: desc(Comment.createdAt),
       });
-      const [[membership], comments] = await Promise.all([
-        membershipQuery.execute(),
-        commentsQuery.execute(),
-      ]);
+      const [membership] = await membershipQuery;
+      const comments = commentsQuery;
       if (!membership || membership.role === "banned") {
         return { comments: [], nextCursor: undefined, prevCursor: undefined };
       }
