@@ -17,35 +17,52 @@ if (!connectionString && !process.env.SKIP_ENV_VALIDATION) {
 
 // Cache the pool on globalThis outside of production so Next.js dev HMR does
 // not open a fresh pool (and leak connections) on every module reload.
-const globalForDb = globalThis as unknown as { pool: Pool | undefined };
+const globalForDb = globalThis as unknown as {
+  pool: Pool | undefined;
+  lockPool: Pool | undefined;
+};
 
 // SSL is driven purely by the connection string: node-postgres honours
 // `?sslmode=verify-full` (Neon / hosted dev; `require` still works but pg 8
 // logs a security warning for it and pg 9 will stop verifying the server
 // certificate) and connects in plaintext when the parameter is absent (dokku
 // postgres over the private docker network).
-const createPool = () => {
+const createPool = (name: string, max: number) => {
   const p = new Pool({
     connectionString,
     // Fail fast when postgres is unreachable instead of hanging every request
-    // until nginx times it out. dokku postgres allows 100 connections, so 10
-    // leaves room for drizzle-kit and a future worker next to the app.
+    // until nginx times it out. dokku postgres allows 100 connections; the app
+    // pool (10) and the lock pool (4) leave room for drizzle-kit and a future
+    // worker next to the app.
     connectionTimeoutMillis: 10_000,
     idleTimeoutMillis: 30_000,
-    max: 10,
+    max,
   });
   // pg re-emits errors from idle clients on the pool (e.g. the server closed
   // the connection during `dokku postgres:restart`). Without a listener node
   // treats that as an uncaught exception, which would exit a plain worker.
   p.on("error", (err) => {
-    console.error("[db] idle client error", err);
+    console.error(`[db] idle client error (${name} pool)`, err);
   });
   return p;
 };
 
-export const pool = globalForDb.pool ?? createPool();
+export const pool = globalForDb.pool ?? createPool("app", 10);
 
 // eslint-disable-next-line no-restricted-properties
 if (process.env.NODE_ENV !== "production") globalForDb.pool = pool;
+
+/**
+ * A second, small pool for connections that stay checked out while slow work
+ * runs elsewhere: the atproto oauth lock (packages/auth/src/atproto/lock.ts)
+ * holds one across network calls to an authorization server. Kept apart from
+ * `pool`, so a pile-up of those can never take the connections that every
+ * other query needs; when all four are busy, the next lock waits (up to
+ * connectionTimeoutMillis) instead of the whole app. Created on first use.
+ */
+export function getLockPool(): Pool {
+  globalForDb.lockPool ??= createPool("lock", 4);
+  return globalForDb.lockPool;
+}
 
 export const db = drizzle(pool, { casing: "snake_case", schema });

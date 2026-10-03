@@ -24,7 +24,7 @@ import {
   Meetup,
   User,
 } from "@laundryroom/db/schema";
-import { sendEmail } from "@laundryroom/email";
+import { deliverableEmail, sendEmail } from "@laundryroom/email";
 import { classify } from "@laundryroom/llm";
 
 import {
@@ -516,7 +516,13 @@ export const groupRouter = {
             ),
             with: {
               user: {
-                columns: { id: true, email: true, name: true, flags: true },
+                columns: {
+                  id: true,
+                  email: true,
+                  contactEmail: true,
+                  name: true,
+                  flags: true,
+                },
               },
               group: { columns: { id: true, name: true } },
             },
@@ -528,12 +534,16 @@ export const groupRouter = {
               `group ${groupId} has no owner, skipping new member notification`,
             );
           } else if (nsfwAllowed(group.status, ownerMembership.user.flags)) {
-            // an owner who opted out of nsfw gets no mail about an nsfw group
-            await sendEmail(ownerMembership.user.email, "newMember", {
-              member: ctx.session.user,
-              group: ownerMembership.group,
-              user: ownerMembership.user,
-            });
+            // an owner who opted out of nsfw gets no mail about an nsfw group,
+            // nor does one without a deliverable address (atproto sign-up)
+            const to = deliverableEmail(ownerMembership.user);
+            if (to) {
+              await sendEmail(to, "newMember", {
+                member: ctx.session.user,
+                group: ownerMembership.group,
+                user: ownerMembership.user,
+              });
+            }
           }
         } catch (err) {
           console.error("failed to send new member notification", err);
@@ -611,12 +621,25 @@ export const groupRouter = {
             eq(GroupMember.groupId, groupId),
             inArray(GroupMember.role, [...ADMIN_ROLES]),
           ),
-          with: { user: { columns: { id: true, email: true, name: true } } },
+          with: {
+            user: {
+              columns: {
+                id: true,
+                email: true,
+                contactEmail: true,
+                name: true,
+              },
+            },
+          },
         });
         // sequential on purpose, resend rate-limits bursts (see meetup.upsert)
         for (const admin of admins) {
+          const to = deliverableEmail(admin.user);
+          if (!to) {
+            continue;
+          }
           try {
-            await sendEmail(admin.user.email, "joinRequest", {
+            await sendEmail(to, "joinRequest", {
               member: ctx.session.user,
               group,
               user: admin.user,

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { and, desc, eq, inArray, lte } from "@laundryroom/db";
 import { Comment, Discussion, GroupMember } from "@laundryroom/db/schema";
-import { sendEmail } from "@laundryroom/email";
+import { deliverableEmail, sendEmail } from "@laundryroom/email";
 import { classifyModeration } from "@laundryroom/llm";
 
 import {
@@ -162,7 +162,15 @@ export const commentRouter = {
           isActiveMemberRow(),
         ),
         with: {
-          user: { columns: { id: true, name: true, email: true, flags: true } },
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true,
+              contactEmail: true,
+              flags: true,
+            },
+          },
           group: { columns: { status: true } },
         },
       });
@@ -173,8 +181,13 @@ export const commentRouter = {
         if (!nsfwAllowed(group.status, user.flags)) {
           continue;
         }
+        // atproto sign-ups without a confirmed email get no mail
+        const to = deliverableEmail(user);
+        if (!to) {
+          continue;
+        }
         try {
-          await sendEmail(user.email, "newComment", {
+          await sendEmail(to, "newComment", {
             user,
             discussion,
             comment: input,

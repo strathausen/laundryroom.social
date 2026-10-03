@@ -2,9 +2,10 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { auth } from "@laundryroom/auth";
+import { auth, forgetAtprotoSession } from "@laundryroom/auth";
 import { and, eq } from "@laundryroom/db";
 import {
+  Account,
   Group,
   GroupMember,
   UpdateProfileSchema,
@@ -111,7 +112,18 @@ export const authRouter = {
       });
     }
 
+    // the account rows go with the user (cascade); read the dids first
+    const atprotoAccounts = await ctx.db.query.Account.findMany({
+      where: and(eq(Account.userId, userId), eq(Account.providerId, "atproto")),
+      columns: { accountId: true },
+    });
+
     await ctx.db.delete(User).where(eq(User.id, userId));
+    // the stored oauth session holds a refresh token for the person's pds:
+    // revoke it there and forget it here (best effort, never throws)
+    for (const { accountId } of atprotoAccounts) {
+      await forgetAtprotoSession(accountId);
+    }
     // the session rows are gone by cascade, but the browser still holds the
     // session cookies (and the signed cookie cache, good for 5 minutes without
     // a db lookup); sign-out expires them even when the row no longer exists

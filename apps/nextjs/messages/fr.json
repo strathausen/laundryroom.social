@@ -103,5 +103,62 @@
     "joinToSeeWho": "rejoins le groupe pour voir qui vient",
     "joinToRsvp": "rejoins le groupe pour répondre",
     "logInToRsvp": "connecte-toi pour répondre"
+  },
+  "login": {
+    "title": "connexion",
+    "subtitle": "connecte-toi pour rejoindre des groupes, répondre aux rencontres et discuter avec du monde",
+    "or": "ou",
+    "continueWithGoogle": "continuer avec google",
+    "emailLabel": "e-mail",
+    "emailPlaceholder": "toi@exemple.com",
+    "emailSubmit": "envoie-moi un lien de connexion",
+    "emailSending": "envoi…",
+    "emailHint": "pas besoin de mot de passe. on t'envoie un lien par e-mail, et tu appuies sur un bouton pour finir de te connecter.",
+    "sentTitle": "regarde ta boîte mail",
+    "sentBody": "on a envoyé un lien de connexion à <strong>{email}</strong>. ouvre-le et appuie sur le bouton de la page qui s'affiche.",
+    "sentHint": "rien reçu ? regarde dans tes spams, ou réessaie avec une autre adresse. le lien expire au bout d'un moment.",
+    "useDifferentEmail": "utiliser un autre e-mail",
+    "errors": {
+      "tooManyAttempts": "trop de tentatives, réessaie plus tard",
+      "generic": "un truc a coincé, réessaie",
+      "signInFailed": "la connexion a échoué, réessaie",
+      "invalidToken": "ce lien n'est plus valable, demandes-en un nouveau",
+      "googleCancelled": "connexion google annulée",
+      "googleIncomplete": "la connexion google n'a pas abouti, réessaie",
+      "googleNoEmail": "google n'a partagé aucune adresse e-mail pour ce compte",
+      "googleEmailMismatch": "ce compte google utilise un autre e-mail",
+      "googleLinkFailed": "impossible de relier ce compte google à ton profil",
+      "googleAlreadyLinked": "ce compte google appartient déjà à un autre profil"
+    }
+  },
+  "atproto": {
+    "signInLead": "connecte-toi avec bluesky ou n'importe quel autre compte atproto",
+    "handleLabel": "ton handle",
+    "handlePlaceholder": "ex. alice.bsky.social",
+    "explainer": "ton handle bluesky marche, ou n'importe quel autre handle atproto",
+    "looksLikeEmail": "ça ressemble à une adresse e-mail. un handle ressemble à alice.bsky.social",
+    "continue": "continuer avec ton handle",
+    "redirecting": "un instant…",
+    "noAccount": "pas encore de compte ?",
+    "createAccount": "crée-en un sur {host}",
+    "accountTitle": "ton compte atproto",
+    "connectedAs": "connecté en tant que <strong>{account}</strong>",
+    "connectedHint": "tu peux t'en servir pour te connecter ici. ton handle s'affiche sur ton profil",
+    "connectTitle": "relie ton compte atproto",
+    "connectHint": "comme ça, tu pourras aussi te connecter avec. ton handle s'affichera sur ton profil",
+    "connect": "relier",
+    "errors": {
+      "invalid_handle": "ça ne ressemble pas à un handle. essaie un truc comme alice.bsky.social",
+      "resolve_failed": "on ne trouve pas ce compte ou on n'arrive pas à joindre son serveur. vérifie le handle et réessaie",
+      "cancelled": "annulé, pas de souci. réessaie quand tu veux",
+      "denied": "cette connexion n'a pas abouti. recommence à partir d'ici",
+      "expired": "la connexion a pris trop de temps ou a été ouverte dans un autre navigateur. recommence à partir d'ici",
+      "signed_out": "ta session a expiré. connecte-toi, puis relie de nouveau ton compte",
+      "already_linked": "ce compte atproto est déjà relié à un autre profil",
+      "has_other_account": "ton profil est déjà relié à un autre compte atproto",
+      "rate_limited": "trop de tentatives, attends une minute et réessaie",
+      "server_error": "un truc a cassé chez nous, réessaie",
+      "generic": "ça n'a pas marché, réessaie"
+    }
   }
 }

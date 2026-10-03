@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { and, eq } from "@laundryroom/db";
 import { Group, GroupMember, GroupPromotion } from "@laundryroom/db/schema";
-import { sendEmail } from "@laundryroom/email";
+import { deliverableEmail, sendEmail } from "@laundryroom/email";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -60,7 +60,14 @@ export const promotionRouter = createTRPCRouter({
       try {
         await sendEmail("strathausen@pm.me", "promotionStatusChange", {
           group,
-          user,
+          // the template shows the owner's address so the platform owner can
+          // reply; an atproto sign-up may have none, show the handle then
+          user: {
+            ...user,
+            email:
+              deliverableEmail(user) ??
+              (user.handle ? `no email, @${user.handle}` : "no email"),
+          },
           status: input.status,
           message: input.message,
         });

@@ -12,9 +12,16 @@ export default async function UserPage(props: {
   return (
     <HydrateClient>
       <main className="container flex min-h-screen flex-col items-center gap-4 py-16">
-        <h1 className="text-center text-3xl font-bold text-black">
-          {user?.name}
-        </h1>
+        <hgroup className="flex flex-col items-center gap-1">
+          <h1 className="text-center text-3xl font-bold text-black">
+            {user?.name}
+          </h1>
+          {user?.handle && (
+            <p className="break-all text-center text-gray-500">
+              @{user.handle}
+            </p>
+          )}
+        </hgroup>
         {user?.image && (
           // `user.image` may point at an oauth provider host (google's
           // lh3.googleusercontent.com) that is not in images.remotePatterns, so

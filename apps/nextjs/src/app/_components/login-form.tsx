@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 import { FaGoogle } from "react-icons/fa6";
 
 import { Box } from "@laundryroom/ui/box";
@@ -8,24 +9,46 @@ import { Button } from "@laundryroom/ui/button";
 import { Input } from "@laundryroom/ui/input";
 
 import { authClient } from "~/auth-client";
+import { AtprotoHandleForm, AtprotoSignUp } from "./atproto/sign-in";
 
 interface Props {
   /** same-origin relative path to land on after signing in, already validated */
   callbackUrl: string;
   /** message for a failed previous attempt (from ?error=), shown above the form */
   error?: string;
+  /** which atproto options this deployment offers (packages/auth) */
+  atproto: {
+    enabled: boolean;
+    /** the sign-up pds's host, null when sign-up is off */
+    signupHost: string | null;
+    /** callbackUrl with the locale in front, for the atproto forms */
+    callbackURL: string;
+    /** `error` came from a failed atproto attempt */
+    failed?: {
+      /** the handle itself was the problem (not a handle, not found) */
+      invalid: boolean;
+      /** what was typed, to fix rather than retype */
+      handle?: string;
+    };
+  };
 }
 
 type Status = "idle" | "sending" | "sent";
 
-function describeApiError(error: { status: number; message?: string }) {
-  if (error.status === 429) return "too many attempts, try again later";
+function OrDivider() {
+  const t = useTranslations("login");
   return (
-    error.message?.toLowerCase() ?? "something went wrong, please try again"
+    <div className="flex items-center gap-3 text-sm text-gray-500">
+      <hr className="flex-1 border-black" />
+      {t("or")}
+      <hr className="flex-1 border-black" />
+    </div>
   );
 }
 
-export function LoginForm({ callbackUrl, error }: Props) {
+export function LoginForm({ callbackUrl, error, atproto }: Props) {
+  const t = useTranslations("login");
+  const tAtproto = useTranslations("atproto");
   const [email, setEmail] = useState("");
   // honeypot: people never see this field, bots fill in everything they find.
   // this only stops bots that drive the form; anything posting straight to
@@ -35,8 +58,18 @@ export function LoginForm({ callbackUrl, error }: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [googlePending, setGooglePending] = useState(false);
   const [message, setMessage] = useState(error);
+  const messageId = useId();
+  // the handle field points at the message while it is the atproto one
+  const atprotoFailed =
+    atproto.failed && message === error ? atproto.failed : undefined;
   // failed magic links and oauth callbacks come back to this page with ?error=
   const errorCallbackURL = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+
+  const describeApiError = (apiError: { status: number; message?: string }) => {
+    if (apiError.status === 429) return t("errors.tooManyAttempts");
+    // better auth's own message is english; better than nothing
+    return apiError.message?.toLowerCase() ?? t("errors.generic");
+  };
 
   const signInWithGoogle = async () => {
     setMessage(undefined);
@@ -77,21 +110,20 @@ export function LoginForm({ callbackUrl, error }: Props) {
   if (status === "sent") {
     return (
       <Box className="flex w-full max-w-md flex-col gap-4">
-        <h2 className="text-xl font-bold">check your inbox</h2>
+        <h2 className="text-xl font-bold">{t("sentTitle")}</h2>
         <p>
-          we sent a sign-in link to <strong>{email}</strong>. open it and press
-          the button on the page it takes you to.
+          {t.rich("sentBody", {
+            email,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
-        <p className="text-sm text-gray-500">
-          nothing there? check your spam folder, or try again with a different
-          address. the link expires after a short while.
-        </p>
+        <p className="text-sm text-gray-500">{t("sentHint")}</p>
         <Button
           type="button"
           variant="plattenbau"
           onClick={() => setStatus("idle")}
         >
-          use a different email
+          {t("useDifferentEmail")}
         </Button>
       </Box>
     );
@@ -101,26 +133,45 @@ export function LoginForm({ callbackUrl, error }: Props) {
     <Box className="relative flex w-full max-w-md flex-col gap-6">
       {message && (
         <p
+          id={messageId}
           role="alert"
           className="border-2 border-red-500 bg-red-50 p-3 text-red-700"
         >
           {message}
         </p>
       )}
+      {atproto.enabled && (
+        <>
+          <div className="flex flex-col gap-4">
+            <p className="font-bold">{tAtproto("signInLead")}</p>
+            <AtprotoHandleForm
+              callbackURL={atproto.callbackURL}
+              submitLabel={tAtproto("continue")}
+              defaultHandle={atproto.failed?.handle}
+              errorId={atprotoFailed ? messageId : undefined}
+              invalid={atprotoFailed?.invalid}
+            />
+            {atproto.signupHost && (
+              <AtprotoSignUp
+                callbackURL={atproto.callbackURL}
+                host={atproto.signupHost}
+              />
+            )}
+          </div>
+          <OrDivider />
+        </>
+      )}
       <Button
         type="button"
         size="lg"
-        className="flex items-center gap-2"
+        // long translations wrap instead of spilling out at phone width
+        className="flex h-auto min-h-10 items-center gap-2 whitespace-normal py-2"
         onClick={signInWithGoogle}
         disabled={googlePending}
       >
-        <FaGoogle /> continue with google
+        <FaGoogle aria-hidden="true" /> {t("continueWithGoogle")}
       </Button>
-      <div className="flex items-center gap-3 text-sm text-gray-500">
-        <hr className="flex-1 border-black" />
-        or
-        <hr className="flex-1 border-black" />
-      </div>
+      <OrDivider />
       <form
         className="flex flex-col gap-3"
         onSubmit={async (e) => {
@@ -129,12 +180,12 @@ export function LoginForm({ callbackUrl, error }: Props) {
         }}
       >
         <label className="flex flex-col gap-1">
-          <span>email</span>
+          <span>{t("emailLabel")}</span>
           <Input
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder={t("emailPlaceholder")}
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -160,15 +211,13 @@ export function LoginForm({ callbackUrl, error }: Props) {
         <Button
           type="submit"
           size="lg"
+          className="h-auto min-h-10 whitespace-normal py-2"
           disabled={status === "sending" || !email}
         >
-          {status === "sending" ? "sending…" : "email me a sign-in link"}
+          {status === "sending" ? t("emailSending") : t("emailSubmit")}
         </Button>
       </form>
-      <p className="text-sm text-gray-500">
-        no password needed. we email you a link, and you press one button to
-        finish signing in.
-      </p>
+      <p className="text-sm text-gray-500">{t("emailHint")}</p>
     </Box>
   );
 }

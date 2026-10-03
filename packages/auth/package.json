@@ -8,6 +8,7 @@
       "react-server": "./src/index.rsc.ts",
       "default": "./src/index.ts"
     },
+    "./atproto": "./src/atproto/public.ts",
     "./env": "./env.ts"
   },
   "license": "MIT",
@@ -18,6 +19,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@atproto-labs/fetch-node": "0.4.0",
+    "@atproto/oauth-client-node": "0.5.9",
     "@laundryroom/db": "workspace:*",
     "@laundryroom/email": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",

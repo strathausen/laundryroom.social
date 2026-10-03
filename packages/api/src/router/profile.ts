@@ -21,6 +21,9 @@ export const profileRouter = {
           bio: true,
           pronouns: true,
           links: true,
+          // the connected atproto handle: public on the network anyway, and
+          // the profile shows it to everyone (the connect form says so)
+          handle: true,
         },
       });
       return profile;

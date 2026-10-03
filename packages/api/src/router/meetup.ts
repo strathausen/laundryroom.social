@@ -20,7 +20,7 @@ import {
   Meetup,
   UpsertMeetupSchema,
 } from "@laundryroom/db/schema";
-import { sendEmail } from "@laundryroom/email";
+import { deliverableEmail, sendEmail } from "@laundryroom/email";
 
 import {
   canSeeHiddenMeetups,
@@ -389,7 +389,13 @@ export const meetupRouter = createTRPCRouter({
             where: isActiveMemberRow(),
             with: {
               user: {
-                columns: { id: true, email: true, name: true, flags: true },
+                columns: {
+                  id: true,
+                  email: true,
+                  contactEmail: true,
+                  name: true,
+                  flags: true,
+                },
               },
             },
           },
@@ -420,7 +426,12 @@ export const meetupRouter = createTRPCRouter({
       // Some additional checks when updating a meetup
       let meetupId: string;
       let recipients: {
-        user: { email: string; id: string; name: string | null };
+        user: {
+          email: string;
+          contactEmail: string | null;
+          id: string;
+          name: string | null;
+        };
       }[] = [];
       // columns with a default are optional in the input; when omitted they
       // keep the stored value (update) or get the column default (create)
@@ -437,7 +448,12 @@ export const meetupRouter = createTRPCRouter({
               where: eq(Attendee.status, "going"),
               with: {
                 user: {
-                  columns: { id: true, email: true, name: true },
+                  columns: {
+                    id: true,
+                    email: true,
+                    contactEmail: true,
+                    name: true,
+                  },
                 },
               },
             },
@@ -516,9 +532,14 @@ export const meetupRouter = createTRPCRouter({
         if (member.user.id === user.id) {
           continue;
         }
+        // atproto sign-ups without a confirmed email get no mail
+        const to = deliverableEmail(member.user);
+        if (!to) {
+          continue;
+        }
         try {
           await sendEmail(
-            member.user.email,
+            to,
             "eventUpdate",
             {
               isNew: !input.id,

@@ -103,5 +103,62 @@
     "joinToSeeWho": "tritt der gruppe bei, um zu sehen, wer kommt",
     "joinToRsvp": "tritt der gruppe bei, um zuzusagen",
     "logInToRsvp": "melde dich an, um zuzusagen"
+  },
+  "login": {
+    "title": "anmelden",
+    "subtitle": "melde dich an, um gruppen beizutreten, bei treffen zuzusagen und mit leuten zu reden",
+    "or": "oder",
+    "continueWithGoogle": "weiter mit google",
+    "emailLabel": "e-mail",
+    "emailPlaceholder": "du@example.com",
+    "emailSubmit": "schick mir einen anmeldelink",
+    "emailSending": "wird gesendet…",
+    "emailHint": "kein passwort nötig. wir mailen dir einen link, und du drückst einen knopf, um dich fertig anzumelden.",
+    "sentTitle": "schau in dein postfach",
+    "sentBody": "wir haben einen anmeldelink an <strong>{email}</strong> geschickt. öffne ihn und drück den knopf auf der seite, zu der er dich bringt.",
+    "sentHint": "nichts angekommen? schau in den spam-ordner oder probier's mit einer anderen adresse. der link läuft nach kurzer zeit ab.",
+    "useDifferentEmail": "andere e-mail nehmen",
+    "errors": {
+      "tooManyAttempts": "zu viele versuche, probier's später nochmal",
+      "generic": "da ist was schiefgelaufen, versuch's bitte nochmal",
+      "signInFailed": "anmelden hat nicht geklappt, versuch's bitte nochmal",
+      "invalidToken": "dieser link gilt nicht mehr, fordere einen neuen an",
+      "googleCancelled": "google-anmeldung abgebrochen",
+      "googleIncomplete": "die google-anmeldung wurde nicht abgeschlossen, versuch's bitte nochmal",
+      "googleNoEmail": "google hat für dieses konto keine e-mail-adresse geteilt",
+      "googleEmailMismatch": "dieses google-konto nutzt eine andere e-mail",
+      "googleLinkFailed": "dieses google-konto konnte nicht mit deinem profil verknüpft werden",
+      "googleAlreadyLinked": "dieses google-konto gehört schon zu einem anderen profil"
+    }
+  },
+  "atproto": {
+    "signInLead": "melde dich mit bluesky oder einem anderen atproto-konto an",
+    "handleLabel": "dein handle",
+    "handlePlaceholder": "z. b. alice.bsky.social",
+    "explainer": "dein bluesky-handle geht, oder jedes andere atproto-handle",
+    "looksLikeEmail": "das sieht nach einer e-mail-adresse aus. handles sehen so aus: alice.bsky.social",
+    "continue": "weiter mit deinem handle",
+    "redirecting": "einen moment…",
+    "noAccount": "noch kein konto?",
+    "createAccount": "erstell eins auf {host}",
+    "accountTitle": "dein atproto-konto",
+    "connectedAs": "verbunden als <strong>{account}</strong>",
+    "connectedHint": "du kannst dich damit hier anmelden. dein handle steht auf deinem profil",
+    "connectTitle": "verbinde dein atproto-konto",
+    "connectHint": "dann kannst du dich auch damit anmelden. dein handle steht dann auf deinem profil",
+    "connect": "verbinden",
+    "errors": {
+      "invalid_handle": "das sieht nicht nach einem handle aus. probier sowas wie alice.bsky.social",
+      "resolve_failed": "wir finden das konto nicht oder erreichen seinen server nicht. check dein handle und versuch's nochmal",
+      "cancelled": "abgebrochen, kein problem. versuch's einfach nochmal, wann du willst",
+      "denied": "die anmeldung hat nicht geklappt. fang hier einfach nochmal an",
+      "expired": "die anmeldung hat zu lange gedauert oder wurde in einem anderen browser geöffnet. fang hier nochmal an",
+      "signed_out": "deine sitzung ist abgelaufen. melde dich an und verbinde dein konto dann nochmal",
+      "already_linked": "dieses atproto-konto ist schon mit einem anderen profil verbunden",
+      "has_other_account": "dein profil ist schon mit einem anderen atproto-konto verbunden",
+      "rate_limited": "zu viele versuche, warte kurz und probier's dann nochmal",
+      "server_error": "bei uns ist was kaputtgegangen, versuch's bitte nochmal",
+      "generic": "das hat nicht geklappt, versuch's bitte nochmal"
+    }
   }
 }

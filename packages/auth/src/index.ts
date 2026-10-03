@@ -10,34 +10,60 @@ import {
   User,
   Verification,
 } from "@laundryroom/db/schema";
-import { sendEmail } from "@laundryroom/email";
+import { isPlaceholderEmail, sendEmail } from "@laundryroom/email";
 
+import type { AtprotoPluginOptions } from "./atproto/plugin";
 import { env } from "../env";
+import { atprotoClientMode } from "./atproto/config";
+import { atproto, atprotoErrorRedirect } from "./atproto/plugin";
+import { authSecret } from "./secret";
+
+export { atprotoLoginStatus } from "./atproto/config";
+export { APPVIEW_DID, appviewDid } from "./atproto/did";
+export {
+  forgetAtprotoSession,
+  restoreAtprotoSession,
+  type AtprotoSessionResult,
+} from "./atproto/client";
+export type { AtprotoErrorCode } from "./atproto/plugin";
+
+// keep in sync with apps/nextjs/src/i18n/routing.ts
+const ATPROTO_LOCALES: AtprotoPluginOptions = {
+  locales: ["de", "en", "es", "fr", "ro"],
+  defaultLocale: "en",
+};
+
+/**
+ * For the auth route handler: runs better-auth's handler, and a rate-limited
+ * atproto sign-in or callback, or a sign-in better-auth's origin check
+ * refuses, becomes the login page with an error instead of a bare 429 / 403
+ * (see atprotoErrorRedirect); any other response passes through.
+ */
+export function withAtprotoErrorRedirect(
+  request: Request,
+  handler: (request: Request) => Promise<Response>,
+): Promise<Response> {
+  return atprotoErrorRedirect(request, handler, ATPROTO_LOCALES);
+}
 
 // AUTH_URL is required in production (the standalone server only knows its
 // listen address behind the dokku proxy); locally both may be unset, in which
 // case better-auth derives the origin from each request.
 const baseURL = env.AUTH_URL ?? env.APP_URL;
 
-// `next build` evaluates every route module that imports this file while it
-// collects page data, and the docker image is built with NODE_ENV=production
-// but without secrets (SKIP_ENV_VALIDATION=1, like packages/db/src/client.ts).
-// better-auth validates the secret while it initialises and rejects its
-// context promise when the default one is used in production, an unhandled
-// rejection that kills the build worker. The placeholder is therefore keyed
-// to the build phase itself (next sets NEXT_PHASE in the build process and
-// its page-data workers inherit it), not to SKIP_ENV_VALIDATION: that switch
-// also disables the env schema, so a `dokku config:set SKIP_ENV_VALIDATION=1`
-// at runtime would otherwise let a string from the public repo sign session
-// cookies. Outside the build, production fails loudly instead.
-// eslint-disable-next-line no-restricted-properties
-const isBuild = process.env.NEXT_PHASE === "phase-production-build";
-if (!env.AUTH_SECRET && env.NODE_ENV === "production" && !isBuild) {
-  throw new Error("AUTH_SECRET is required in production");
-}
-const secret =
-  env.AUTH_SECRET ??
-  (isBuild ? "build-time-placeholder-secret-never-used-at-runtime" : undefined);
+// Development with a loopback APP_URL (the atproto loopback client): the pages
+// run on http://127.0.0.1:<port> (apps/nextjs/src/middleware.ts sends
+// localhost there), so their posts carry that origin even when APP_URL says
+// localhost.
+const atprotoMode = atprotoClientMode();
+const devLoopbackOrigin =
+  env.NODE_ENV !== "production" && atprotoMode.kind === "loopback"
+    ? atprotoMode.loopbackOrigin
+    : undefined;
+
+// AUTH_SECRET, or a placeholder while `next build` collects page data (see
+// ./secret.ts for why that is keyed to the build phase)
+const secret = authSecret;
 
 /**
  * The magic-link email must not point at the verify endpoint directly:
@@ -59,7 +85,9 @@ export function toConfirmUrl(verifyUrl: string) {
 export const auth = betterAuth({
   baseURL,
   secret,
-  trustedOrigins: baseURL ? [baseURL] : [],
+  trustedOrigins: [baseURL, devLoopbackOrigin].filter(
+    (origin): origin is string => !!origin,
+  ),
   database: drizzleAdapter(db, {
     provider: "pg",
     // better-auth addresses tables by these keys and columns by their object
@@ -89,6 +117,16 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
+  user: {
+    // written by the atproto sign-in only (input: false keeps them out of
+    // better-auth's update-user endpoint); listed here so that getSession and
+    // the Session type carry them
+    additionalFields: {
+      did: { type: "string", required: false, input: false },
+      handle: { type: "string", required: false, input: false },
+      contactEmail: { type: "string", required: false, input: false },
+    },
+  },
   advanced: {
     database: {
       // postgres generates the uuids (all four tables default to gen_random_uuid)
@@ -114,6 +152,13 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/magic-link": { window: 300, max: 3 },
       "/magic-link/verify": { window: 300, max: 10 },
+      // every atproto sign-in resolves a handle and pushes a request to the
+      // person's authorization server on our behalf. Each callback needs a
+      // sign-in, so its limit sits well above (a person who just granted
+      // access never hits it); both answer with the login page, not a 429
+      // (withAtprotoErrorRedirect)
+      "/atproto/sign-in": { window: 60, max: 10 },
+      "/atproto/callback": { window: 60, max: 30 },
     },
   },
   plugins: [
@@ -123,9 +168,15 @@ export const auth = betterAuth({
       // database read (studio, a dump, query logs) does not yield live sign-ins
       storeToken: "hashed",
       sendMagicLink: async ({ email, url }) => {
+        // atproto sign-ups have a placeholder address nobody can receive
+        // mail at (they sign in with their pds); say nothing either way
+        if (isPlaceholderEmail(email)) return;
         await sendEmail(email, "magicLink", { confirmUrl: toConfirmUrl(url) });
       },
     }),
+    // sign in with an atproto account: /api/auth/atproto/sign-in and
+    // /api/auth/atproto/callback (./atproto/plugin.ts)
+    atproto(ATPROTO_LOCALES),
     // has to be last: copies set-cookie headers onto next's cookie store so
     // server actions and route handlers can sign in / out
     nextCookies(),

@@ -103,5 +103,62 @@
     "joinToSeeWho": "únete al grupo para ver quién viene",
     "joinToRsvp": "únete al grupo para confirmar asistencia",
     "logInToRsvp": "inicia sesión para confirmar asistencia"
+  },
+  "login": {
+    "title": "iniciar sesión",
+    "subtitle": "inicia sesión para unirte a grupos, apuntarte a encuentros y hablar con gente",
+    "or": "o",
+    "continueWithGoogle": "seguir con google",
+    "emailLabel": "correo",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "emailSubmit": "mándame un enlace para entrar",
+    "emailSending": "enviando…",
+    "emailHint": "no hace falta contraseña. te mandamos un enlace por correo y pulsas un botón para terminar de entrar.",
+    "sentTitle": "mira tu bandeja de entrada",
+    "sentBody": "te mandamos un enlace para entrar a <strong>{email}</strong>. ábrelo y pulsa el botón de la página que se abre.",
+    "sentHint": "¿no ha llegado nada? mira en la carpeta de spam o prueba con otra dirección. el enlace caduca al poco rato.",
+    "useDifferentEmail": "usar otro correo",
+    "errors": {
+      "tooManyAttempts": "demasiados intentos, prueba más tarde",
+      "generic": "algo salió mal, inténtalo de nuevo",
+      "signInFailed": "no se pudo iniciar sesión, inténtalo de nuevo",
+      "invalidToken": "este enlace ya no vale, pide uno nuevo",
+      "googleCancelled": "cancelaste el inicio de sesión con google",
+      "googleIncomplete": "el inicio de sesión con google no terminó, inténtalo de nuevo",
+      "googleNoEmail": "google no compartió ningún correo de esa cuenta",
+      "googleEmailMismatch": "esa cuenta de google usa otro correo",
+      "googleLinkFailed": "no pudimos vincular esta cuenta de google a tu perfil",
+      "googleAlreadyLinked": "esta cuenta de google ya pertenece a otro perfil"
+    }
+  },
+  "atproto": {
+    "signInLead": "inicia sesión con bluesky o cualquier otra cuenta de atproto",
+    "handleLabel": "tu handle",
+    "handlePlaceholder": "p. ej. alice.bsky.social",
+    "explainer": "vale tu handle de bluesky o cualquier otro handle de atproto",
+    "looksLikeEmail": "eso parece un correo. los handles son como alice.bsky.social",
+    "continue": "seguir con tu handle",
+    "redirecting": "un momento…",
+    "noAccount": "¿aún no tienes cuenta?",
+    "createAccount": "crea una en {host}",
+    "accountTitle": "tu cuenta de atproto",
+    "connectedAs": "conectada como <strong>{account}</strong>",
+    "connectedHint": "puedes usarla para iniciar sesión aquí. tu handle aparece en tu perfil",
+    "connectTitle": "conecta tu cuenta de atproto",
+    "connectHint": "así también podrás iniciar sesión con ella. tu handle aparecerá en tu perfil",
+    "connect": "conectar",
+    "errors": {
+      "invalid_handle": "eso no parece un handle. prueba algo como alice.bsky.social",
+      "resolve_failed": "no encontramos esa cuenta o no llegamos a su servidor. revisa el handle y vuelve a intentarlo",
+      "cancelled": "cancelado, sin problema. vuelve a intentarlo cuando quieras",
+      "denied": "ese inicio de sesión no salió bien. empieza de nuevo desde aquí",
+      "expired": "el inicio de sesión tardó demasiado o se abrió en otro navegador. empieza de nuevo desde aquí",
+      "signed_out": "tu sesión se cerró. inicia sesión y vuelve a conectar tu cuenta",
+      "already_linked": "esa cuenta de atproto ya está conectada a otro perfil",
+      "has_other_account": "tu perfil ya está conectado a otra cuenta de atproto",
+      "rate_limited": "demasiados intentos, espera un minuto y vuelve a probar",
+      "server_error": "algo se rompió por nuestra parte, inténtalo de nuevo",
+      "generic": "eso no funcionó, inténtalo de nuevo"
+    }
   }
 }

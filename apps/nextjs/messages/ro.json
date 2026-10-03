@@ -103,5 +103,62 @@
     "joinToSeeWho": "intră în grup ca să vezi cine vine",
     "joinToRsvp": "intră în grup ca să confirmi",
     "logInToRsvp": "autentifică-te ca să confirmi"
+  },
+  "login": {
+    "title": "autentificare",
+    "subtitle": "autentifică-te ca să intri în grupuri, să confirmi la întâlniri și să vorbești cu oamenii",
+    "or": "sau",
+    "continueWithGoogle": "continuă cu google",
+    "emailLabel": "e-mail",
+    "emailPlaceholder": "tu@exemplu.com",
+    "emailSubmit": "trimite-mi un link pe e-mail",
+    "emailSending": "se trimite…",
+    "emailHint": "nu-ți trebuie parolă. îți trimitem un link pe e-mail și apeși un buton ca să termini autentificarea.",
+    "sentTitle": "uită-te în inbox",
+    "sentBody": "ți-am trimis un link de autentificare la <strong>{email}</strong>. deschide-l și apasă butonul de pe pagina la care te duce.",
+    "sentHint": "n-a venit nimic? uită-te în spam sau încearcă cu altă adresă. linkul expiră după puțin timp.",
+    "useDifferentEmail": "folosește alt e-mail",
+    "errors": {
+      "tooManyAttempts": "prea multe încercări, mai încearcă mai târziu",
+      "generic": "ceva n-a mers, mai încearcă o dată",
+      "signInFailed": "autentificarea n-a reușit, mai încearcă o dată",
+      "invalidToken": "linkul ăsta nu mai e valabil, cere unul nou",
+      "googleCancelled": "ai anulat autentificarea cu google",
+      "googleIncomplete": "autentificarea cu google nu s-a terminat, mai încearcă o dată",
+      "googleNoEmail": "google n-a dat nicio adresă de e-mail pentru contul ăsta",
+      "googleEmailMismatch": "contul ăsta google folosește alt e-mail",
+      "googleLinkFailed": "n-am putut lega contul ăsta google de profilul tău",
+      "googleAlreadyLinked": "contul ăsta google aparține deja altui profil"
+    }
+  },
+  "atproto": {
+    "signInLead": "autentifică-te cu bluesky sau cu orice alt cont atproto",
+    "handleLabel": "handle-ul tău",
+    "handlePlaceholder": "ex. alice.bsky.social",
+    "explainer": "merge handle-ul tău de bluesky sau orice alt handle atproto",
+    "looksLikeEmail": "pare o adresă de e-mail. handle-urile arată așa: alice.bsky.social",
+    "continue": "continuă cu handle-ul tău",
+    "redirecting": "o clipă…",
+    "noAccount": "n-ai cont încă?",
+    "createAccount": "fă-ți unul pe {host}",
+    "accountTitle": "contul tău atproto",
+    "connectedAs": "conectat ca <strong>{account}</strong>",
+    "connectedHint": "te poți autentifica cu el aici. handle-ul tău apare pe profil",
+    "connectTitle": "conectează-ți contul atproto",
+    "connectHint": "așa te poți autentifica și cu el. handle-ul tău o să apară pe profil",
+    "connect": "conectează",
+    "errors": {
+      "invalid_handle": "asta nu arată a handle. încearcă ceva de genul alice.bsky.social",
+      "resolve_failed": "nu găsim contul ăsta sau nu ajungem la serverul lui. verifică handle-ul și mai încearcă o dată",
+      "cancelled": "anulat, nicio problemă. mai încearcă oricând vrei",
+      "denied": "autentificarea n-a mers. ia-o de la capăt de aici",
+      "expired": "autentificarea a durat prea mult sau a fost deschisă în alt browser. ia-o de la capăt de aici",
+      "signed_out": "sesiunea ta a expirat. autentifică-te, apoi conectează-ți din nou contul",
+      "already_linked": "contul ăsta atproto e deja conectat la alt profil",
+      "has_other_account": "profilul tău e deja conectat la alt cont atproto",
+      "rate_limited": "prea multe încercări, așteaptă un minut și mai încearcă",
+      "server_error": "s-a stricat ceva la noi, mai încearcă o dată",
+      "generic": "n-a mers, mai încearcă o dată"
+    }
   }
 }

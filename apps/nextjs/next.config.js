@@ -11,6 +11,13 @@ createJiti(fileURLToPath(import.meta.url))("./src/env");
 const config = {
   reactStrictMode: true,
 
+  /**
+   * dev only: atproto's loopback oauth client must call back on 127.0.0.1, so
+   * the middleware moves local page views there; the dev server otherwise only
+   * accepts localhost as an origin for /_next/* and hot reload
+   */
+  allowedDevOrigins: ["127.0.0.1"],
+
   /** Self-contained build for the docker image; lands at .next/standalone/apps/nextjs/server.js */
   output: "standalone",
   /** trace from the monorepo root so the workspace packages end up in the standalone bundle */

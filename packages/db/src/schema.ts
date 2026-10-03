@@ -65,9 +65,25 @@ export const User = pgTable(
       .$onUpdateFn(() => new Date()),
     role: UserRole("role").default("user").notNull(),
     flags: UserFlags("flags").array().default([]),
+    // atproto identity, set when the person signs in with (or links) an
+    // atproto account. the account row (provider_id 'atproto', account_id =
+    // did) is what sign-in looks up; this column makes "one did, one user"
+    // a database guarantee and lets the app read the did off the session
+    did: text("did"),
+    // cache of the handle the did resolved to (bidirectionally) at the last
+    // atproto sign-in, null when the check failed. handles change, the did not
+    handle: text("handle"),
+    // the confirmed email the person's pds reported via account:email at the
+    // last atproto sign-in (null when not shared or not confirmed). never used
+    // to find or link accounts, only to deliver mail, see deliverableEmail in
+    // packages/email
+    contactEmail: text("contact_email"),
   },
-  // better-auth looks users up by email and requires it to be unique
-  (t) => [uniqueIndex("user_email_idx").on(t.email)],
+  (t) => [
+    // better-auth looks users up by email and requires it to be unique
+    uniqueIndex("user_email_idx").on(t.email),
+    uniqueIndex("user_did_idx").on(t.did),
+  ],
 );
 
 export const UserRelations = relations(User, ({ many }) => ({
@@ -164,6 +180,34 @@ export const Verification = pgTable(
   },
   (t) => [index("verification_identifier_idx").on(t.identifier)],
 );
+
+// stores of @atproto/oauth-client-node (packages/auth/src/atproto/stores.ts).
+// values are json encrypted with AUTH_SECRET: a state holds the pkce verifier
+// and the dpop private key of a sign-in in progress, a session the dpop key
+// and the single-use refresh token of a signed-in did. created by
+// migrations/2026-10-04-atproto-login.sql on the live db.
+
+// pending authorization requests, keyed by the oauth "state" parameter. rows
+// older than an hour are dead (the authorization server gave up long before)
+// and are deleted opportunistically whenever a new one is written
+export const AtprotoOAuthState = pgTable("atproto_oauth_state", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// one oauth session per did. no foreign key on purpose: the session is stored
+// by the oauth client before the callback knows which user the did belongs to
+export const AtprotoOAuthSession = pgTable("atproto_oauth_session", {
+  did: text("did").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
+});
 
 // only owner, admin, moderator and member count as being in the group, see
 // ACTIVE_MEMBER_ROLES in packages/api. adding a value? the live db needs an
@@ -551,6 +595,10 @@ export const UpdateProfileSchema = createInsertSchema(User, {
   updatedAt: true,
   role: true,
   flags: true,
+  // set by the atproto sign-in only
+  did: true,
+  handle: true,
+  contactEmail: true,
 });
 
 export const GroupPromotion = pgTable("group_promotion", {

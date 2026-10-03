@@ -16,7 +16,7 @@ export const env = createEnv({
    * This way you can ensure the app isn't built with invalid env vars.
    */
   server: {
-    /** canonical public origin, e.g. https://www.laundryroom.social or http://localhost:3000; a trailing slash is stripped so it can be concatenated */
+    /** canonical public origin, e.g. https://www.laundryroom.social or http://127.0.0.1:3000 (atproto's loopback oauth client needs 127.0.0.1 in dev); a trailing slash is stripped so it can be concatenated */
     APP_URL: z
       .string()
       .url()

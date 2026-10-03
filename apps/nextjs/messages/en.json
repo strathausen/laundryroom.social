@@ -103,5 +103,62 @@
     "joinToSeeWho": "join the group to see who's coming",
     "joinToRsvp": "join the group to rsvp",
     "logInToRsvp": "log in to rsvp"
+  },
+  "login": {
+    "title": "login",
+    "subtitle": "sign in to join groups, rsvp to meetups and talk to people",
+    "or": "or",
+    "continueWithGoogle": "continue with google",
+    "emailLabel": "email",
+    "emailPlaceholder": "you@example.com",
+    "emailSubmit": "email me a sign-in link",
+    "emailSending": "sending…",
+    "emailHint": "no password needed. we email you a link, and you press one button to finish signing in.",
+    "sentTitle": "check your inbox",
+    "sentBody": "we sent a sign-in link to <strong>{email}</strong>. open it and press the button on the page it takes you to.",
+    "sentHint": "nothing there? check your spam folder, or try again with a different address. the link expires after a short while.",
+    "useDifferentEmail": "use a different email",
+    "errors": {
+      "tooManyAttempts": "too many attempts, try again later",
+      "generic": "something went wrong, please try again",
+      "signInFailed": "sign in failed, please try again",
+      "invalidToken": "this link is no longer valid, request a new one",
+      "googleCancelled": "google sign-in was cancelled",
+      "googleIncomplete": "google sign-in did not complete, please try again",
+      "googleNoEmail": "google did not share an email address for that account",
+      "googleEmailMismatch": "that google account uses a different email",
+      "googleLinkFailed": "this google account could not be linked to your profile",
+      "googleAlreadyLinked": "this google account already belongs to another profile"
+    }
+  },
+  "atproto": {
+    "signInLead": "sign in with bluesky or any other atproto account",
+    "handleLabel": "your handle",
+    "handlePlaceholder": "e.g. alice.bsky.social",
+    "explainer": "your bluesky handle works, or any other atproto handle",
+    "looksLikeEmail": "that looks like an email address. handles look like alice.bsky.social",
+    "continue": "continue with your handle",
+    "redirecting": "one sec…",
+    "noAccount": "no account yet?",
+    "createAccount": "create one on {host}",
+    "accountTitle": "your atproto account",
+    "connectedAs": "connected as <strong>{account}</strong>",
+    "connectedHint": "you can use it to sign in here. your handle shows on your profile",
+    "connectTitle": "connect your atproto account",
+    "connectHint": "then you can sign in with it, too. your handle shows on your profile",
+    "connect": "connect",
+    "errors": {
+      "invalid_handle": "that doesn't look like a handle. try something like alice.bsky.social",
+      "resolve_failed": "we couldn't find that account or reach its server. check the handle and try again",
+      "cancelled": "cancelled, no worries. try again whenever you like",
+      "denied": "that sign-in didn't go through. start it again from here",
+      "expired": "that sign-in took too long or was opened in another browser. start it again from here",
+      "signed_out": "your session ended. sign in, then connect your account again",
+      "already_linked": "that atproto account is already connected to another profile",
+      "has_other_account": "your profile is already connected to another atproto account",
+      "rate_limited": "too many tries, wait a minute and try again",
+      "server_error": "something broke on our end, please try again",
+      "generic": "that didn't work, please try again"
+    }
   }
 }
