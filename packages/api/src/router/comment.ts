@@ -1,11 +1,17 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, inArray, lte, ne } from "@laundryroom/db";
+import { and, desc, eq, inArray, lte } from "@laundryroom/db";
 import { Comment, Discussion, GroupMember } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 import { classifyModeration } from "@laundryroom/llm";
 
+import {
+  getGroupAccess,
+  isActiveMember,
+  isActiveMemberRow,
+  nsfwAllowed,
+} from "../access";
 import { protectedProcedure } from "../trpc";
 
 export const commentRouter = {
@@ -18,24 +24,33 @@ export const commentRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const discussionQuery = ctx.db
-        .select({ id: Discussion.id, groupId: Discussion.groupId })
-        .from(Discussion)
-        .where(eq(Discussion.id, input.discussionId));
-      const membershipQuery = discussionQuery.then(([discussion]) =>
-        discussion
-          ? ctx.db
-              .select({ role: GroupMember.role })
-              .from(GroupMember)
-              .where(
-                and(
-                  eq(GroupMember.groupId, discussion.groupId),
-                  eq(GroupMember.userId, ctx.session.user.id),
-                ),
-              )
-          : [],
+      const empty = {
+        comments: [],
+        nextCursor: undefined,
+        prevCursor: undefined,
+      };
+      // discussions that moderation hid keep their comments hidden as well
+      const discussion = await ctx.db.query.Discussion.findFirst({
+        where: and(
+          eq(Discussion.id, input.discussionId),
+          eq(Discussion.moderationStatus, "ok"),
+        ),
+        columns: { groupId: true },
+      });
+      if (!discussion) {
+        return empty;
+      }
+      // comments are for members only (banned users and open join requests
+      // get an empty list, nsfw groups need the opt-in)
+      const access = await getGroupAccess(
+        ctx.db,
+        discussion.groupId,
+        ctx.session.user.id,
       );
-      const commentsQuery = await ctx.db.query.Comment.findMany({
+      if (!access?.canSeeMemberContent) {
+        return empty;
+      }
+      const comments = await ctx.db.query.Comment.findMany({
         where: and(
           eq(Comment.discussionId, input.discussionId),
           eq(Comment.moderationStatus, "ok"),
@@ -50,11 +65,6 @@ export const commentRouter = {
         limit: input.limit + 1,
         orderBy: desc(Comment.createdAt),
       });
-      const [membership] = await membershipQuery;
-      const comments = commentsQuery;
-      if (!membership || membership.role === "banned") {
-        return { comments: [], nextCursor: undefined, prevCursor: undefined };
-      }
       const nextComment =
         comments.length > input.limit ? comments.pop() : undefined;
       return {
@@ -78,8 +88,12 @@ export const commentRouter = {
     .input(z.object({ discussionId: z.string(), content: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
+      // discussions that moderation hid take no comments (and send no emails)
       const discussion = await ctx.db.query.Discussion.findFirst({
-        where: eq(Discussion.id, input.discussionId),
+        where: and(
+          eq(Discussion.id, input.discussionId),
+          eq(Discussion.moderationStatus, "ok"),
+        ),
         columns: {
           id: true,
           title: true,
@@ -100,7 +114,9 @@ export const commentRouter = {
       if (!membership) {
         throw new Error("Not a member of the group");
       }
-      if (membership.role === "banned") {
+      // banned users must not learn about the ban, open join requests get
+      // the same answer
+      if (!isActiveMember(membership.role)) {
         throw new Error("Something went wrong");
       }
       // typed as the column's literal union rather than the llm package's enum,
@@ -137,21 +153,26 @@ export const commentRouter = {
       if (candidateIds.size === 0) {
         return inserted;
       }
-      // only people who are still (non-banned) members of the group get the email
+      // only people who are still members of the group get the email (no
+      // bans, no join requests), in nsfw groups only those who opted in
       const recipients = await ctx.db.query.GroupMember.findMany({
         where: and(
           eq(GroupMember.groupId, discussion.groupId),
           inArray(GroupMember.userId, [...candidateIds]),
-          ne(GroupMember.role, "banned"),
+          isActiveMemberRow(),
         ),
         with: {
-          user: { columns: { id: true, name: true, email: true } },
+          user: { columns: { id: true, name: true, email: true, flags: true } },
+          group: { columns: { status: true } },
         },
       });
       // the comment is already saved, so a failing email must not fail the
       // mutation. sends stay sequential on purpose: resend rate-limits bursts
       // (2 requests/second), so firing all sends at once would drop most of them
-      for (const { user } of recipients) {
+      for (const { user, group } of recipients) {
+        if (!nsfwAllowed(group.status, user.flags)) {
+          continue;
+        }
         try {
           await sendEmail(user.email, "newComment", {
             user,

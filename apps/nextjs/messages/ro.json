@@ -67,5 +67,41 @@
     "prompt": "te rog spune-ne numele tău",
     "placeholder": "cum să te numim?",
     "submit": "ok"
+  },
+  "group": {
+    "notFound": "nu găsim grupul ăsta",
+    "logInToSee": "autentifică-te ca să vezi grupul ăsta",
+    "nsfwHint": "grupul ăsta e marcat nsfw. ca să-l vezi, activează modul nsfw la „advanced options” în profilul tău.",
+    "nsfwLink": "mergi la profilul meu",
+    "join": "intră în grup",
+    "askToJoin": "cere să intri",
+    "logInToJoin": "autentifică-te ca să intri în grup",
+    "logInToAskToJoin": "autentifică-te ca să ceri să intri",
+    "cannotJoin": "momentan nu poți intra în grupul ăsta",
+    "requestSent": "cerere trimisă! acum e rândul adminilor grupului.",
+    "withdrawRequest": "retrage cererea",
+    "memberOf": "ești {role, select, admin {admin} moderator {moderator} other {membru}} în grupul ăsta,",
+    "leave": "ieși din grup",
+    "privateContent": "grupul ăsta e privat. cere să intri ca să vezi ce se întâmplă.",
+    "pendingContent": "cererea ta a plecat. o să vezi tot imediat ce un admin te primește.",
+    "joinToSeeMeetups": "intră în grup ca să-i vezi întâlnirile.",
+    "joinToDiscuss": "intră în grup ca să participi la discuție.",
+    "joinToSeeMembers": "intră în grup ca să-i cunoști pe membri."
+  },
+  "members": {
+    "requests": "cereri de intrare",
+    "approve": "primește",
+    "decline": "refuză",
+    "ban": "blochează",
+    "approved": "gata, e înăuntru!",
+    "declined": "cerere refuzată",
+    "requestBanned": "gata, e blocat. n-o să afle nimic."
+  },
+  "meetupPage": {
+    "logInToSee": "autentifică-te ca să vezi întâlnirea asta",
+    "notFound": "întâlnirea asta nu există sau e doar pentru membrii grupului",
+    "joinToSeeWho": "intră în grup ca să vezi cine vine",
+    "joinToRsvp": "intră în grup ca să confirmi",
+    "logInToRsvp": "autentifică-te ca să confirmi"
   }
 }

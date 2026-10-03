@@ -12,7 +12,6 @@ import {
   inArray,
   lt,
   not,
-  sql,
 } from "@laundryroom/db";
 import {
   Attendee,
@@ -23,6 +22,13 @@ import {
 } from "@laundryroom/db/schema";
 import { sendEmail } from "@laundryroom/email";
 
+import {
+  canSeeHiddenMeetups,
+  getGroupAccess,
+  isActiveMemberRow,
+  isGroupAdmin,
+  nsfwAllowed,
+} from "../access";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const meetupRouter = createTRPCRouter({
@@ -30,28 +36,7 @@ export const meetupRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = ctx.session?.user;
-      const groupQuery = user
-        ? ctx.db.query.Group.findFirst({
-            where: inArray(
-              Group.id,
-              sql`(SELECT group_id FROM meetup WHERE id = ${input.id})`,
-            ),
-            with: {
-              members: {
-                where: and(
-                  eq(GroupMember.userId, user.id),
-                  not(eq(GroupMember.role, "banned")),
-                ),
-                with: {
-                  user: {
-                    columns: { id: true, email: true, name: true },
-                  },
-                },
-              },
-            },
-          })
-        : undefined;
-      const meetupQuery = ctx.db.query.Meetup.findFirst({
+      const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.id),
         columns: {
           id: true,
@@ -74,19 +59,6 @@ export const meetupRouter = createTRPCRouter({
               image: true,
             },
           },
-          // this might get slow for some meetups in the future, but we can optimize later
-          attendees: {
-            where: eq(Attendee.status, "going"),
-            with: {
-              user: {
-                columns: {
-                  id: true,
-                  name: true,
-                  image: true,
-                },
-              },
-            },
-          },
           organizer: {
             columns: {
               id: true,
@@ -96,19 +68,43 @@ export const meetupRouter = createTRPCRouter({
           },
         },
       });
-      const [group, meetup] = await Promise.all([groupQuery, meetupQuery]);
       if (!meetup) {
-        throw new Error("Meetup not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "meetup not found" });
       }
-      if (!group && user) {
-        throw new Error("Group not found");
+      const access = await getGroupAccess(ctx.db, meetup.groupId, user?.id);
+      // private, nsfw and archived groups keep their meetups to their
+      // members, and hidden meetups are for owners, admins and moderators
+      if (
+        !access?.canSeeMeetups ||
+        (meetup.status === "hidden" && !canSeeHiddenMeetups(access.role))
+      ) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "meetup not found" });
       }
-      const isSuperUser = !!group?.members.some(
-        (m) => m.user.id === user?.id && ["admin", "owner"].includes(m.role),
+      const goingFilter = and(
+        eq(Attendee.meetupId, meetup.id),
+        eq(Attendee.status, "going"),
       );
-      const isGroupMember = !!group && group.members.length > 0; // we are only interested in the length
-      // attendees are already filtered to status "going"
-      const goingCount = meetup.attendees.length;
+      const [attendees, [going]] = await Promise.all([
+        // who is going is for members only, everyone else gets the count.
+        // this might get slow for some meetups in the future, but we can optimize later
+        access.canSeeMemberContent
+          ? ctx.db.query.Attendee.findMany({
+              where: goingFilter,
+              columns: { userId: true, status: true },
+              with: {
+                user: {
+                  columns: {
+                    id: true,
+                    name: true,
+                    image: true,
+                  },
+                },
+              },
+            })
+          : [],
+        ctx.db.select({ count: count() }).from(Attendee).where(goingFilter),
+      ]);
+      const goingCount = going?.count ?? 0;
       return {
         ...meetup,
         isOngoing:
@@ -120,12 +116,13 @@ export const meetupRouter = createTRPCRouter({
           new Date(meetup.startTime.getTime() + meetup.duration * 60 * 1000),
         isFull:
           meetup.attendeeLimit != null && goingCount >= meetup.attendeeLimit,
-        attendees: meetup.attendees.map((a) => ({
+        goingCount,
+        attendees: attendees.map((a) => ({
           ...a,
           isCurrentUser: a.user.id === user?.id,
         })),
-        isSuperUser,
-        isGroupMember,
+        isSuperUser: isGroupAdmin(access.role),
+        isGroupMember: access.isActiveMember,
         isLoggedIn: !!user,
       };
     }),
@@ -147,18 +144,12 @@ export const meetupRouter = createTRPCRouter({
       const now = new Date();
       const boundary = cursor ? new Date(cursor) : now;
 
-      // check if user is member of the group
-      const membership = user
-        ? await ctx.db.query.GroupMember.findFirst({
-            where: and(
-              eq(GroupMember.groupId, groupId),
-              eq(GroupMember.userId, user.id),
-            ),
-          })
-        : undefined;
-      const isSuperUser = ["admin", "owner", "moderator"].includes(
-        membership?.role ?? "",
-      );
+      const access = await getGroupAccess(ctx.db, groupId, user?.id);
+      // private, nsfw and archived groups keep their meetups to their members
+      if (!access?.canSeeMeetups) {
+        return { meetups: [], nextCursor: null };
+      }
+      const isSuperUser = canSeeHiddenMeetups(access.role);
       // omit hidden meetups for non-admins
       const visibilityFilter = isSuperUser
         ? undefined
@@ -283,8 +274,17 @@ export const meetupRouter = createTRPCRouter({
       const meetup = await ctx.db.query.Meetup.findFirst({
         where: eq(Meetup.id, input.id),
       });
-      if (!meetup) {
-        throw new Error("Meetup not found");
+      const access = meetup
+        ? await getGroupAccess(ctx.db, meetup.groupId, user.id)
+        : null;
+      // a meetup the caller cannot see (see byId) is "not found", whatever
+      // state it is in
+      if (
+        !meetup ||
+        !access?.canSeeMeetups ||
+        (meetup.status === "hidden" && !canSeeHiddenMeetups(access.role))
+      ) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "meetup not found" });
       }
       const isOver =
         new Date() >
@@ -299,17 +299,13 @@ export const meetupRouter = createTRPCRouter({
         });
       }
       // check if user is member of the group
-      const membership = await ctx.db.query.GroupMember.findFirst({
-        where: and(
-          eq(GroupMember.groupId, meetup.groupId),
-          eq(GroupMember.userId, user.id),
-        ),
-      });
-      if (!membership) {
+      if (!access.role) {
         throw new Error("Not authorized");
       }
-      // banned users cannot RSVP, but don't leak that they are banned
-      if (membership.role === "banned") {
+      // banned users cannot RSVP, but don't leak that they are banned. open
+      // join requests (which is what a ban looks like in a private group) get
+      // the same answer
+      if (!access.isActiveMember) {
         return input.status;
       }
       const attendee = await ctx.db.query.Attendee.findFirst({
@@ -362,19 +358,16 @@ export const meetupRouter = createTRPCRouter({
         return null;
       }
       const { user } = ctx.session;
-      const meetup = await ctx.db.query.Meetup.findFirst({
-        where: eq(Meetup.id, input.meetupId),
-      });
-      if (!meetup) {
-        throw new Error("Meetup not found");
-      }
+      // only the viewer's own rsvp. the meetup itself is not looked up, so
+      // this does not tell anyone whether a meetup they cannot see exists
       const attendee = await ctx.db.query.Attendee.findFirst({
         where: and(
-          eq(Attendee.meetupId, meetup.id),
+          eq(Attendee.meetupId, input.meetupId),
           eq(Attendee.userId, user.id),
         ),
+        columns: { status: true },
       });
-      return attendee?.status;
+      return attendee?.status ?? null;
     }),
 
   upsert: protectedProcedure
@@ -392,10 +385,11 @@ export const meetupRouter = createTRPCRouter({
         where: eq(Group.id, input.groupId),
         with: {
           members: {
-            where: not(eq(GroupMember.role, "banned")),
+            // no bans, no join requests
+            where: isActiveMemberRow(),
             with: {
               user: {
-                columns: { id: true, email: true, name: true },
+                columns: { id: true, email: true, name: true, flags: true },
               },
             },
           },
@@ -410,9 +404,15 @@ export const meetupRouter = createTRPCRouter({
           eq(GroupMember.userId, user.id),
         ),
       });
-      if (!membership || !["owner", "admin"].includes(membership.role)) {
+      if (!membership || !isGroupAdmin(membership.role)) {
         throw new Error("Not authorized");
       }
+      // meetup emails go to members only, in nsfw groups only to those who
+      // opted in
+      const mailable = group.members.filter((member) =>
+        nsfwAllowed(group.status, member.user.flags),
+      );
+      const mailableIds = new Set(mailable.map((member) => member.user.id));
       // if (input.endTime && data.startTime > new Date(input.endTime)) {
       //   throw new Error("Start time must be before end time");
       // }
@@ -462,7 +462,10 @@ export const meetupRouter = createTRPCRouter({
           data.title !== meetup.title ||
           duration !== meetup.duration;
         if (status !== "hidden" && hasRelevantChange) {
-          recipients = meetup.attendees;
+          // banning leaves the attendee rows in place
+          recipients = meetup.attendees.filter((attendee) =>
+            mailableIds.has(attendee.user.id),
+          );
         }
         await ctx.db.update(Meetup).set(data).where(eq(Meetup.id, input.id));
         meetupId = input.id;
@@ -479,7 +482,7 @@ export const meetupRouter = createTRPCRouter({
         meetupId = res[0].id;
         // announce new meetups to the whole group, unless they are hidden
         if (data.status !== "hidden") {
-          recipients = group.members;
+          recipients = mailable;
         }
       }
       const icsInvite = createEventUpdate({

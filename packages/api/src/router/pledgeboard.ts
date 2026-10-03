@@ -13,12 +13,16 @@ import {
   UpsertPledgeBoardSchema,
 } from "@laundryroom/db/schema";
 
+import type { GroupMemberRole } from "../access";
+import {
+  canSeeHiddenMeetups,
+  getGroupAccess,
+  isActiveMember,
+  isGroupAdmin,
+} from "../access";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 type Db = typeof Database;
-type GroupMemberRole = (typeof GroupMember.$inferSelect)["role"];
-
-const ADMIN_ROLES: GroupMemberRole[] = ["admin", "owner"];
 
 /**
  * Role of `userId` in the group that owns `meetupId`, or null when the user
@@ -75,7 +79,7 @@ async function memberRoleForBoard(
 
 /** Throws FORBIDDEN unless the role is admin or owner of the group. */
 function assertAdmin(role: GroupMemberRole | null) {
-  if (role === null || !ADMIN_ROLES.includes(role)) {
+  if (!isGroupAdmin(role)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "only group admins can manage the pledge board",
@@ -130,13 +134,26 @@ export const pledgeboardRouter = createTRPCRouter({
   getPledgeBoard: protectedProcedure
     .input(z.object({ meetupId: z.string().uuid() }))
     .query(async function ({ ctx, input }) {
-      // only (non-banned) members of the group get to see the board and who pledged what
-      const role = await memberRoleForMeetup(
+      // only members of the group get to see the board and who pledged what
+      // (no bans, no join requests, nsfw groups need the opt-in), and the
+      // board of a hidden meetup is as hidden as the meetup itself
+      const meetup = await ctx.db.query.Meetup.findFirst({
+        where: eq(Meetup.id, input.meetupId),
+        columns: { groupId: true, status: true },
+      });
+      // a missing meetup gets the same answer as one the caller cannot see
+      if (!meetup) {
+        return null;
+      }
+      const access = await getGroupAccess(
         ctx.db,
-        input.meetupId,
+        meetup.groupId,
         ctx.session.user.id,
       );
-      if (role === null || role === "banned") {
+      if (
+        !access?.canSeeMemberContent ||
+        (meetup.status === "hidden" && !canSeeHiddenMeetups(access.role))
+      ) {
         return null;
       }
       const pledgeBoard = await ctx.db.query.PledgeBoard.findFirst({
@@ -283,9 +300,8 @@ export const pledgeboardRouter = createTRPCRouter({
       }
       const { meetup } = pledge.pledgeBoard;
       // banning leaves the attendee rows in place, so a "going" rsvp alone is
-      // not enough: the user must also (still) be a non-banned group member
-      const role = meetup.group.members[0]?.role ?? null;
-      if (role === null || role === "banned") {
+      // not enough: the user must also (still) be a member of the group
+      if (!isActiveMember(meetup.group.members[0]?.role)) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "only group members can pledge",

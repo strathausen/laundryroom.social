@@ -30,4 +30,5 @@ type RouterInputs = inferRouterInputs<AppRouter>;
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export { createTRPCContext, appRouter, createCaller };
+export { ACTIVE_MEMBER_ROLES } from "./access";
 export type { AppRouter, RouterInputs, RouterOutputs };

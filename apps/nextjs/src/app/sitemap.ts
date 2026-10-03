@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@laundryroom/db/client";
 import { Group } from "@laundryroom/db/schema";
@@ -13,8 +13,10 @@ export const dynamic = "force-dynamic";
 const baseUrl = env.APP_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // the same groups group.search lists: public, and not hidden by moderation
   const groups = await db.query.Group.findMany({
-    where: eq(Group.status, "active"),
+    where: and(eq(Group.status, "active"), eq(Group.moderationStatus, "ok")),
+    columns: { id: true, updatedAt: true },
   });
 
   return [

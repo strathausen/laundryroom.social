@@ -15,9 +15,11 @@ import { UpsertMeetupForm } from "./meetup-form";
 interface Props {
   groupId: string;
   canEdit: boolean;
+  /** only (active) members of the group can rsvp */
+  isMember: boolean;
 }
 
-export function MeetupList({ groupId, canEdit }: Props) {
+export function MeetupList({ groupId, canEdit, isMember }: Props) {
   const meetups = useMeetups({ groupId });
   const [editableEventId, setEditableEventId] = useState<string | undefined>();
   const [showCreateMeetup, setShowCreateMeetup] = useState(false);
@@ -30,6 +32,7 @@ export function MeetupList({ groupId, canEdit }: Props) {
             key={meetup.id}
             meetup={meetup}
             canEdit={canEdit}
+            isMember={isMember}
             onEdit={() => {
               setEditableEventId(meetup.id);
               setShowCreateMeetup(true);

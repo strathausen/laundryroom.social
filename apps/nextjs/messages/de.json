@@ -67,5 +67,41 @@
     "prompt": "sag uns bitte deinen namen",
     "placeholder": "wie sollen wir dich nennen?",
     "submit": "ok"
+  },
+  "group": {
+    "notFound": "wir finden diese gruppe nicht",
+    "logInToSee": "melde dich an, um diese gruppe zu sehen",
+    "nsfwHint": "diese gruppe ist als nsfw markiert. um sie zu sehen, schalte in deinem profil unter „advanced options“ den nsfw-modus ein.",
+    "nsfwLink": "zu meinem profil",
+    "join": "gruppe beitreten",
+    "askToJoin": "beitritt anfragen",
+    "logInToJoin": "melde dich an, um der gruppe beizutreten",
+    "logInToAskToJoin": "melde dich an, um den beitritt anzufragen",
+    "cannotJoin": "du kannst dieser gruppe gerade nicht beitreten",
+    "requestSent": "anfrage verschickt! jetzt sind die admins der gruppe dran.",
+    "withdrawRequest": "anfrage zurückziehen",
+    "memberOf": "du bist {role, select, admin {admin} moderator {moderator*in} other {mitglied}} dieser gruppe,",
+    "leave": "gruppe verlassen",
+    "privateContent": "diese gruppe ist privat. frag nach dem beitritt, um zu sehen, was hier los ist.",
+    "pendingContent": "deine anfrage ist raus. sobald dich ein admin reinlässt, siehst du alles.",
+    "joinToSeeMeetups": "tritt der gruppe bei, um ihre treffen zu sehen.",
+    "joinToDiscuss": "tritt der gruppe bei, um mitzudiskutieren.",
+    "joinToSeeMembers": "tritt der gruppe bei, um die mitglieder kennenzulernen."
+  },
+  "members": {
+    "requests": "beitrittsanfragen",
+    "approve": "reinlassen",
+    "decline": "ablehnen",
+    "ban": "sperren",
+    "approved": "reingelassen!",
+    "declined": "anfrage abgelehnt",
+    "requestBanned": "gesperrt. die person merkt davon nichts."
+  },
+  "meetupPage": {
+    "logInToSee": "melde dich an, um dieses treffen zu sehen",
+    "notFound": "dieses treffen gibt's nicht, oder es ist nur für mitglieder der gruppe",
+    "joinToSeeWho": "tritt der gruppe bei, um zu sehen, wer kommt",
+    "joinToRsvp": "tritt der gruppe bei, um zuzusagen",
+    "logInToRsvp": "melde dich an, um zuzusagen"
   }
 }

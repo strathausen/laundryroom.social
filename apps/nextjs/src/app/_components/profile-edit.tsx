@@ -59,7 +59,12 @@ export function EditProfileForm(props: Props) {
   // Add setFlag mutation
   const setFlag = api.auth.setFlag.useMutation({
     onSuccess: async () => {
-      await utils.auth.invalidate();
+      // the nsfw flag decides what the group and meetup queries return
+      await Promise.all([
+        utils.auth.invalidate(),
+        utils.group.invalidate(),
+        utils.meetup.invalidate(),
+      ]);
     },
   });
 

@@ -5,7 +5,6 @@ import type { RouterOutputs } from "@laundryroom/api";
 import { Box } from "@laundryroom/ui/box";
 import { Button } from "@laundryroom/ui/button";
 
-import { authClient } from "~/auth-client";
 import { Link } from "~/i18n/routing";
 import { MembersCount } from "../members-count";
 import { RsvpSelect } from "../rsvp-select";
@@ -13,13 +12,14 @@ import { RsvpSelect } from "../rsvp-select";
 interface Props {
   meetup: RouterOutputs["meetup"]["byGroupId"]["meetups"][number];
   canEdit: boolean;
+  /** only (active) members of the group can rsvp */
+  isMember: boolean;
   onEdit: () => void;
 }
 
-export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
+export function MeetupCard({ meetup, onEdit, canEdit, isMember }: Props) {
   const isCancelled = meetup.status === "cancelled";
   const isPast = new Date(meetup.startTime) < new Date();
-  const session = authClient.useSession();
 
   return (
     <Box
@@ -46,15 +46,12 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
             </Button>
           )}
         </div>
-        {session.data ? (
-          <Link href={`/meetup/${meetup.id}`}>
-            <p className="underline decoration-green-400 decoration-4 underline-offset-4">
-              {meetup.description}
-            </p>
-          </Link>
-        ) : (
-          <p>{meetup.description}</p>
-        )}
+        {/* the meetup page works for everyone who can see this list */}
+        <Link href={`/meetup/${meetup.id}`}>
+          <p className="underline decoration-green-400 decoration-4 underline-offset-4">
+            {meetup.description}
+          </p>
+        </Link>
       </div>
       <div className="flex flex-col gap-2 space-y-2">
         <div>
@@ -69,13 +66,17 @@ export function MeetupCard({ meetup, onEdit, canEdit }: Props) {
           </div>
         )}
         <div className="flex justify-between">
-          <RsvpSelect
-            meetupId={meetup.id}
-            groupId={meetup.groupId}
-            rsvp={meetup.attendance?.status}
-            disabled={isCancelled || isPast || !session.data}
-            isFull={meetup.isFull}
-          />
+          {isMember ? (
+            <RsvpSelect
+              meetupId={meetup.id}
+              groupId={meetup.groupId}
+              rsvp={meetup.attendance?.status}
+              disabled={isCancelled || isPast}
+              isFull={meetup.isFull}
+            />
+          ) : (
+            <span />
+          )}
           <div className="flex items-center gap-3">
             {meetup.isFull && !isCancelled && (
               <span className="rotate-[-6deg] transform border-2 border-black bg-hotpink px-2 py-0.5 text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000]">

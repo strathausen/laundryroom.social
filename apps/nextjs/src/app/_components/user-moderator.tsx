@@ -17,7 +17,13 @@ import { toast } from "@laundryroom/ui/toast";
 import { api } from "~/trpc/react";
 
 // TODO get type from api
-type UserRole = "owner" | "admin" | "member" | "banned" | "moderator";
+type UserRole =
+  | "owner"
+  | "admin"
+  | "member"
+  | "banned"
+  | "moderator"
+  | "pending";
 interface Props {
   userName?: string | null;
   userId: string;

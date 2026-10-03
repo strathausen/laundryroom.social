@@ -67,5 +67,41 @@
     "prompt": "dis-nous ton nom",
     "placeholder": "comment on peut t'appeler ?",
     "submit": "ok"
+  },
+  "group": {
+    "notFound": "on ne trouve pas ce groupe",
+    "logInToSee": "connecte-toi pour voir ce groupe",
+    "nsfwHint": "ce groupe est marqué nsfw. pour le voir, active le mode nsfw dans « advanced options » de ton profil.",
+    "nsfwLink": "aller à mon profil",
+    "join": "rejoindre ce groupe",
+    "askToJoin": "demander à rejoindre",
+    "logInToJoin": "connecte-toi pour rejoindre ce groupe",
+    "logInToAskToJoin": "connecte-toi pour demander à rejoindre",
+    "cannotJoin": "tu ne peux pas rejoindre ce groupe pour le moment",
+    "requestSent": "demande envoyée ! c'est aux admins du groupe de jouer.",
+    "withdrawRequest": "retirer ma demande",
+    "memberOf": "tu es {role, select, admin {admin} moderator {modérateur} other {membre}} de ce groupe,",
+    "leave": "quitter ce groupe",
+    "privateContent": "ce groupe est privé. demande à le rejoindre pour voir ce qui s'y passe.",
+    "pendingContent": "ta demande est partie. tu verras tout dès qu'un admin te laisse entrer.",
+    "joinToSeeMeetups": "rejoins le groupe pour voir ses rencontres.",
+    "joinToDiscuss": "rejoins le groupe pour participer à la discussion.",
+    "joinToSeeMembers": "rejoins le groupe pour faire connaissance avec ses membres."
+  },
+  "members": {
+    "requests": "demandes pour rejoindre le groupe",
+    "approve": "accepter",
+    "decline": "refuser",
+    "ban": "bannir",
+    "approved": "c'est fait, bienvenue !",
+    "declined": "demande refusée",
+    "requestBanned": "personne bannie. elle n'en saura rien."
+  },
+  "meetupPage": {
+    "logInToSee": "connecte-toi pour voir cette rencontre",
+    "notFound": "cette rencontre n'existe pas, ou elle est réservée aux membres de son groupe",
+    "joinToSeeWho": "rejoins le groupe pour voir qui vient",
+    "joinToRsvp": "rejoins le groupe pour répondre",
+    "logInToRsvp": "connecte-toi pour répondre"
   }
 }

@@ -1,0 +1,26 @@
+-- join requests for private groups, 2026-10-03
+--
+-- run this ONCE against the live database BEFORE deploying the code that
+-- knows the "pending" role (the old code keeps working after it has run, it
+-- just never writes or reads the new value):
+--
+--   psql -v ON_ERROR_STOP=1 "$POSTGRES_URL" -f packages/db/migrations/2026-10-03-pending-member-role.sql
+--
+-- (-v ON_ERROR_STOP=1 matters: without it psql carries on after a failed
+-- statement and still exits 0, so an aborted run looks like a successful one)
+--
+-- what it does
+--   group_member_role  gains "pending": asking to join a private group creates
+--                      a group_member row with this role, an owner or admin
+--                      approves it (role -> member) or declines it (row
+--                      deleted). pending rows are not members: they see no
+--                      content and are not counted
+--
+-- idempotent: IF NOT EXISTS makes a re-run a no-op. the new value is appended
+-- at the end of the enum, which matches the order in packages/db/src/schema.ts,
+-- so `pnpm --filter @laundryroom/db push` reports no changes afterwards.
+-- no BEGIN / COMMIT on purpose: postgres does not let a transaction use an enum
+-- value that was added in the same transaction, and there is nothing else to
+-- group it with.
+
+ALTER TYPE group_member_role ADD VALUE IF NOT EXISTS 'pending';

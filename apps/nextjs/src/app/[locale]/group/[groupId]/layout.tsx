@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
+import { ACTIVE_MEMBER_ROLES } from "@laundryroom/api";
 import { getSession } from "@laundryroom/auth";
 import { db } from "@laundryroom/db/client";
 import { Group, GroupMember } from "@laundryroom/db/schema";
@@ -51,16 +52,17 @@ export async function generateMetadata(
 
   if (!isPublic) {
     // private/nsfw/archived: members get the real title, everyone else gets
-    // the same response as for a missing group. note that this only keeps the
-    // group's details out of link previews and crawler results: group.byId
-    // does not gate on status, so non-members can still open the page itself.
+    // the same response as for a missing group (banned users and open join
+    // requests included). this is stricter than the page itself: group.byId
+    // shows the profile of a private group to everyone who is logged in, so
+    // they can ask to join, but a link preview never shows it to anyone else
     const session = await getSession(await headers());
     const membership = session?.user
       ? await db.query.GroupMember.findFirst({
           where: and(
             eq(GroupMember.groupId, params.groupId),
             eq(GroupMember.userId, session.user.id),
-            not(eq(GroupMember.role, "banned")),
+            inArray(GroupMember.role, [...ACTIVE_MEMBER_ROLES]),
           ),
           columns: { userId: true },
         })

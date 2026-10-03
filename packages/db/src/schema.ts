@@ -165,12 +165,16 @@ export const Verification = pgTable(
   (t) => [index("verification_identifier_idx").on(t.identifier)],
 );
 
+// only owner, admin, moderator and member count as being in the group, see
+// ACTIVE_MEMBER_ROLES in packages/api. adding a value? the live db needs an
+// ALTER TYPE in migrations/ (2026-10-03-pending-member-role.sql for "pending")
 export const GroupMemberRole = pgEnum("group_member_role", [
   "owner",
   "admin",
   "member",
   "moderator",
   "banned",
+  "pending", // asked to join a private group, waiting for an owner or admin
 ]);
 
 export const MeetupAttendeeStatus = pgEnum("meetup_attendee_status", [
@@ -306,6 +310,9 @@ export const GroupMember = pgTable(
         onDelete: "cascade",
       }),
     role: GroupMemberRole("role").default("member").notNull(),
+    // on a "banned" row, later than created_at means the banned user has an
+    // open (never answered) join request, see hasAskedToJoin in the api's
+    // group router. don't reset it on unrelated updates
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {

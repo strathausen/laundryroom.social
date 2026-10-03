@@ -67,5 +67,41 @@
     "prompt": "please tell us your name",
     "placeholder": "what should we call you?",
     "submit": "ok"
+  },
+  "group": {
+    "notFound": "we couldn't find this group",
+    "logInToSee": "log in to see this group",
+    "nsfwHint": "this group is marked nsfw. to see it, turn on nsfw mode under advanced options in your profile.",
+    "nsfwLink": "go to my profile",
+    "join": "join this group",
+    "askToJoin": "ask to join",
+    "logInToJoin": "log in to join this group",
+    "logInToAskToJoin": "log in to ask to join",
+    "cannotJoin": "you can't join this group right now",
+    "requestSent": "request sent! now it's up to the group admins.",
+    "withdrawRequest": "withdraw request",
+    "memberOf": "you're {role, select, admin {an admin} moderator {a moderator} other {a member}} of this group,",
+    "leave": "leave this group",
+    "privateContent": "this group is private. ask to join to see what's going on.",
+    "pendingContent": "your request is in. you'll see everything once an admin lets you in.",
+    "joinToSeeMeetups": "join this group to see its meetups.",
+    "joinToDiscuss": "join this group to take part in the discussion.",
+    "joinToSeeMembers": "join this group to get to know the members."
+  },
+  "members": {
+    "requests": "join requests",
+    "approve": "let in",
+    "decline": "decline",
+    "ban": "ban",
+    "approved": "they're in!",
+    "declined": "request declined",
+    "requestBanned": "banned. they won't find out."
+  },
+  "meetupPage": {
+    "logInToSee": "log in to see this meetup",
+    "notFound": "this meetup doesn't exist, or it's just for members of its group",
+    "joinToSeeWho": "join the group to see who's coming",
+    "joinToRsvp": "join the group to rsvp",
+    "logInToRsvp": "log in to rsvp"
   }
 }

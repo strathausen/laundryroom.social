@@ -141,6 +141,22 @@ Say hi and welcome them to the group!`,
     };
   },
 
+  // someone asked to join a private group; goes to its owner and admins
+  joinRequest({ group, user, member }: UserInput & GroupInput & MemberInput) {
+    // names are '' until people set one
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    const memberName = member.name || "someone";
+    return {
+      subject: `Join request: ${memberName} wants to join ${group.name}`,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      body: `Dear ${user.name || "human"},
+
+There is a new request to join your private group "${group.name}" from ${memberName}. Let them in or decline the request on https://www.laundryroom.social/group/${group.id}/members
+
+Only members get to see the meetups and discussions, so they are waiting for you!`,
+    };
+  },
+
   promotionStatusChange({
     group,
     user,

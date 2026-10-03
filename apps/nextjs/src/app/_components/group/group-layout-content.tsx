@@ -25,6 +25,16 @@ export function GroupLayoutContent({ children }: GroupLayoutContentProps) {
     return <div className="m-auto mt-40">Loading...</div>;
   }
 
+  // not found (no group), or a private / nsfw group the viewer may not see (a
+  // stub with a restriction): GroupDetail says why, there are no tabs to show
+  if (groupQuery.data.group?.restriction !== null) {
+    return (
+      <PageContainer>
+        <GroupDetail groupId={params.groupId} />
+      </PageContainer>
+    );
+  }
+
   const tabs = [
     { label: "Meetups", path: `/group/${params.groupId}/meetups` },
     {

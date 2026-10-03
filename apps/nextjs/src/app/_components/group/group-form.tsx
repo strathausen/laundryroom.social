@@ -46,8 +46,9 @@ export function GroupForm(props: Props) {
   });
 
   useEffect(() => {
-    if (groupQuery.data?.group) {
-      const { group } = groupQuery.data;
+    const group = groupQuery.data?.group;
+    // a stub (restriction set) has nothing to edit
+    if (group?.restriction === null) {
       form.reset({
         id: group.id,
         name: group.name,
