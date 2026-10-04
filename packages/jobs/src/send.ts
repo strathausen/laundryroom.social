@@ -1,4 +1,10 @@
-import type { ConnectionOptions, JobOptions } from "pg-boss";
+import type {
+  ConnectionOptions,
+  DrizzleSqlTagLike,
+  DrizzleTransactionLike,
+  JobOptions,
+} from "pg-boss";
+import { fromDrizzle } from "pg-boss";
 
 import type { JobInput, JobName } from "./registry";
 import { getBoss } from "./boss";
@@ -41,4 +47,27 @@ export function enqueueAt<N extends JobName>(
   options: Omit<EnqueueOptions, "startAfter"> = {},
 ): Promise<string | null> {
   return enqueue(name, data, { ...options, startAfter: at });
+}
+
+/**
+ * Like `enqueue`, inside a drizzle transaction: the job is inserted by the
+ * transaction itself, so it exists exactly when the transaction commits
+ * (e.g. a status change and the job that carries it to the network).
+ * `sql` is drizzle's tag (from @laundryroom/db), passed in so this package
+ * needs no drizzle dependency.
+ *
+ * @example
+ * await db.transaction(async (tx) => {
+ *   await tx.update(Group).set({ status }).where(eq(Group.id, groupId));
+ *   await enqueueInTransaction(tx, sql, "group.syncProfile", { groupId });
+ * });
+ */
+export function enqueueInTransaction<N extends JobName>(
+  tx: DrizzleTransactionLike,
+  sql: DrizzleSqlTagLike,
+  name: N,
+  data: JobInput<N>,
+  options: Omit<EnqueueOptions, "db"> = {},
+): Promise<string | null> {
+  return enqueue(name, data, { ...options, db: fromDrizzle(tx, sql) });
 }

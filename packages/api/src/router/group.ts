@@ -2,6 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import type { SQL } from "@laundryroom/db";
 import type { db as Database } from "@laundryroom/db/client";
 import {
   and,
@@ -18,6 +19,7 @@ import {
 import {
   Attendee,
   Group,
+  GroupCredential,
   GroupMember,
   GroupPromotion,
   GroupShortCode,
@@ -25,6 +27,12 @@ import {
   User,
 } from "@laundryroom/db/schema";
 import { deliverableEmail, sendEmail } from "@laundryroom/email";
+import {
+  groupAccountsEnabled,
+  isReadableGroupHandle,
+  publishesOnNetwork,
+} from "@laundryroom/group-accounts";
+import { enqueueInTransaction } from "@laundryroom/jobs";
 import { classify } from "@laundryroom/llm";
 
 import {
@@ -76,6 +84,58 @@ function removeFutureRsvps(db: Db, groupId: string, userId: string) {
     ),
   );
 }
+
+/**
+ * Changes the group row and queues the job that carries the change to the
+ * group's atproto account (handle, public profile), in one transaction: the
+ * job exists exactly when the change does. Queued whenever group accounts
+ * are on, and for a group that has an account also while they are off: a
+ * change such as going private must reach the network once the worker can
+ * reach it again, not get lost. The pds itself is only ever written by the
+ * worker (packages/group-accounts), never inside a request. Callers run
+ * their access checks first.
+ */
+function updateGroupAndSync(
+  db: Db,
+  groupId: string,
+  values: {
+    [K in keyof typeof Group.$inferInsert]?:
+      | (typeof Group.$inferInsert)[K]
+      | SQL;
+  },
+) {
+  return db.transaction(async (tx) => {
+    const updated = await tx
+      .update(Group)
+      .set(values)
+      .where(eq(Group.id, groupId))
+      .returning({ did: Group.did });
+    if (updated.some((row) => row.did) || groupAccountsEnabled()) {
+      await enqueueInTransaction(
+        tx,
+        sql,
+        "group.syncProfile",
+        { groupId },
+        { singletonKey: groupId },
+      );
+    }
+    return { rowCount: updated.length };
+  });
+}
+
+/**
+ * Groups one user may create per day while group accounts are on: every
+ * group gets an account on the group pds, and the relay's budget is shared
+ * by all of them.
+ */
+const GROUPS_PER_USER_PER_DAY = 3;
+
+/**
+ * What the classifier sees of a group: the name as well, since it becomes
+ * the group's public handle and display name on the network.
+ */
+const classifiable = (group: { name: string; description: string }) =>
+  `name: ${group.name}\ndescription: ${group.description}`;
 
 export const groupRouter = {
   search: publicProcedure
@@ -241,6 +301,10 @@ export const groupRouter = {
             status: true,
             timeZone: true,
             location: true,
+            moderationStatus: true,
+            did: true,
+            handle: true,
+            publishedAt: true,
           },
           where: eq(Group.id, input.id),
           with: {
@@ -277,8 +341,31 @@ export const groupRouter = {
       if (!group) {
         return notFound;
       }
+      const {
+        moderationStatus: _,
+        did,
+        handle,
+        publishedAt,
+        ...profile
+      } = group;
       return {
-        group: { ...group, restriction: null, members },
+        group: {
+          ...profile,
+          restriction: null,
+          members,
+          // the group's handle on the network, only while it is public
+          // there (active, moderation ok, its profile published) and the
+          // handle readable: an opaque one says nothing, and right after a
+          // switch to active it would still be the private-era handle
+          atprotoHandle:
+            did &&
+            handle &&
+            publishedAt &&
+            publishesOnNetwork(group) &&
+            isReadableGroupHandle(handle)
+              ? handle
+              : null,
+        },
         membership,
         promotion: promotion ?? null,
         canSeeMeetups: access.canSeeMeetups,
@@ -348,7 +435,7 @@ export const groupRouter = {
       const userId = user.id;
 
       const classifyAndUpdate = async (data: typeof input) => {
-        const classification = await classify(data.description);
+        const classification = await classify(classifiable(data));
         return { ...data, ...classification };
       };
 
@@ -382,7 +469,7 @@ export const groupRouter = {
           membership.group.moderationStatus &&
           manualModerationStatuses.includes(membership.group.moderationStatus)
         ) {
-          return ctx.db.update(Group).set(input).where(eq(Group.id, input.id));
+          return updateGroupAndSync(ctx.db, input.id, input);
         }
 
         const data = await classifyAndUpdate(input);
@@ -393,7 +480,28 @@ export const groupRouter = {
             code: data.shortCode,
           });
         }
-        return ctx.db.update(Group).set(data).where(eq(Group.id, input.id));
+        return updateGroupAndSync(ctx.db, input.id, data);
+      }
+
+      if (groupAccountsEnabled()) {
+        const [recent] = await ctx.db
+          .select({ count: count() })
+          .from(Group)
+          .innerJoin(
+            GroupMember,
+            and(
+              eq(GroupMember.groupId, Group.id),
+              eq(GroupMember.userId, userId),
+              eq(GroupMember.role, "owner"),
+            ),
+          )
+          .where(gt(Group.createdAt, sql`now() - interval '1 day'`));
+        if ((recent?.count ?? 0) >= GROUPS_PER_USER_PER_DAY) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "you created a lot of groups today, try again tomorrow",
+          });
+        }
       }
 
       const data = await classifyAndUpdate(input);
@@ -401,7 +509,9 @@ export const groupRouter = {
       return ctx.db.transaction(async (tx) => {
         const [group] = await tx
           .insert(Group)
-          .values(data)
+          // active from now on: on the network only once it has been for a
+          // day (group accounts), so the owner can still make it private
+          .values({ ...data, activeSince: sql`now()` })
           .returning({ id: Group.id });
 
         if (!group) throw new Error("Failed to create group");
@@ -436,6 +546,19 @@ export const groupRouter = {
           }
         }
 
+        // the group's atproto account is created by the worker, once this
+        // transaction (and with it the job) is committed, and once the group
+        // has been active for a day
+        if (groupAccountsEnabled()) {
+          await enqueueInTransaction(
+            tx,
+            sql,
+            "group.ensureAccount",
+            { groupId: group.id },
+            { singletonKey: group.id },
+          );
+        }
+
         return group;
       });
     }),
@@ -454,6 +577,44 @@ export const groupRouter = {
 
       if (membership?.role !== "owner") {
         throw new Error("Not authorized");
+      }
+
+      // while group accounts are on, every group is deleted by the worker,
+      // under the group's lock: after it took the public profile down and
+      // deactivated the account (or, with a lost credential, had the pds
+      // admin take it down). its credentials go with the row, so deleting
+      // the row first would leave the account behind, out of reach, also
+      // one the worker is creating right now. until then the group is
+      // archived (members only)
+      const [account] = await ctx.db
+        .select({ did: Group.did, credential: GroupCredential.groupId })
+        .from(Group)
+        .leftJoin(GroupCredential, eq(GroupCredential.groupId, Group.id))
+        .where(eq(Group.id, groupId))
+        .limit(1);
+      const hasAccount = !!account?.did || !!account?.credential;
+      if (hasAccount || groupAccountsEnabled()) {
+        if (!groupAccountsEnabled()) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              "this group has an account on the network, it can only be deleted while group accounts are set up",
+          });
+        }
+        return ctx.db.transaction(async (tx) => {
+          const result = await tx
+            .update(Group)
+            .set({ status: "archived" })
+            .where(eq(Group.id, groupId));
+          await enqueueInTransaction(
+            tx,
+            sql,
+            "group.retireAccount",
+            { groupId },
+            { singletonKey: groupId },
+          );
+          return result;
+        });
       }
 
       return ctx.db.delete(Group).where(eq(Group.id, groupId));
@@ -800,8 +961,23 @@ export const groupRouter = {
         throw new Error("Not authorized");
       }
 
-      return ctx.db.update(Group).set({ status }).where(eq(Group.id, groupId));
+      // leaving "active" takes the public profile down and swaps the handle
+      // for an opaque one; becoming active publishes them a day later
+      // (worker), so active_since restarts on every switch to active
+      return updateGroupAndSync(ctx.db, groupId, {
+        status,
+        ...(status === "active"
+          ? {
+              activeSince: sql`case when coalesce(${Group.status}, 'active') = 'active' then ${Group.activeSince} else now() end`,
+            }
+          : {}),
+      });
     }),
+
+  /** Whether groups get accounts on the network (for the ui's warnings). */
+  networkStatus: publicProcedure.query(() => ({
+    groupAccounts: groupAccountsEnabled(),
+  })),
 
   members: protectedProcedure
     .input(z.object({ groupId: z.string(), search: z.string().optional() }))

@@ -111,6 +111,39 @@ export const XRPC = {
   serverGetSession: "com.atproto.server.getSession",
   /** a bluesky profile, for the display name fallback */
   bskyActorGetProfile: "app.bsky.actor.getProfile",
+
+  // group accounts on pds.lndry.social (packages/group-accounts). Stable
+  // com.atproto.* methods, called with the group's sessions; the admin ones
+  // with the pds admin password (worker only).
+  /** admin only: a single-use invite for one new group account */
+  serverCreateInviteCode: "com.atproto.server.createInviteCode",
+  /** admin only: custody recovery of a group whose credential is lost */
+  adminUpdateAccountPassword: "com.atproto.admin.updateAccountPassword",
+  /** admin only: takes a group account down when it cannot be reached */
+  adminUpdateSubjectStatus: "com.atproto.admin.updateSubjectStatus",
+  serverCreateAccount: "com.atproto.server.createAccount",
+  serverCreateSession: "com.atproto.server.createSession",
+  serverRefreshSession: "com.atproto.server.refreshSession",
+  /** full session only (the master password) */
+  serverCreateAppPassword: "com.atproto.server.createAppPassword",
+  /** full session only (the master password) */
+  serverListAppPasswords: "com.atproto.server.listAppPasswords",
+  /** full session only (the master password) */
+  serverRevokeAppPassword: "com.atproto.server.revokeAppPassword",
+  /** full session only (the master password) */
+  serverDeactivateAccount: "com.atproto.server.deactivateAccount",
+  /** an app password is enough */
+  identityUpdateHandle: "com.atproto.identity.updateHandle",
+  repoGetRecord: "com.atproto.repo.getRecord",
+  repoPutRecord: "com.atproto.repo.putRecord",
+  repoDeleteRecord: "com.atproto.repo.deleteRecord",
+  repoUploadBlob: "com.atproto.repo.uploadBlob",
+} as const;
+
+/** Record keys laundryroom writes under by convention. */
+export const RKEY = {
+  /** `key: literal:self` records, e.g. social.laundryroom.group.profile */
+  self: "self",
 } as const;
 
 export type NsidKey = keyof typeof NSID;

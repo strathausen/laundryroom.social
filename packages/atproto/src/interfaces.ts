@@ -1,9 +1,10 @@
 /**
  * The seams that keep the experimental parts (the spaces alpha, the
  * opensocial.group draft, custodied group accounts) swappable. Interfaces
- * only; the implementations arrive in phases 3 (LocalPdsGroupHost), 5 (forum)
- * and 6 (everything else). See docs/atproto-plan.md, "how the app acts as the
- * group" and "containing the alpha: adapter, guardrails, weekly routine".
+ * only; the implementations arrive in phases 3 (LocalPdsGroupHost, in
+ * packages/group-accounts), 5 (forum, GroupSpaceHost) and 6 (everything
+ * else). See docs/atproto-plan.md, "how the app acts as the group" and
+ * "containing the alpha: adapter, guardrails, weekly routine".
  *
  * The spaces alpha itself goes into its own alpha-only package (phase 5, with
  * exact pins of the alpha @atproto/* versions): the phase-0 spike showed the
@@ -21,9 +22,10 @@ import type {
   RecordKeyString,
 } from "@atproto/lex";
 
+import type { GroupHandleIntent } from "./groups/handle";
+import type { GroupProfileFields } from "./groups/profile";
 import type {
   GroupSpaceName,
-  JoinPolicy,
   LABEL_VAL,
   NSID,
   OpensocialRecordNsid,
@@ -121,60 +123,128 @@ export interface SpaceMember {
  */
 export type SpacePolicy = "public" | "memberList";
 
+/** A group's account on its host. */
+export interface GroupAccount {
+  did: DidString;
+  /** the full handle, e.g. foodiespace.lndry.social */
+  handle: string;
+}
+
 /**
- * Group accounts on pds.lndry.social and everything done as the group.
- * Today's implementation is LocalPdsGroupHost (laundryroom holds the group's
- * app password and master password); an OpensocialGroupHost with nested
- * oauth replaces it once a real group host exists, or if ga stops accepting
- * app-password writes to spaces. Every call happens in the worker, after the
- * access.ts check in trpc; the browser never holds group credentials.
+ * The group's image for its profile, already re-encoded (exif and gps
+ * stripped) and at most 2 MB (the lexicon's maxSize).
+ */
+export interface GroupAvatar {
+  bytes: Uint8Array;
+  mimeType: "image/png" | "image/jpeg" | "image/webp";
+  /** alt text (group.image_description) */
+  alt?: string;
+}
+
+/**
+ * Group accounts on pds.lndry.social and everything done as the group in
+ * its public repo. Today's implementation is LocalPdsGroupHost
+ * (packages/group-accounts: laundryroom holds the group's app password and
+ * master password); an OpensocialGroupHost with nested oauth replaces it once
+ * a real group host exists, or if ga stops accepting app-password writes.
+ * Every call happens in the worker, after the access.ts check in trpc; the
+ * browser never holds group credentials, and no request writes inline.
+ *
+ * What the group may publish (readable handle, public profile) is decided by
+ * the caller with publishesOnNetwork / groupHandleIntent (src/groups); the
+ * host only carries it out. Every method is idempotent: it looks at what
+ * exists first, so a retried job does not create, rename or write twice.
+ *
+ * The group's spaces (meta, members, calendar, forum) are a separate seam,
+ * GroupSpaceHost, implemented by the alpha-only spaces package in phase 5.
  *
  * See docs/atproto-plan.md, "group accounts on lndry.social", "how the app
- * acts as the group" and "roles, join requests and bans in opensocial terms".
+ * acts as the group" and "no new leaks".
  */
 export interface GroupHost {
   /**
-   * Creates the group's did:plc account, its custodied credentials and its
-   * meta and members spaces. Hidden, private, nsfw and archived groups get an
-   * opaque `g-<6 base32>` handle; active groups a readable one. The profile
-   * is not part of this: the caller writes it with updateProfile next.
+   * The account createGroupAccount made for this group, or null when there
+   * is none. An account whose creation was interrupted (it exists on the pds
+   * but was never recorded as finished) is found and finished here.
    */
-  createGroup(input: {
-    slug: string;
-    status: GroupStatus;
-    ownerDid: DidString;
-    /** the owner's did:key, offered at creation; shown once, never stored */
-    ownerRecoveryKey?: string;
-  }): Promise<{ did: DidString; handle: string }>;
+  findGroupAccount(groupId: string): Promise<GroupAccount | null>;
 
   /**
-   * A session that writes as the group (app password today): every repo and
-   * space write and every simplespace management call. An Agent, so both the
-   * stable Client and the spaces package can use it.
+   * Creates the group's did:plc account with a handle of the given kind
+   * (readable from the name, or an opaque `g-<6 base32>`), and keeps its
+   * credentials. A readable handle is the one the group holds from before,
+   * else the name's slug, `-2` or a short suffix when taken; a reserved or
+   * denied name, or one without a usable slug, gets an opaque handle
+   * instead. Keyed by laundryroom's group id, and safe to call again: an
+   * account created by an earlier, interrupted call is found and finished
+   * instead of creating a second one. The profile is not part of this: the
+   * caller writes it with updateProfile next.
+   */
+  createGroupAccount(input: {
+    groupId: string;
+    handle: GroupHandleIntent;
+  }): Promise<GroupAccount>;
+
+  /**
+   * A session that writes as the group (the app password today): every repo
+   * write, later every space write and simplespace management call. An
+   * Agent, so both the stable Client and the spaces package can use it.
    */
   writer(groupDid: DidString): Promise<Agent>;
 
   /**
-   * A full session, only for getDelegationToken (app passwords are refused
-   * there), i.e. for the space syncer's reads and registerNotify.
+   * A full session (the master password), only for what app passwords are
+   * refused: getDelegationToken for the space syncer (phase 5), deactivation
+   * and app password management.
    */
   syncSession(groupDid: DidString): Promise<Agent>;
 
   /**
-   * Writes group.opensocial.profile/self and social.laundryroom.group.profile/self
-   * into the meta space, and the public copy of the laundryroom profile only
-   * when `publish` is true (active groups; access.ts decides).
+   * Makes the handle fit `handle`: no-op when it already does (a readable
+   * handle is never renamed because the name changed), otherwise a new one
+   * through com.atproto.identity.updateHandle. A readable intent that no
+   * readable handle can satisfy (a non-latin, reserved or denied name)
+   * keeps the opaque handle the account has, rather than minting a new one
+   * on every call. Resolves to the handle the account has afterwards. The
+   * old handle stays in the plc log forever.
+   */
+  updateHandle(input: {
+    groupDid: DidString;
+    handle: GroupHandleIntent;
+  }): Promise<string>;
+
+  /**
+   * Writes social.laundryroom.group.profile/self into the group's public
+   * repo, validated with buildRecord first. Only for groups that publish on
+   * the network. Nothing is written when the stored record already equals
+   * the new one (every write is a firehose event, and the relay budget is
+   * per host). `avatar`: undefined keeps the stored avatar, null removes it.
    */
   updateProfile(input: {
     groupDid: DidString;
-    profile: RecordFields<typeof NSID.laundryroomGroupProfile>;
-    joinPolicy: JoinPolicy;
-    publish: boolean;
-  }): Promise<RecordRef[]>;
+    profile: GroupProfileFields;
+    avatar?: GroupAvatar | null;
+  }): Promise<{ ref: RecordRef; changed: boolean }>;
 
-  /** Renames the group's handle (status changes swap readable and opaque). */
-  setHandle(groupDid: DidString, handle: string): Promise<void>;
+  /**
+   * Deletes social.laundryroom.group.profile/self from the public repo (the
+   * pds then drops the avatar blob too). Resolves to false when there was
+   * none.
+   */
+  deleteProfile(groupDid: DidString): Promise<boolean>;
 
+  /** Deactivates the group account (a deleted group); keeps the did. */
+  deactivate(groupDid: DidString): Promise<void>;
+}
+
+/**
+ * The group's spaces (simplespace today), managed as the group. Phase 5,
+ * implemented in the alpha-only spaces package on top of GroupHost.writer;
+ * split from GroupHost because nothing outside that package may call
+ * com.atproto.space.* or com.atproto.simplespace.* (see docs/atproto-plan.md,
+ * "containing the alpha").
+ */
+export interface GroupSpaceHost {
   /** Creates one of the group's spaces (simplespace createSpace). */
   createSpace(input: {
     groupDid: DidString;
@@ -208,9 +278,6 @@ export interface GroupHost {
    * notifySpaceDeleted, and the index purges every copy.
    */
   deleteSpace(space: SpaceRef): Promise<void>;
-
-  /** Deactivates the group account (after deleteSpace for every space). */
-  deactivate(groupDid: DidString): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------

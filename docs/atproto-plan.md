@@ -551,15 +551,19 @@ custody, in one table:
 - the space alpha accepts these legacy bearer and app-password sessions for `space.createRecord/putRecord/deleteRecord/applyWrites` and for every `simplespace.*` management call. the proposal's text says writes "accept only an oauth credential", so **ga may close this** (see risks). everything goes through one interface, so that change stays local:
 
 ```ts
-// packages/atproto/src/groups/group-host.ts
+// packages/atproto/src/interfaces.ts (as built in phase 3)
 export interface GroupHost {
-  createGroup(input: { slug: string; ownerDid: string; status: GroupStatus }): Promise<{ did: string; handle: string }>;
-  writer(groupDid: string): Promise<Client>;      // app-password session today; nested-oauth session from a real group host later
-  syncSession(groupDid: string): Promise<Client>; // full session, only for getDelegationToken
-  setHandle(groupDid: string, handle: string): Promise<void>;
-  deactivate(groupDid: string): Promise<void>;
+  findGroupAccount(groupId: string): Promise<GroupAccount | null>;          // finishes an interrupted creation
+  createGroupAccount(input: { groupId: string; handle: GroupHandleIntent }): Promise<GroupAccount>; // readable | opaque
+  writer(groupDid: DidString): Promise<Agent>;      // app-password session today; nested-oauth session from a real group host later
+  syncSession(groupDid: DidString): Promise<Agent>; // full session: getDelegationToken, app passwords, deactivation
+  updateHandle(input: { groupDid: DidString; handle: GroupHandleIntent }): Promise<string>;
+  updateProfile(input: { groupDid: DidString; profile: GroupProfileFields; avatar?: GroupAvatar | null }): Promise<{ ref: RecordRef; changed: boolean }>;
+  deleteProfile(groupDid: DidString): Promise<boolean>;
+  deactivate(groupDid: DidString): Promise<void>;
 }
-// LocalPdsGroupHost   — pds.lndry.social, credentials held by laundryroom (now)
+// GroupSpaceHost (createSpace, putMember, listMembers, …) — phase 5, in the alpha-only package
+// LocalPdsGroupHost   — pds.lndry.social, credentials held by laundryroom (now; packages/group-accounts)
 // OpensocialGroupHost — nested oauth against a group host (when one exists)
 ```
 
@@ -881,6 +885,20 @@ each phase deploys on its own. estimates are for one person part-time. there is 
 - a custody drill succeeds: delete the stored credential, recover with admin `updateAccountPassword`;
 - `simplespace.listMembers` on foodiespace's members space matches `group_member`;
 - private, hidden and nsfw groups have nothing public except their opaque handle.
+
+*built (2026-10-04), off in production until the `GROUP_*` variables are set* (README, "Group accounts"):
+- `packages/group-accounts`: `LocalPdsGroupHost` over plain fetch + zod. `createGroupAccount` mints one single-use invite (admin basic auth), creates the account with a random 32-byte password and then the `laundryroom-writer` app password. The master password and the handle are stored *before* `createAccount`, so a crash in between is finished on the retry (found by logging in) instead of creating a second account; a group deleted meanwhile gets the new account deactivated again. A new did must be a `did:plc` whose document (at `GROUP_PLC_URL`) names our pds and the requested handle. Both secrets are aes-256-gcm encrypted in `group_credential`, with the key's fingerprint per row and a `GROUP_CREDENTIAL_KEY_2` rotation slot (rows move to the new key as they are read). Sessions are cached and refreshed in memory; a revoked app password is replaced from the master password. `updateProfile` validates with `buildRecord`, writes nothing when the record is unchanged (relay budget), and uploads the image re-encoded with sharp (webp, ≤ 1000 px, ≤ 2 MB, no exif), fetched only from our upload hosts. `deleteProfile`, `updateHandle` (no-op when the handle already fits) and `deactivate` (master password: app passwords are refused there) complete it; `takeDown` and `recoverAccount` use the admin password where the group's own credential cannot help.
+- handles: the slug rules plus a deny list of our own (brands anywhere, roles and our hostnames whole, compared without hyphens). Only "taken" earns `-2` or a suffix; a name the pds reserves or refuses, a denied one and one without latin letters get an opaque handle, also while public, and keep it (no new opaque handle per sync). A readable handle is claimed in `group.readable_slug` before the pds is asked and the claim outlives the handle: a group that goes private and back gets its own handle again, and no other group can take it meanwhile; an older public group's name is claimed before a newer group can take it (the backfill takes days).
+- `GroupHost` now covers the account and its public repo; the space methods moved to a separate `GroupSpaceHost` for the alpha package (phase 5). It gained `findGroupAccount`.
+- "public on the network" is active **and** moderation `ok` (the sitemap's rule; names are moderated with the description now) **and** active for a day (`group.active_since`): new groups start out active, and the day lets the owner make one private before anything permanent happens. The ui warns before a group goes active and on the create form. A group's readable handle can change at most once a day this way.
+- schema: `group.did` (unique), `group.handle`, `group.readable_slug` (unique), `group.active_since`, `group.published_at`, `group_credential`; migration `2026-10-05-group-accounts.sql`.
+- jobs `group.ensureAccount` (new group; the account is created once its day is over), `group.syncProfile` (edit, status change; queued for a group with an account also while the feature is off), `group.retireAccount` (every delete while the feature is on: archived at once, then profile deleted, account deactivated, row deleted; an unreachable account is taken down with the admin password, and if that fails too the group stays archived), `group.reconcileAccounts` (hourly: re-queues groups that still publish what they must not) and `group.backfillAccounts`. trpc queues them with `enqueueInTransaction`, in the same transaction as the change, after its access check. Handlers take a per-group advisory lock, stop with the job's signal (pg-boss expiry, a lost lock, an 8-minute deadline), retry network errors with backoff for about a day, and give up loudly on permanent ones, with only sanitized errors in logs and in `pgboss.job`. Leaving active deletes the profile first, then swaps to an opaque handle, never waiting; becoming active switches to a readable handle, then publishes, within limits: 3 new groups per user and day, 60 new accounts an hour, a profile write per group and minute, 800 relay events an hour from the worker.
+- the backfill is a one-off command (`backfill-group-accounts`, `--group` for foodiespace first, `--resync` for all), 10 per batch, one account a minute (≤ ~300 relay events an hour), with a warning from 80 accounts on. The custody drill has a command too: `recover-group-credential --group <id>` (admin `updateAccountPassword`, a new app password, stored encrypted, then a sync).
+- the web app reads only `GROUP_PDS_URL` and `GROUP_HANDLE_DOMAIN`; the worker refuses to start on a partial or invalid config; `GROUP_EMAIL_DOMAIN` must be the handle domain or under it.
+- the group page shows "on the network @<handle>" for public groups with a readable handle and a published profile only.
+- tested: unit tests (handles and the deny list, a fake pds for the host's handle rules, claims, signals and admin calls, config, error sanitizing, the budget), a contract test against `@atproto/dev-env` 0.6.10 (pds 0.5.37, invites required, rate limits on, a recovery key) covering creation, idempotency, suffixes, reserved and non-latin names, claims across a private spell, a group deleted during creation, crash recovery, the profile and its avatar (the blob is gone after the delete), handle swaps, a revoked app password, the bypass header and deactivation; and an end-to-end run of trpc, the worker and the one-off commands against a local database and that pds. The dev-env did's `rotationKeys` start with the recovery key.
+
+waiting for the real pds-social: the exit checks on the real network (tls on `*.lndry.social`, pdsls.dev, `plc.directory/<did>/data` with `PDS_RECOVERY_DID_KEY` set, the relay crawl and its 100-account cap); the custody drill on the real pds (`recover-group-credential`); a mailbox for `groups+<slug>@lndry.social`; moving the worker to its own dokku app so the admin password and the credential keys leave the web container (ops, README); and, with the alpha package in phase 5, the meta and members simplespaces, the opensocial records, the `putMember` mirror and the daily reconcile of members. Sessions live in worker memory, not the db (with the bypass key that costs nothing). sharp reaches the worker through the standalone tree's node_modules; without it profiles go out without an avatar (logged).
 
 **phase 4: public meetups and interop (2 weeks).**
 - tap, the indexer and the index tables;

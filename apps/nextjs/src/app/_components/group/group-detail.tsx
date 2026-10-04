@@ -24,10 +24,13 @@ interface GroupInfoProps {
     image: string | null;
     description: string;
     location: string | null;
+    /** e.g. foodiespace.lndry.social, only for groups public on the network */
+    atprotoHandle: string | null;
   };
 }
 
 function GroupInfo({ group }: GroupInfoProps) {
+  const t = useTranslations("group");
   return (
     <div className="flex flex-col gap-2">
       {group.image && (
@@ -51,6 +54,12 @@ function GroupInfo({ group }: GroupInfoProps) {
           <span>📍</span>
           <p className="text-base">{group.location}</p>
         </div>
+      )}
+      {group.atprotoHandle && (
+        <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-gray-600">
+          <span className="lowercase">{t("onTheNetwork")}</span>
+          <span className="break-all font-mono">@{group.atprotoHandle}</span>
+        </p>
       )}
     </div>
   );

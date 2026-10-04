@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { UpsertGroupSchema } from "@laundryroom/db/schema";
 import { Button } from "@laundryroom/ui/button";
@@ -29,7 +30,12 @@ interface Props {
 }
 
 export function GroupForm(props: Props) {
+  const t = useTranslations("group");
   const [imageUrl, setImageUrl] = useState<string>();
+  // with group accounts on, a new group goes on the network after a day
+  const networkQuery = api.group.networkStatus.useQuery(undefined, {
+    enabled: props.isNew,
+  });
   const groupQuery = api.group.byId.useQuery(
     { id: props.groupId },
     { enabled: !props.isNew, staleTime: 0 },
@@ -78,7 +84,9 @@ export function GroupForm(props: Props) {
       toast.error(
         err.data?.code === "UNAUTHORIZED"
           ? "You must be logged in to create a group"
-          : `Failed to ${props.isNew ? "create" : "modify"} group`,
+          : err.data?.code === "TOO_MANY_REQUESTS"
+            ? t("tooManyGroups")
+            : `Failed to ${props.isNew ? "create" : "modify"} group`,
       );
     },
   });
@@ -186,6 +194,9 @@ export function GroupForm(props: Props) {
               </FormItem>
             )}
           />
+          {props.isNew && networkQuery.data?.groupAccounts && (
+            <p className="text-sm text-gray-600">{t("newGroupOnNetwork")}</p>
+          )}
           <div className="mt-2 flex gap-4 border-t-2 border-black pt-4">
             <Button type="submit">save</Button>
             <Button type="button" onClick={props.onCancel}>

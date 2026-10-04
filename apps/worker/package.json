@@ -5,7 +5,9 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.mjs --external:pg-native --sourcemap --banner:js=\"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);\"",
+    "build": "esbuild src/index.ts src/backfill-group-accounts.ts src/recover-group-credential.ts --bundle --platform=node --target=node22 --format=esm --outdir=dist --out-extension:.js=.mjs --external:pg-native --external:sharp --sourcemap --banner:js=\"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);\"",
+    "backfill-group-accounts": "pnpm with-env tsx src/backfill-group-accounts.ts",
+    "recover-group-credential": "pnpm with-env tsx src/recover-group-credential.ts",
     "clean": "rm -rf .turbo dist node_modules",
     "dev": "pnpm with-env tsx watch src/index.ts",
     "format": "prettier --check . --ignore-path ../../.gitignore",
@@ -15,6 +17,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@laundryroom/group-accounts": "workspace:*",
     "@laundryroom/jobs": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
     "pg-boss": "^12.36.0",

@@ -59,9 +59,14 @@ ENV SKIP_ENV_VALIDATION=1 \
 RUN pnpm turbo build --filter=@laundryroom/nextjs^...
 
 # 2. The worker. esbuild bundles apps/worker/src and every dependency it imports
-#    (pg-boss, pg, zod, the workspace packages) into one file,
-#    apps/worker/dist/index.mjs, so the runner needs no node_modules for it.
-#    turbo builds the workspace packages it depends on first.
+#    (pg-boss, pg, zod, the workspace packages) into apps/worker/dist/index.mjs,
+#    plus the one-offs apps/worker/dist/backfill-group-accounts.mjs and
+#    apps/worker/dist/recover-group-credential.mjs, so the runner needs no
+#    node_modules for them. The one exception is sharp (native, kept external;
+#    it re-encodes group avatars): it is required at runtime from the standalone
+#    tree's node_modules, where next's image optimizer puts it (CommonJS only:
+#    the trace has no dist/index.mjs, so never import() it). turbo builds
+#    the workspace packages it depends on first.
 RUN pnpm turbo build --filter=@laundryroom/worker
 
 # 3. The web app itself, run directly instead of through its `pnpm with-env next build`

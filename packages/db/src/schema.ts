@@ -288,8 +288,35 @@ export const Group = pgTable(
       mode: "string",
       withTimezone: true,
     }).$onUpdateFn(() => sql`now()`),
+    // the group's atproto account on pds.lndry.social (packages/group-accounts),
+    // written by the worker only. did is set once the account exists; handle is
+    // the handle it has (or is being created with). readable while the group is
+    // public on the network, an opaque g-xxxxxx otherwise
+    did: text("did"),
+    handle: text("handle"),
+    // the readable slug this group holds (e.g. foodiespace), claimed by the
+    // worker before it asks the pds for it and never released, also while the
+    // group is not public and has an opaque handle: it gets the same handle
+    // back, and no other group can take it in the meantime
+    readableSlug: text("readable_slug"),
+    // when the group last became active (created, or switched to active);
+    // null for groups older than group accounts. a group gets its readable
+    // handle and public profile only once it has been active for a day, so
+    // its owner can still make it private first
+    activeSince: timestamp("active_since", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    // when the worker last wrote the group's public profile record; null
+    // while it has none
+    publishedAt: timestamp("published_at", {
+      mode: "date",
+      withTimezone: true,
+    }),
   },
   (t) => [
+    uniqueIndex("group_did_idx").on(t.did),
+    uniqueIndex("group_readable_slug_idx").on(t.readableSlug),
     index("search_index").using(
       "gin",
       sql`(
@@ -315,6 +342,12 @@ export const UpsertGroupSchema = createInsertSchema(Group, {
   moderationStatus: true,
   aiSearchText: true,
   imageDescription: true,
+  // set by the worker (and active_since by the group router) only
+  did: true,
+  handle: true,
+  readableSlug: true,
+  activeSince: true,
+  publishedAt: true,
 });
 
 export const GroupRelations = relations(Group, ({ many, one }) => ({
@@ -338,7 +371,45 @@ export const CreateGroupSchema = createInsertSchema(Group, {
   id: true,
   createdAt: true,
   updatedAt: true,
+  // set by the worker (and active_since by the group router) only
+  did: true,
+  handle: true,
+  readableSlug: true,
+  activeSince: true,
+  publishedAt: true,
 });
+
+// the custodied credentials of a group's atproto account (see
+// docs/atproto-plan.md, "group accounts on lndry.social"). written and read
+// by the worker only (packages/group-accounts); nothing here ever reaches a
+// client or a log. both secrets are aes-256-gcm encrypted with the key whose
+// fingerprint is key_id (GROUP_CREDENTIAL_KEY_1, or _2 while rotating). a row
+// with a null did is an account being created: the master password and
+// group.handle are kept first, so an interrupted creation is finished
+// instead of repeated. changing this table? update migrations/ as well
+export const GroupCredential = pgTable(
+  "group_credential",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .primaryKey()
+      .references(() => Group.id, { onDelete: "cascade" }),
+    did: text("did"),
+    // the "laundryroom-writer" app password: every write as the group
+    appPasswordEnc: text("app_password_enc"),
+    // the account password: app passwords, deactivation, and later the
+    // spaces delegation tokens (app passwords are refused there)
+    masterPasswordEnc: text("master_password_enc").notNull(),
+    keyId: text("key_id").notNull(),
+    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    // the last time a stored secret was replaced (a new app password, or a
+    // re-encryption under a new key); null if never
+    rotatedAt: timestamp("rotated_at", { mode: "date", withTimezone: true }),
+  },
+  (t) => [uniqueIndex("group_credential_did_idx").on(t.did)],
+);
 
 export const GroupMember = pgTable(
   "group_member",

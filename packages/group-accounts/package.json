@@ -1,0 +1,40 @@
+{
+  "name": "@laundryroom/group-accounts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker.ts",
+    "./env": "./env.ts"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo dist node_modules",
+    "dev": "tsc",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@atproto/lex": "0.3.14",
+    "@laundryroom/atproto": "workspace:*",
+    "@laundryroom/db": "workspace:*",
+    "@t3-oss/env-core": "^0.10.1",
+    "sharp": "^0.35.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
+    "@types/node": "^22.20.2",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:"
+  },
+  "prettier": "@laundryroom/prettier-config"
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "passThroughEnv": [
+        "GROUP_ACCOUNTS_CONTRACT_PDS_URL",
+        "GROUP_ACCOUNTS_CONTRACT_ADMIN_PASSWORD",
+        "GROUP_ACCOUNTS_CONTRACT_HANDLE_DOMAIN",
+        "GROUP_ACCOUNTS_CONTRACT_BYPASS_KEY",
+        "GROUP_ACCOUNTS_CONTRACT_PLC_URL",
+        "GROUP_ACCOUNTS_CONTRACT_RECOVERY_DID_KEY"
+      ]
+    }
+  }
+}

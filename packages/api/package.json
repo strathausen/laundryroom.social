@@ -23,6 +23,8 @@
     "@laundryroom/calendar": "workspace:*",
     "@laundryroom/db": "workspace:*",
     "@laundryroom/email": "workspace:*",
+    "@laundryroom/group-accounts": "workspace:*",
+    "@laundryroom/jobs": "workspace:*",
     "@laundryroom/llm": "workspace:*",
     "@laundryroom/validators": "workspace:*",
     "@trpc/server": "catalog:",

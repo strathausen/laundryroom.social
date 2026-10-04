@@ -8,6 +8,10 @@
 import "./env";
 
 import {
+  groupAccountsConfig,
+  groupAccountsConfigProblem,
+} from "@laundryroom/group-accounts/worker";
+import {
   enqueue,
   getBoss,
   jobNames,
@@ -83,6 +87,16 @@ process.on("SIGTERM", stop);
 process.on("SIGINT", stop);
 
 async function main(): Promise<void> {
+  // half a group accounts config (a typo, a malformed rotation key) must not
+  // quietly turn the feature off while groups with accounts keep publishing:
+  // refuse to start, so the deploy's uptime check fails (names only, never
+  // values)
+  const groupAccountsProblem = groupAccountsConfigProblem();
+  if (groupAccountsProblem) {
+    throw new Error(
+      `group accounts are misconfigured (${groupAccountsProblem}): fix the GROUP_* variables, or unset all of them`,
+    );
+  }
   // starts pg-boss: installs or migrates the `pgboss` schema, creates the
   // registry's queues and opens a pool of at most 3 connections
   const boss = await getBoss("worker");
@@ -91,8 +105,13 @@ async function main(): Promise<void> {
   // one heartbeat per start, so the deploy log shows the queue round trip
   // working without waiting for the cron
   await enqueue("heartbeat", { trigger: "startup" });
+  const groupAccounts = groupAccountsConfig();
   console.log(
-    `[worker] ready: working ${jobNames.join(", ")}; heartbeat cron "${env.WORKER_HEARTBEAT_CRON}" (utc)`,
+    `[worker] ready: working ${jobNames.join(", ")}; heartbeat cron "${env.WORKER_HEARTBEAT_CRON}" (utc); group accounts ${
+      groupAccounts
+        ? `on (${groupAccounts.pdsUrl}, *.${groupAccounts.handleDomain})`
+        : "off"
+    }`,
   );
 }
 

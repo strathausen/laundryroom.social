@@ -208,6 +208,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@laundryroom/group-accounts':
+        specifier: workspace:*
+        version: link:../../packages/group-accounts
       '@laundryroom/jobs':
         specifier: workspace:*
         version: link:../../packages/jobs
@@ -266,6 +269,12 @@ importers:
       '@laundryroom/email':
         specifier: workspace:*
         version: link:../email
+      '@laundryroom/group-accounts':
+        specifier: workspace:*
+        version: link:../group-accounts
+      '@laundryroom/jobs':
+        specifier: workspace:*
+        version: link:../jobs
       '@laundryroom/llm':
         specifier: workspace:*
         version: link:../llm
@@ -476,6 +485,52 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/group-accounts:
+    dependencies:
+      '@atproto/lex':
+        specifier: 0.3.14
+        version: 0.3.14
+      '@laundryroom/atproto':
+        specifier: workspace:*
+        version: link:../atproto
+      '@laundryroom/db':
+        specifier: workspace:*
+        version: link:../db
+      '@t3-oss/env-core':
+        specifier: ^0.10.1
+        version: 0.10.1(typescript@5.9.3)(zod@3.23.8)
+      sharp:
+        specifier: ^0.35.4
+        version: 0.35.4(@types/node@22.20.2)
+      zod:
+        specifier: 'catalog:'
+        version: 3.23.8
+    devDependencies:
+      '@laundryroom/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@laundryroom/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@laundryroom/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: ^22.20.2
+        version: 22.20.2
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.3.3)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.3
+      tsx:
+        specifier: ^4.23.13
+        version: 4.23.13
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

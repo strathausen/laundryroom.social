@@ -7,6 +7,6 @@ export { getBoss, stopBoss } from "./boss";
 export type { JobData, JobInput, JobName } from "./registry";
 export { jobNames, jobs, parsePayload } from "./registry";
 export type { EnqueueOptions } from "./send";
-export { enqueue, enqueueAt } from "./send";
+export { enqueue, enqueueAt, enqueueInTransaction } from "./send";
 export type { JobContext, JobHandler, JobHandlers, ScheduleSpec } from "./work";
 export { registerHandlers, syncSchedules } from "./work";
