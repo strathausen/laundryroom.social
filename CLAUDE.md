@@ -23,9 +23,10 @@ pnpm ui-add           # Add shadcn/ui components via interactive CLI
 
 ### Deployment
 ```bash
-git push dokku main   # Deploy web + worker: dokku builds the root Dockerfile, swaps containers after the app.json healthchecks
-dokku ps:scale laundryroom worker=1   # one-time owner step on the box: non-web Procfile processes start at scale 0
-dokku ps:set laundryroom restart-policy on-failure   # one-time: dokku's default on-failure:10 stops restarting after 10 crashes per container
+git push dokku main          # web: dokku app "laundryroom" builds the root Dockerfile, swaps containers after the app.json healthchecks
+git push dokku-worker main   # worker: dokku app "laundryroom-worker" (same image, scaled web=0 worker=1, mostly cached build); deploy both every time
+# remote: git remote add dokku-worker dokku@167.235.249.248:laundryroom-worker
+# the worker app alone holds the group-account secrets (pds admin password, credential key); the web app gets only GROUP_PDS_URL and GROUP_HANDLE_DOMAIN
 dokku logs laundryroom -p worker -t  # worker logs; a heartbeat line every 15 minutes and one per start
 dokku run laundryroom node apps/worker/dist/backfill-group-accounts.mjs [--group <id>] [--resync]   # one-off, by hand: queue group accounts for existing groups (README, "Group accounts")
 dokku run laundryroom node apps/worker/dist/recover-group-credential.mjs --group <id>   # one-off, by hand: custody recovery of a group whose stored credential is lost or refused (pds admin password)

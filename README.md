@@ -174,16 +174,27 @@ POSTGRES_URL='postgres://postgres:<pw>@localhost:5433/laundryroom_db' pnpm db:pu
 
 The same image also runs the job worker: the Procfile's `worker:` line, `node --enable-source-maps apps/worker/dist/index.mjs`. That file is a single esbuild bundle and needs no `node_modules`, except `sharp` for group avatars, which it loads from the standalone tree (without it, group profiles are published without an avatar). It runs [pg-boss](https://github.com/timgit/pg-boss) 12 against the same database as the web app.
 
-- **One-time steps.** dokku starts only `web` on its own; every other Procfile process starts at scale 0. And dokku's default restart policy, `on-failure:10`, counts restarts over a container's whole life, so after 10 crashes between two deploys docker gives up and the worker stays down. Run both once on the box (the restart policy applies from the next deploy); later deploys keep them:
+- **Its own dokku app.** In production the worker runs as a second dokku app, `laundryroom-worker`, built from the same repo and image, so the group-account secrets (the pds admin password and the credential key) live only there and never in the internet-facing web container. Deploy both apps every time; the second build comes almost entirely from the docker cache:
 
   ```bash
-  dokku ps:scale laundryroom worker=1
-  dokku ps:set laundryroom restart-policy on-failure   # no maximum; docker backs off up to 1 min between restarts
+  git push dokku main          # laundryroom: web (its worker process stays at scale 0)
+  git push dokku-worker main   # laundryroom-worker: worker only
+  ```
+
+  How it was set up, once (2026-10-04): dokku starts only `web` on its own and every other Procfile process at scale 0, and dokku's default restart policy, `on-failure:10`, counts restarts over a container's whole life, so after 10 crashes between two deploys docker would give up:
+
+  ```bash
+  dokku apps:create laundryroom-worker
+  dokku domains:disable laundryroom-worker && dokku proxy:disable laundryroom-worker
+  dokku postgres:link laundryroom-db laundryroom-worker --alias POSTGRES   # POSTGRES_URL, like the web app
+  dokku ps:set laundryroom-worker restart-policy on-failure                 # no maximum; docker backs off up to 1 min
+  dokku ps:scale --skip-deploy laundryroom-worker web=0 worker=1
+  git remote add dokku-worker dokku@167.235.249.248:laundryroom-worker      # on the laptop
   ```
 
 - **Database.** Nothing to set up. On its first start, pg-boss creates its tables in a separate `pgboss` schema in `laundryroom_db`, and a newer pg-boss migrates them on start. `pnpm db:push` (drizzle-kit, `public` schema only) never touches that schema. A dump of `laundryroom-db` includes the queued jobs.
 - **Config.** Nothing extra for the worker itself: it uses `POSTGRES_URL` from `postgres:link`. `WORKER_HEARTBEAT_CRON` (default `*/15 * * * *`, utc) is only worth changing for a local test. Of the `GROUP_*` variables of [group accounts](#group-accounts), the web app reads only `GROUP_PDS_URL` and `GROUP_HANDLE_DOMAIN`; the worker reads all of them and refuses to start while they are incomplete or invalid.
-- **Checking it works.** `dokku logs laundryroom -p worker -t` shows `[worker] ready`, one `heartbeat (startup)` line per start, and a `heartbeat (schedule)` line every 15 minutes. `dokku ps:report laundryroom` lists the worker container. A dead worker is otherwise silent (the web app keeps enqueueing), so whatever alerting watches the box should also check that the newest completed heartbeat is under 30 minutes old:
+- **Checking it works.** `dokku logs laundryroom-worker -p worker -t` shows `[worker] ready`, one `heartbeat (startup)` line per start, and a `heartbeat (schedule)` line every 15 minutes. `dokku ps:report laundryroom-worker` lists the worker container. A dead worker is otherwise silent (the web app keeps enqueueing), so whatever alerting watches the box should also check that the newest completed heartbeat is under 30 minutes old:
 
   ```sql
   select max(completed_on) from pgboss.job where name = 'heartbeat' and state = 'completed';
@@ -216,28 +227,27 @@ Every group gets its own atproto account on the group pds (`pds.lndry.social`, p
 - **Handles.** A group's readable handle is claimed in `group.readable_slug` before the pds is asked for it and kept while the group is not public, so nobody else takes it meanwhile; an older public group's name is claimed before a newer group can take it. A taken handle gets `-2` or a short suffix. Names the pds reserves (`HandleNotAvailable`) or refuses, names on our deny list (`laundryroom`, `lndry`, `bluesky`, `bsky`, `atproto` anywhere; `admin`, `support`, `official`, `pds`, … as the whole name; see `packages/atproto/src/groups/handle.ts`) and names without latin letters keep an opaque handle, also while public.
 - **Who writes.** Only the worker: trpc queues `group.ensureAccount` (a new group), `group.syncProfile` (an edit, a status change; also while the feature is off, for a group that has an account) and `group.retireAccount` (deleting a group while the feature is on: it is archived at once, then the worker deletes the profile, deactivates the account and deletes the row) inside the same transaction as the change, after its access check. Names and descriptions go through moderation together. The browser never sees a group credential; the app password and the master password are stored aes-256-gcm encrypted in `group_credential`.
 - **Limits.** Each user creates at most 3 groups a day while the feature is on. The worker creates at most 60 accounts an hour, writes a group's profile at most once a minute, and keeps to 800 relay events an hour for all groups together (the relay takes 2,600 an hour and 21,000 a day per host); what is over waits. Taking something off the network never waits.
-- **Setup, once.** Run the migration first, then set the variables (documented in [.env.example](./.env.example)) on the app, which restarts web and worker. The worker refuses to start while only some of them are set or one is invalid, so a typo fails the deploy instead of switching the feature off:
+- **Setup, once (done 2026-10-04).** Run the migration first. The secrets go only on the worker app (`laundryroom-worker`, see [the worker](#worker-background-jobs)); they are copied from pds-social's config on the box, so they never leave it. The web app gets only the two public variables. The worker refuses to start while only some of its variables are set or one is invalid, so a typo fails its deploy instead of switching the feature off:
 
   ```bash
   ssh falkenstein 'dokku postgres:connect laundryroom-db' < packages/db/migrations/2026-10-05-group-accounts.sql
-  dokku config:set laundryroom \
-    GROUP_PDS_URL=https://pds.lndry.social \
-    GROUP_HANDLE_DOMAIN=lndry.social \
-    GROUP_EMAIL_DOMAIN=lndry.social \
-    GROUP_PDS_ADMIN_PASSWORD=<pds-social's PDS_ADMIN_PASSWORD> \
-    GROUP_PDS_RATE_LIMIT_BYPASS_KEY=<pds-social's PDS_RATE_LIMIT_BYPASS_KEY> \
-    GROUP_CREDENTIAL_KEY_1="$(openssl rand -base64 32)"
+  ssh falkenstein 'dokku config:set --no-restart laundryroom-worker \
+    GROUP_PDS_URL=https://pds.lndry.social GROUP_HANDLE_DOMAIN=lndry.social GROUP_EMAIL_DOMAIN=lndry.social \
+    GROUP_PDS_ADMIN_PASSWORD="$(dokku config:get pds-social PDS_ADMIN_PASSWORD)" \
+    GROUP_PDS_RATE_LIMIT_BYPASS_KEY="$(dokku config:get pds-social PDS_RATE_LIMIT_BYPASS_KEY)" \
+    GROUP_CREDENTIAL_KEY_1="$(openssl rand -base64 32)" >/dev/null'
+  ssh falkenstein 'dokku config:set laundryroom GROUP_PDS_URL=https://pds.lndry.social GROUP_HANDLE_DOMAIN=lndry.social'
   ```
 
-  Keep an offline copy of `GROUP_CREDENTIAL_KEY_1` with the other keys: without it the stored group passwords are gone (then every group needs the recovery below). `dokku logs laundryroom -p worker` says `group accounts on (https://pds.lndry.social, *.lndry.social)` after the restart.
+  Keep an offline copy of `GROUP_CREDENTIAL_KEY_1` with the other keys: without it the stored group passwords are gone (then every group needs the recovery below). `dokku logs laundryroom-worker -p worker` says `group accounts on (https://pds.lndry.social, *.lndry.social)` after a restart.
 
-  The web app only reads `GROUP_PDS_URL` and `GROUP_HANDLE_DOMAIN`. The admin password (it can reset, take down or delete every group account) and the credential keys (with `POSTGRES_URL` they decrypt every stored group password) are the worker's alone, but web and worker are one dokku app today and share its config, so the web container carries them too. Before switching this on, consider running the worker as its own dokku app from the same image (`laundryroom-worker`, scaled to `web=0 worker=1`, linked to `laundryroom-db`) and setting the three secrets only there. Treat the `groups+…@lndry.social` mailbox like the keys: whoever reads it can reset a group's password (`GROUP_EMAIL_DOMAIN` must be the handle domain or under it).
+  The admin password (it can reset, take down or delete every group account) and the credential keys (with `POSTGRES_URL` they decrypt every stored group password) live only in `laundryroom-worker`, never in the internet-facing web container; never set them on `laundryroom`. Treat the `groups+…@lndry.social` mailbox like the keys: whoever reads it can reset a group's password (`GROUP_EMAIL_DOMAIN` must be the handle domain or under it).
 - **Backfill existing groups, once, by hand** (never on deploy). New groups get their account a day after they are created; the groups that existed before need the one-off command, which only queues jobs for the worker. Start with foodiespace, check it, then the rest, oldest first, 10 per batch, one account a minute, which keeps the relay well under its 2,600 events per hour and host:
 
   ```bash
-  dokku run laundryroom node apps/worker/dist/backfill-group-accounts.mjs --group <foodiespace's group id>
-  dokku run laundryroom node apps/worker/dist/backfill-group-accounts.mjs            # all groups without an account
-  dokku logs laundryroom -p worker -t                                                 # one line per group
+  dokku run laundryroom-worker node apps/worker/dist/backfill-group-accounts.mjs --group <foodiespace's group id>
+  dokku run laundryroom-worker node apps/worker/dist/backfill-group-accounts.mjs            # all groups without an account
+  dokku logs laundryroom-worker -p worker -t                                          # one line per group
   ```
 
   `--batch-size` and `--spacing` change the pace, `--resync` re-syncs every group that already has an account (after a moderation change made in the database that makes a group public again, or a key rotation), `--help` explains. The relay takes 100 accounts per new pds host; the worker warns from 80 on, so ask bluesky to raise the limit for `pds.lndry.social` in time. Locally (like `pnpm dev:worker`, it reads `.env` unless the variables are given inline, so point it at a local database): `POSTGRES_URL=postgresql://localhost/<db> pnpm -F @laundryroom/worker backfill-group-accounts [options]`.
@@ -245,7 +255,7 @@ Every group gets its own atproto account on the group pds (`pds.lndry.social`, p
 - **Recovering a lost credential (the custody drill).** When the worker says a group's credential is lost, refused or does not decrypt, recover it with the pds admin password: a new random master password (`com.atproto.admin.updateAccountPassword`), a new `laundryroom-writer` app password, both stored encrypted the way the worker reads them, then a sync is queued. Prints no secret:
 
   ```bash
-  dokku run laundryroom node apps/worker/dist/recover-group-credential.mjs --group <group id>
+  dokku run laundryroom-worker node apps/worker/dist/recover-group-credential.mjs --group <group id>
   ```
 
   The drill: pick a test group, `delete from group_credential where group_id = '<id>';`, watch its next sync give up, run the command, watch the sync succeed.
