@@ -414,7 +414,7 @@ the backend-for-frontend pattern (statusphere, leaflet), wired into better auth:
 
 - **scopes.**
   - request first: `atproto account:email?action=read blob:image/* include:social.laundryroom.authFull repo:community.lexicon.calendar.rsvp`.
-  - on `OAuthResponseError` with `.error === 'invalid_scope'`, retry with the raw list: `atproto account:email?action=read blob:image/* repo:social.laundryroom.actor.profile repo:community.lexicon.calendar.rsvp`, plus two raw space scopes (both are also in the metadata above):
+  - on `OAuthResponseError` with `.error === 'invalid_scope'` at par (an unresolvable `include:`), **and** on `OAuthCallbackError` with `params.error === 'invalid_scope'` in the callback route (an unresolvable space type bounces from the authorize page before any sign-in ui; verified in the phase-0 spike), retry with the raw list: `atproto account:email?action=read blob:image/* repo:social.laundryroom.actor.profile repo:community.lexicon.calendar.rsvp`, plus two raw space scopes (both are also in the metadata above):
     - `space:social.laundryroom.forum?authority=*&skey=self&collection=social.laundryroom.forum.thread&collection=social.laundryroom.forum.reply&action=create&action=update&action=delete`
     - `space:social.laundryroom.calendar?authority=*&skey=self&collection=community.lexicon.calendar.rsvp&collection=social.laundryroom.pledge.fulfillment&action=create&action=update&action=delete`
   - never request `space:group.opensocial.*` (unpublished declaration → `invalid_scope` for the whole login) or `transition:generic`.
@@ -630,7 +630,7 @@ Authorization: Bearer <group session>
 
 ### credentials, sync and indexing
 
-- **getting a credential** (`packages/atproto/src/spaces/credential.ts`, the only place that imports `@atproto/space`):
+- **getting a credential** (`packages/atproto-spaces/src/credential.ts`, the only place that imports `@atproto/space`):
   - `getDelegationToken {space}` on the reader's pds. it needs a full session. it returns a jwt with `typ: atproto-space-delegation+jwt`, `aud: <authority>#atproto_space_host`, valid 60 s, single-use.
   - `P256Keypair.create()` from `@atproto/crypto`: a fresh key per credential.
   - `POST <authority pds>/xrpc/com.atproto.space.getSpaceCredential {space}`, with `Authorization: Bearer <delegation>` and the rfc 9421 headers from `createSpaceSigHeaders(key, { authorization })`.
@@ -681,7 +681,7 @@ bsky.social and most other pdses do not serve spaces yet, and their oauth server
 
 ### containing the alpha: adapter, guardrails, weekly routine
 
-- **one package holds the alpha**: `packages/atproto/src/spaces/` (credential, http signatures, the `com.atproto.space.*` / `simplespace.*` calls, sync, uri construction through `SpaceRef` from the alpha `@atproto/syntax`). nothing outside it builds a space uri by hand, because the scheme may become `ats://`.
+- **one package holds the alpha**: `packages/atproto-spaces` (`@laundryroom/atproto-spaces`, its own workspace package with exact alpha pins; the phase-0 spike showed a single package cannot hold stable `@atproto/lex` 0.3.14 and the alpha side by side). its public api is plain data: no `AtUri`, `SpaceRef`, `Client`, `P256Keypair`, `Cid` or generated schema crosses it; members' oauth sessions and the group's password session go in as arguments. it holds the credential, http signatures, the `com.atproto.space.*` / `simplespace.*` calls, sync, uri construction through `SpaceRef` from the alpha `@atproto/syntax`). nothing outside it builds a space uri by hand, because the scheme may become `ats://`.
   - only this package depends on the alpha versions (`@atproto/space`, `@atproto/crypto`, `@atproto/syntax`, `@atproto/lex` at `0.0.0-spaces-alpha-20261001173819`, exact pins, never a range).
   - `@atproto/space`'s `latest` tag points at the stale dpop-era `0.0.0-spaces-alpha-20260818022935`, so never install it without a version.
   - the rest of the monorepo uses the stable versions above. *to verify in the phase-0 spike*: that the two `@atproto/*` versions coexist in one pnpm workspace without type clashes (two `AtUri` classes). fallback: bulletin's approach, everything on alpha plus `pnpm.overrides`, for the whole monorepo until ga.
@@ -709,7 +709,7 @@ bsky.social and most other pdses do not serve spaces yet, and their oauth server
   4. run the contract tests against the dev env at the new commit.
   5. deploy both pdses in one short window, then laundryroom. smoke-test `_health`, a space write from pds-me into a pds-social space, and a sync.
   6. if it breaks, go back to the previous image **and** restore the step-1 backup: the alpha's migrations run at start-up and only go forward. if a release cannot carry existing data (the blog warns that "database schemas may change without clean migrations"), stay on the old pin. if it has to be taken, rebuild with the phase-7 move procedure.
-  7. change only `packages/atproto/src/spaces/`. if anything outside it has to change, the adapter boundary is wrong; fix the boundary.
+  7. change only `packages/atproto-spaces/`. if anything outside it has to change, the adapter boundary is wrong; fix the boundary.
   - if a week's break costs more than a day, stay on the previous pin until the next release rather than chase it.
 
 ## no new leaks
@@ -825,7 +825,7 @@ each phase deploys on its own. estimates are for one person part-time. there is 
 - **a 2–3 day spaces spike on the local dev env**: run bulletin against `dev-env start:multi-pds` at the pinned alpha. it answers five questions:
   - can a simplespace be created with a `group.opensocial.*` type?
   - do stable and alpha `@atproto/*` coexist in pnpm?
-  - do `lex build` and `goat lex publish` accept `type: "space"`?
+  - do `lex build` and `goat lex publish` accept `type: "space"`? (answered 2026-10-04, see "phase-0 spike results")
   - does the mixed permission set resolve on bsky.social, and does bsky.social ignore a raw `space:` token rather than refuse it?
   - does a local record's computed cid equal the cid `space.createRecord` returns for the same record and rkey?
 
@@ -913,7 +913,7 @@ each phase deploys on its own. estimates are for one person part-time. there is 
 - an anonymous visitor, a signed-in non-member and a banned member get nothing from the appview, for space and local records alike;
 - the banned member's new space write is refused at `notifyWrite`, and a new local write is refused in trpc;
 - on the dev env, a lifted local record keeps its uri and cid;
-- one thursday release is absorbed, backup first, with changes only under `packages/atproto/src/spaces/`.
+- one thursday release is absorbed, backup first, with changes only under `packages/atproto-spaces/`.
 
 **phase 6: everything else on spaces (3–4 weeks).**
 - the calendar space: canonical events, eventInfo, rsvps in members' space repos (local records for members without spaces), pledge boards/items/fulfillments;
@@ -1024,6 +1024,21 @@ dokku proxy:build-config pds-me
 ```
 
 `PDS_DPOP_SECRET` (64 hex characters) keeps dpop nonces valid across restarts. left unset, the pds draws a random one at every start (`config/env.ts` and `oauth-provider/src/dpop/dpop-nonce.ts` on the alpha branch). smoke test: `curl https://pds.lndry.me/xrpc/_health` and `wsdump "wss://pds.lndry.me/xrpc/com.atproto.sync.subscribeRepos?cursor=0"`. the pds readme sizes 1 gb ram, 1 core and 20 gb ssd for 1–20 users, so two instances are small change on this box. the alpha image's idle footprint is not measured.
+
+## phase-0 spike results (2026-10-04)
+
+run on the pinned alpha (npm `0.0.0-spaces-alpha-20261001173819`, byte-identical to 79d6307e1) with a local three-pds dev network, bulletin end to end, and the stable dev-env 0.6.10 for comparison. bsky.social itself was not tested; the stable reference pds 0.5.37 stood in for it.
+
+| question | answer | consequence |
+|---|---|---|
+| can a simplespace use a space type outside the creator's namespace (`group.opensocial.meta`, `social.laundryroom.forum`)? | yes. `simplespace.createSpace` accepts any valid nsid with an app-password session, does no lexicon lookup, and does not check the declared `key` or `collections`; `space.createRecord` accepts undeclared collections too. | the adapter enforces skey and collections itself, validates with `$parse` before every write and on ingest, and the indexer drops collections it does not know. |
+| do stable `@atproto/*` (oauth-client-node 0.5.9, lex 0.3.14) and the alpha coexist in one pnpm workspace? | yes, with selector-scoped `pnpm.overrides` for the 12 packages that have a stray `0.0.0` release, and a hard type boundary (17 packages install twice). a stable `OAuthSession` can be passed to the alpha client; alpha `AtUri`/schemas cannot cross into stable code. | a separate alpha-only package `packages/atproto-spaces` with a plain-data api (see "containing the alpha"). |
+| do `lex build` / goat accept `type: "space"`? | stable `lex build` 0.3.14 and goat 0.2.5 refuse it; the alpha `lex build` generates it. both lex versions build the permission set with `resource: "space"`; goat lints it with a warning and refuses to publish it. | space types live in `packages/atproto/lexicons-alpha/` and are generated only by the alpha package. lexicons are published with a small `com.atproto.lexicon.schema` putRecord script, not `goat lex publish`. |
+| does a raw `space:` scope work without a published space type? | no: par succeeds, then the authorize page bounces back with `invalid_scope` "Unable to retrieve space declarations" before any sign-in ui (an `OAuthCallbackError` in the stable client). an unresolvable `include:` fails earlier, at par. failures are cached for about 5 min. | publish both space types (forum, calendar) before the first login that asks for them; the raw-scope fallback also catches the callback error; monitoring test-resolves both declarations. |
+| can a group write into a simplespace with an app password? | yes: createSpace, putMember, listMembers, updateSpace, space.createRecord/putRecord/applyWrites all return 200. only `space.getDelegationToken` needs a full session (or an oauth session with space `read`). | `GroupHost.writer()` uses the app password; `GroupHost.syncSession()` (master password) is only for delegation tokens, i.e. member reads and `registerNotify`. a 200 from `space.createRecord` is provisional: optimistic index rows are confirmed by sync. |
+| the appview sync path | works end to end: full session → `getDelegationToken` (60 s, single use) → `getSpaceCredential` with rfc 9421 headers (600 s) → `registerNotify` (24 h; resolves our did doc at registration, so the receiver must be up) → `listRepos`/`listRepoOps` catch-up with an exclusive spaceRev cursor. the stable `xrpc-server` `verifyJwt` accepts the fragment `aud`. | the sync design above holds as written. |
+| does a local record's cid equal the cid `space.createRecord` returns for the same record and rkey? | yes, for threads and replies (non-ascii text, strongRefs, integers); the uri matches the predicted `at://<authority>/space/<type>/<skey>/<author>/<collection>/<rkey>`. | lifting a local record keeps its uri and cid when the bytes are identical (same rkey, `createdAt` preserved), so strongRefs to local records stay valid. |
+| bulletin, two users on two pdses | both users saw all four posts on both boards within 7 s. | the npm alpha dev-env is a viable contract-test target without building the atproto monorepo. |
 
 ## risks and how we hold them
 
