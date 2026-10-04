@@ -1,0 +1,19 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.forum",
+  "description": "Space type for a laundryroom group's discussion board. Uses the atproto spaces alpha lexicon syntax (type space).",
+  "defs": {
+    "main": {
+      "type": "space",
+      "description": "A laundryroom group's discussion board. One per group, at skey self, with the group's DID as the authority. Members write threads and replies into their own repos in it; the group writes labels and the access record.",
+      "key": "literal:self",
+      "name": "laundryroom group discussions",
+      "collections": [
+        "social.laundryroom.forum.thread",
+        "social.laundryroom.forum.reply",
+        "group.opensocial.access",
+        "group.opensocial.label"
+      ]
+    }
+  }
+}

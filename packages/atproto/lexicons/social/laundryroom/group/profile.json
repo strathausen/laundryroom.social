@@ -1,0 +1,80 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.group.profile",
+  "description": "A laundryroom group's profile.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A laundryroom group's profile, authored by the group's own DID. Always in the group's meta/self space; also in the group's public repo while the group is active, and only then.",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["displayName", "createdAt"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The group's name. Same limit as group.opensocial.profile.",
+            "minGraphemes": 1,
+            "maxGraphemes": 64,
+            "maxLength": 640
+          },
+          "description": {
+            "type": "string",
+            "description": "What the group is about.",
+            "maxGraphemes": 2000,
+            "maxLength": 20000
+          },
+          "avatar": {
+            "type": "blob",
+            "description": "The group's image.",
+            "accept": ["image/png", "image/jpeg", "image/webp"],
+            "maxSize": 2000000
+          },
+          "avatarAlt": {
+            "type": "string",
+            "description": "Alt text for the avatar.",
+            "maxGraphemes": 1000,
+            "maxLength": 10000
+          },
+          "locationName": {
+            "type": "string",
+            "description": "Where the group meets, as free text (for example a city or neighbourhood).",
+            "maxGraphemes": 255,
+            "maxLength": 2550
+          },
+          "location": {
+            "type": "union",
+            "description": "A structured location for the group, when one is known.",
+            "refs": [
+              "community.lexicon.location.address",
+              "community.lexicon.location.fsq",
+              "community.lexicon.location.geo",
+              "community.lexicon.location.hthree"
+            ]
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code of the group, for example DE. Used as the country of event addresses.",
+            "minLength": 2,
+            "maxLength": 2
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone name the group's meetups are shown in, for example Europe/Berlin.",
+            "maxLength": 64
+          },
+          "labels": {
+            "type": "union",
+            "description": "Self-labels on the group, for example for adult content.",
+            "refs": ["com.atproto.label.defs#selfLabels"]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the group was created. Kept on updates.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

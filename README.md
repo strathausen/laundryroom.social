@@ -20,13 +20,15 @@ This is a [Turborepo](https://turborepo.org) monorepo (pnpm workspaces), origina
 
 ```text
 apps
-  └─ nextjs       the web app (Next.js 15, App Router, next-intl, tRPC server)
+  ├─ nextjs       the web app (Next.js 15, App Router, next-intl, tRPC server)
+  └─ worker       background jobs: pg-boss consumers + cron schedules, bundled by esbuild
 packages
   ├─ api          tRPC v11 routers (auth, profile, group, meetup, pledge, ...)
   ├─ auth         Better Auth server config (`auth`, `getSession`, the `Session` type)
   ├─ calendar     ical / calendar helpers
   ├─ db           Drizzle schema + client (Postgres)
   ├─ email        transactional email via Resend
+  ├─ jobs         job registry (names + zod payloads), the pg-boss instance, enqueue helpers
   ├─ llm          OpenAI + Instructor helpers
   ├─ ui           shadcn/ui based component library
   └─ validators   shared zod schemas
@@ -35,9 +37,9 @@ tooling
   ├─ prettier     shared prettier config
   ├─ tailwind     shared tailwind config
   └─ typescript   shared tsconfig
-Dockerfile        multi-stage image dokku builds on push (turbo prune → next build, standalone output)
-Procfile          `web: node apps/nextjs/server.js`
-app.json          dokku startup healthcheck (GET /en) for zero-downtime deploys
+Dockerfile        multi-stage image dokku builds on push (turbo prune → next build + worker bundle)
+Procfile          `web: node apps/nextjs/server.js`, `worker: node --enable-source-maps apps/worker/dist/index.mjs`
+app.json          dokku startup healthchecks (web: GET /en, worker: stays up 20 s)
 ```
 
 All day-to-day commands (`pnpm dev`, `pnpm check`, `pnpm db:push`, ...) and the architecture notes live in [CLAUDE.md](./CLAUDE.md).
@@ -164,6 +166,44 @@ ssh dokku@<your-host> postgres:unexpose laundryroom-db
 # option b: ssh tunnel straight to the service container, no public port at all
 ssh -N -L 5433:$(ssh dokku@<your-host> postgres:info laundryroom-db --internal-ip):5432 root@<your-host> &
 POSTGRES_URL='postgres://postgres:<pw>@localhost:5433/laundryroom_db' pnpm db:push
+```
+
+#### Worker (background jobs)
+
+The same image also runs the job worker: the Procfile's `worker:` line, `node --enable-source-maps apps/worker/dist/index.mjs`. That file is a single esbuild bundle and needs no `node_modules`. It runs [pg-boss](https://github.com/timgit/pg-boss) 12 against the same database as the web app.
+
+- **One-time steps.** dokku starts only `web` on its own; every other Procfile process starts at scale 0. And dokku's default restart policy, `on-failure:10`, counts restarts over a container's whole life, so after 10 crashes between two deploys docker gives up and the worker stays down. Run both once on the box (the restart policy applies from the next deploy); later deploys keep them:
+
+  ```bash
+  dokku ps:scale laundryroom worker=1
+  dokku ps:set laundryroom restart-policy on-failure   # no maximum; docker backs off up to 1 min between restarts
+  ```
+
+- **Database.** Nothing to set up. On its first start, pg-boss creates its tables in a separate `pgboss` schema in `laundryroom_db`, and a newer pg-boss migrates them on start. `pnpm db:push` (drizzle-kit, `public` schema only) never touches that schema. A dump of `laundryroom-db` includes the queued jobs.
+- **Config.** No extra env vars: the worker uses `POSTGRES_URL` from `postgres:link`. `WORKER_HEARTBEAT_CRON` (default `*/15 * * * *`, utc) is only worth changing for a local test.
+- **Checking it works.** `dokku logs laundryroom -p worker -t` shows `[worker] ready`, one `heartbeat (startup)` line per start, and a `heartbeat (schedule)` line every 15 minutes. `dokku ps:report laundryroom` lists the worker container. A dead worker is otherwise silent (the web app keeps enqueueing), so whatever alerting watches the box should also check that the newest completed heartbeat is under 30 minutes old:
+
+  ```sql
+  select max(completed_on) from pgboss.job where name = 'heartbeat' and state = 'completed';
+  ```
+
+- **Deploys and restarts.** The `worker` startup check in [app.json](./app.json) fails the deploy if a new worker does not stay up for 20 s (bad config, database unreachable). On dokku 0.37 the old worker keeps running after a successful deploy for the app's `wait-to-retire` (60 s by default), so old and new worker both take jobs for a minute or two. Then dokku runs `docker stop` on it: SIGTERM, and SIGKILL after the app's `stop-timeout-seconds` (30). On SIGTERM the worker stops fetching jobs, gives running ones up to 20 s, fails whatever is left so it gets retried, closes its pool and exits. (dokku 0.38 sends the SIGTERM right after the deploy instead.) An unhandled error makes it exit non-zero, and the restart policy above starts it again.
+- **Connections.** The worker's pg-boss pool is capped at 3. The web app's pool is 10, its lock pool 4, and its send-only pg-boss pool 2, all within dokku postgres's 100, even while old and new containers overlap during a deploy.
+- **Adding a job.** Add it to the registry ([packages/jobs/src/registry.ts](./packages/jobs/src/registry.ts)) with sample payloads in `registry.test.ts`, write its handler in [apps/worker/src/handlers.ts](./apps/worker/src/handlers.ts), then `enqueue("name", payload)` from the server. Payloads are JSON (dates as ISO strings). Because the outgoing worker keeps running for a minute or two after a deploy, a payload change must stay readable by the old and the new handler: add optional fields only, or use a new queue name. A job that must not be lost gets `retryLimit` of at least 1 and a `retryDelay` longer than that overlap.
+
+Locally, `pnpm dev` leaves the worker out. `pnpm dev:worker` starts it, against the `POSTGRES_URL` in `.env` unless one is given inline, and its first start creates the `pgboss` schema in that database, so point it at a local one (`WORKER_HEARTBEAT_CRON='* * * * *'` makes the cron fire every minute):
+
+```bash
+createdb laundryroom_jobs_test
+POSTGRES_URL=postgresql://localhost/laundryroom_jobs_test pnpm dev:worker
+```
+
+To try the production bundle against the same database instead:
+
+```bash
+pnpm -F @laundryroom/worker build
+POSTGRES_URL=postgresql://localhost/laundryroom_jobs_test WORKER_HEARTBEAT_CRON='* * * * *' node --enable-source-maps apps/worker/dist/index.mjs
+# ctrl-c stops it gracefully; dropdb laundryroom_jobs_test afterwards
 ```
 
 #### Backups

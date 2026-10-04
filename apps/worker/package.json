@@ -1,0 +1,36 @@
+{
+  "name": "@laundryroom/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.mjs --external:pg-native --sourcemap --banner:js=\"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);\"",
+    "clean": "rm -rf .turbo dist node_modules",
+    "dev": "pnpm with-env tsx watch src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "start": "node --enable-source-maps dist/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@laundryroom/jobs": "workspace:*",
+    "@t3-oss/env-core": "^0.10.1",
+    "pg-boss": "^12.36.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
+    "@types/node": "^22.20.2",
+    "dotenv-cli": "^7.4.2",
+    "esbuild": "0.28.2",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:"
+  },
+  "prettier": "@laundryroom/prettier-config"
+}

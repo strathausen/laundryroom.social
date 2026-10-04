@@ -1,0 +1,57 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.actor.profile",
+  "description": "A person's laundryroom profile.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A person's laundryroom profile, in their public repo. Optional: apps fall back to app.bsky.actor.profile for the name and avatar. Everything in it is public.",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["createdAt"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name shown next to the person's posts and rsvps.",
+            "maxGraphemes": 64,
+            "maxLength": 640
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-form bio.",
+            "maxGraphemes": 2000,
+            "maxLength": 20000
+          },
+          "pronouns": {
+            "type": "string",
+            "description": "Free-form pronouns, as the person writes them.",
+            "maxGraphemes": 64,
+            "maxLength": 640
+          },
+          "links": {
+            "type": "array",
+            "description": "Links the person wants to show. Absolute http or https URLs; clients must check the scheme before rendering a link.",
+            "maxLength": 10,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 2000
+            }
+          },
+          "avatar": {
+            "type": "blob",
+            "description": "Square avatar image.",
+            "accept": ["image/png", "image/jpeg", "image/webp"],
+            "maxSize": 2000000
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the profile was first created. Kept on updates.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.pledge.board",
+  "description": "A pledge board: things members can bring to an event.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A pledge board for a community.lexicon.calendar.event (things members can bring or do), authored by the group in the event's calendar space. The rkey must equal the rkey of the event (a TID), so there is at most one board per event.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["event", "title", "createdAt"],
+        "properties": {
+          "event": {
+            "type": "ref",
+            "description": "The community.lexicon.calendar.event the board belongs to.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the board.",
+            "minGraphemes": 1,
+            "maxGraphemes": 255,
+            "maxLength": 2550
+          },
+          "description": {
+            "type": "string",
+            "description": "What the board is for.",
+            "maxGraphemes": 2000,
+            "maxLength": 20000
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the board was created.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.forum.reply",
+  "description": "A reply in a laundryroom group discussion thread.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A reply to a social.laundryroom.forum.thread, authored by a member in their own repo in the same social.laundryroom.forum space as the thread.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["thread", "text", "createdAt"],
+        "properties": {
+          "thread": {
+            "type": "ref",
+            "description": "The social.laundryroom.forum.thread this reply belongs to.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "parent": {
+            "type": "ref",
+            "description": "The social.laundryroom.forum.reply this one answers, when it answers a reply rather than the thread itself.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "text": {
+            "type": "string",
+            "description": "The reply, as plain text.",
+            "minGraphemes": 1,
+            "maxGraphemes": 3000,
+            "maxLength": 30000
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the reply was written.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

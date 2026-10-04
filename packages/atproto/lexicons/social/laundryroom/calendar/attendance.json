@@ -1,0 +1,46 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.calendar.attendance",
+  "description": "The group's authoritative attendance outcome for an event.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "The group's authoritative attendance outcome for a community.lexicon.calendar.event with a capacity: who got a place and who is on the waitlist, in order. Authored by the group in the event's calendar space. The rkey must equal the rkey of the event (a TID).",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["event", "createdAt"],
+        "properties": {
+          "event": {
+            "type": "ref",
+            "description": "The community.lexicon.calendar.event this outcome is for.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "going": {
+            "type": "array",
+            "description": "DIDs of the members who have a place, in rsvp order. Absent means nobody.",
+            "maxLength": 1000,
+            "items": {
+              "type": "string",
+              "format": "did"
+            }
+          },
+          "waitlist": {
+            "type": "array",
+            "description": "DIDs of the members waiting for a place, first in line first. Absent means nobody.",
+            "maxLength": 1000,
+            "items": {
+              "type": "string",
+              "format": "did"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the record was created.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

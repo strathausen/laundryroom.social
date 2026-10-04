@@ -1,0 +1,52 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.pledge.item",
+  "description": "One thing on a pledge board.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "One thing on a social.laundryroom.pledge.board that members can pledge to bring or do, authored by the group in the board's calendar space.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["board", "title", "createdAt"],
+        "properties": {
+          "board": {
+            "type": "ref",
+            "description": "The social.laundryroom.pledge.board this item is on.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "title": {
+            "type": "string",
+            "description": "What is needed.",
+            "minGraphemes": 1,
+            "maxGraphemes": 255,
+            "maxLength": 2550
+          },
+          "description": {
+            "type": "string",
+            "description": "Details about the item.",
+            "maxGraphemes": 2000,
+            "maxLength": 20000
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "How many are needed in total, summed over the quantities of all fulfillments. Omitted when there is no limit.",
+            "minimum": 1
+          },
+          "sortOrder": {
+            "type": "integer",
+            "description": "Position on the board, ascending.",
+            "minimum": 0,
+            "default": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the item was created.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

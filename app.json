@@ -11,6 +11,14 @@
         "wait": 5,
         "timeout": 10
       }
+    ],
+    "worker": [
+      {
+        "type": "startup",
+        "name": "worker",
+        "description": "the worker stays up for 20 s: it connected, migrated the pgboss schema and registered its handlers. a failed start exits within ~10 s: an unreachable database costs twice pg-boss's 5 s connection timeout",
+        "uptime": 20
+      }
     ]
   }
 }

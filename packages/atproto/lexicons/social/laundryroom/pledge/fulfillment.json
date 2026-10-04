@@ -1,0 +1,33 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.pledge.fulfillment",
+  "description": "A member's pledge to bring some of a pledge item.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A member's pledge to bring or do some of a social.laundryroom.pledge.item, authored by the member in their own repo in the item's calendar space. The rkey must equal the rkey of the item (a TID), so there is one per member and item.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["item", "quantity", "createdAt"],
+        "properties": {
+          "item": {
+            "type": "ref",
+            "description": "The social.laundryroom.pledge.item being pledged.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "How many the member pledges.",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the pledge was made.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

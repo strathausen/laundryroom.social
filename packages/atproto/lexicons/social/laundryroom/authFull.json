@@ -1,0 +1,45 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.authFull",
+  "description": "Everything laundryroom asks a member for in one consent. Its space entries are atproto spaces alpha syntax; stable authorization servers skip them.",
+  "defs": {
+    "main": {
+      "type": "permission-set",
+      "description": "Write access to the member's laundryroom profile, and to their own threads, replies, rsvps and pledges in the forum and calendar spaces (skey self) of any group. blob, account and community.lexicon.* repo permissions cannot be part of this set and are requested as raw scopes.",
+      "title": "laundryroom",
+      "detail": "groups, meetups and rsvps on laundryroom",
+      "permissions": [
+        {
+          "type": "permission",
+          "resource": "repo",
+          "collection": ["social.laundryroom.actor.profile"],
+          "action": ["create", "update", "delete"]
+        },
+        {
+          "type": "permission",
+          "resource": "space",
+          "spaceType": "social.laundryroom.forum",
+          "authority": "*",
+          "skey": "self",
+          "collection": [
+            "social.laundryroom.forum.thread",
+            "social.laundryroom.forum.reply"
+          ],
+          "action": ["create", "update", "delete"]
+        },
+        {
+          "type": "permission",
+          "resource": "space",
+          "spaceType": "social.laundryroom.calendar",
+          "authority": "*",
+          "skey": "self",
+          "collection": [
+            "community.lexicon.calendar.rsvp",
+            "social.laundryroom.pledge.fulfillment"
+          ],
+          "action": ["create", "update", "delete"]
+        }
+      ]
+    }
+  }
+}

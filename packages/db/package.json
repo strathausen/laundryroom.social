@@ -33,7 +33,7 @@
   "dependencies": {
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.5.1",
-    "pg": "^8.23.0",
+    "pg": "^8.23.1",
     "zod": "catalog:"
   },
   "devDependencies": {

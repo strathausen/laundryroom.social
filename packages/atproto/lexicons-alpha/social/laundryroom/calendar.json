@@ -1,0 +1,24 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.calendar",
+  "description": "Space type for a laundryroom group's meetups. Uses the atproto spaces alpha lexicon syntax (type space).",
+  "defs": {
+    "main": {
+      "type": "space",
+      "description": "A laundryroom group's meetups, with the group's DID as the authority. skey self holds the members' calendar; skey staff holds hidden meetups that only owners, admins and moderators may read. The group writes events, event info, attendance, pledge boards and items, labels and the access record; members write rsvps and pledge fulfillments into their own repos.",
+      "key": "any",
+      "name": "laundryroom group meetups",
+      "collections": [
+        "community.lexicon.calendar.event",
+        "community.lexicon.calendar.rsvp",
+        "social.laundryroom.calendar.eventInfo",
+        "social.laundryroom.calendar.attendance",
+        "social.laundryroom.pledge.board",
+        "social.laundryroom.pledge.item",
+        "social.laundryroom.pledge.fulfillment",
+        "group.opensocial.access",
+        "group.opensocial.label"
+      ]
+    }
+  }
+}

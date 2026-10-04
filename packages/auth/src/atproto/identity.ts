@@ -70,6 +70,8 @@ const profileSchema = z.object({
 export async function fetchDisplayName(did: string): Promise<string | null> {
   try {
     const appview = atprotoDevNetwork()?.publicAppview ?? PUBLIC_APPVIEW;
+    // TODO: XRPC.bskyActorGetProfile from @laundryroom/atproto (src/nsid.ts,
+    // the one home of every nsid) once auth depends on that package
     const url = new URL("/xrpc/app.bsky.actor.getProfile", appview);
     url.searchParams.set("actor", did);
     const res = await fetch(url, {
@@ -112,6 +114,7 @@ export async function fetchConfirmedEmail(
   if (pdsUrl === undefined) return { ok: false };
   if (!isEmailTrustedPds(pdsUrl)) return { ok: true, email: null };
   try {
+    // TODO: XRPC.serverGetSession from @laundryroom/atproto (see above)
     const res = await session.fetchHandler(
       "/xrpc/com.atproto.server.getSession",
       {

@@ -2,7 +2,7 @@
   "name": "laundryroom",
   "private": true,
   "engines": {
-    "node": ">=20.15.0"
+    "node": ">=22.12.0"
   },
   "packageManager": "pnpm@9.6.0",
   "scripts": {
@@ -11,13 +11,15 @@
     "clean:workspaces": "turbo run clean",
     "db:push": "turbo -F @laundryroom/db push",
     "db:studio": "turbo -F @laundryroom/db studio",
-    "dev": "turbo watch dev",
+    "dev": "turbo watch dev --filter=!@laundryroom/worker",
     "dev:next": "turbo watch dev -F @laundryroom/nextjs...",
+    "dev:worker": "turbo watch dev -F @laundryroom/worker...",
     "format": "turbo run format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "format:fix": "turbo run format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache",
     "lint": "turbo run lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
+    "test": "turbo run test",
     "postinstall": "pnpm lint:ws",
     "typecheck": "turbo run typecheck",
     "check": "pnpm lint:fix && pnpm format:fix && pnpm typecheck",

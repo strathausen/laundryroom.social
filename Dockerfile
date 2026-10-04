@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
-# Builds the web app (apps/nextjs) into one self-contained image. dokku builds it
-# on `git push dokku main` and starts it via the Procfile. No secret is needed at
+# Builds the web app (apps/nextjs) and the job worker (apps/worker) into one
+# self-contained image. dokku builds it on `git push dokku main` and starts one
+# container per Procfile line (web, worker) from it. No secret is needed at
 # build time: SKIP_ENV_VALIDATION=1 short-circuits the t3-env check that
 # next.config.js runs through jiti; every real value is injected by dokku when
 # the container starts (see .env.example and README.md).
@@ -18,14 +19,14 @@ FROM node:22-bookworm-slim AS base
 RUN npm install -g pnpm@9.6.0
 
 # ---------------------------------------------------------------------------
-# pruner: shrink the monorepo to the workspaces @laundryroom/nextjs depends on
-# (apps/expo drops out, the lockfile is pruned to match)
+# pruner: shrink the monorepo to the workspaces @laundryroom/nextjs and
+# @laundryroom/worker depend on (the lockfile is pruned to match)
 # ---------------------------------------------------------------------------
 FROM base AS pruner
 WORKDIR /app
 COPY . .
 # same version as the root devDependency (turbo ^2.10.12 resolves to 2.10.12 in the lockfile)
-RUN pnpm dlx turbo@2.10.12 prune @laundryroom/nextjs --docker
+RUN pnpm dlx turbo@2.10.12 prune @laundryroom/nextjs @laundryroom/worker --docker
 
 # ---------------------------------------------------------------------------
 # builder: install from the pruned lockfile, build the workspace packages, build next
@@ -57,7 +58,13 @@ ENV SKIP_ENV_VALIDATION=1 \
 #    `<pkg>^...` selects the dependencies of <pkg> without <pkg> itself.
 RUN pnpm turbo build --filter=@laundryroom/nextjs^...
 
-# 2. The app itself, run directly instead of through its `pnpm with-env next build`
+# 2. The worker. esbuild bundles apps/worker/src and every dependency it imports
+#    (pg-boss, pg, zod, the workspace packages) into one file,
+#    apps/worker/dist/index.mjs, so the runner needs no node_modules for it.
+#    turbo builds the workspace packages it depends on first.
+RUN pnpm turbo build --filter=@laundryroom/worker
+
+# 3. The web app itself, run directly instead of through its `pnpm with-env next build`
 #    script: there is no ../../.env in the image (dotenv-cli tolerates a missing
 #    file, but there is nothing to load either), and a direct `next build` keeps
 #    the env this step sees explicit (turbo.json passes SKIP_ENV_VALIDATION
@@ -85,6 +92,10 @@ ENV NODE_ENV=production \
 COPY --from=builder --chown=node:node /app/apps/nextjs/.next/standalone ./
 COPY --from=builder --chown=node:node /app/apps/nextjs/.next/static ./apps/nextjs/.next/static
 COPY --from=builder --chown=node:node /app/apps/nextjs/public ./apps/nextjs/public
+# The worker bundle and its source map; the Procfile starts it with
+# `node --enable-source-maps apps/worker/dist/index.mjs` (nothing else from the
+# build is needed; the map turns stack traces into source lines).
+COPY --from=builder --chown=node:node /app/apps/worker/dist ./apps/worker/dist
 
 USER node
 EXPOSE 3000

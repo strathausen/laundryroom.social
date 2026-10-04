@@ -1,0 +1,37 @@
+{
+  "name": "@laundryroom/atproto",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./lexicons/*": "./lexicons/*",
+    "./lexicons-alpha/*": "./lexicons-alpha/*"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo dist node_modules",
+    "dev": "tsc",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lex:build": "lex build --clear --index-file --import-ext \"\" --no-pretty && prettier --write --no-error-on-unmatched-pattern lexicons.json lexicons src/lexicons",
+    "lex:install": "lex install",
+    "lint": "eslint",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@atproto/lex": "0.3.14"
+  },
+  "devDependencies": {
+    "@laundryroom/eslint-config": "workspace:*",
+    "@laundryroom/prettier-config": "workspace:*",
+    "@laundryroom/tsconfig": "workspace:*",
+    "@types/node": "^22.20.2",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:"
+  },
+  "prettier": "@laundryroom/prettier-config"
+}

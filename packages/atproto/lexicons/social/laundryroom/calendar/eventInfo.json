@@ -1,0 +1,57 @@
+{
+  "lexicon": 1,
+  "id": "social.laundryroom.calendar.eventInfo",
+  "description": "laundryroom-specific details of a community.lexicon.calendar.event.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "laundryroom-specific details of a community.lexicon.calendar.event, authored by the group next to the event in the same calendar space. The rkey must equal the rkey of the event (a TID), so there is one per event.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["event", "createdAt"],
+        "properties": {
+          "event": {
+            "type": "ref",
+            "description": "The community.lexicon.calendar.event this record describes.",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "Maximum number of attendees. Omitted when there is no limit; whether the event is full is derived, never stored. At most the number of places a social.laundryroom.calendar.attendance record can list.",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "image": {
+            "type": "blob",
+            "description": "The meetup's image.",
+            "accept": ["image/png", "image/jpeg", "image/webp"],
+            "maxSize": 2000000
+          },
+          "imageAlt": {
+            "type": "string",
+            "description": "Alt text for the image.",
+            "maxGraphemes": 1000,
+            "maxLength": 10000
+          },
+          "organizer": {
+            "type": "string",
+            "description": "DID of the member who organizes the meetup.",
+            "format": "did"
+          },
+          "locationText": {
+            "type": "string",
+            "description": "Where the meetup happens, as free text. Kept here when the event carries no structured location.",
+            "maxGraphemes": 255,
+            "maxLength": 2550
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Client-declared timestamp when the record was created.",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
